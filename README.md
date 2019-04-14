@@ -2,9 +2,15 @@ DemEnt
 ====
 Demographic inference as an inverse problem
 
+## Dependencies
+  - python3.6+
+  - numpy
+  - scipy
+  - matplotlib
+  - jupyter
+
 Code
 ---
-
 - [`dement.py`](dement.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in Rosen et al., and adding the Poisson random field for a full generative model.
 - [`regularization.ipynb`](regularization.ipynb): Jupyter notebook exploring penalized likelihood optimization.
 
