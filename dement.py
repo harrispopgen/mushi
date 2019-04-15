@@ -20,6 +20,7 @@ class DemEnt():
         The last epoch in t extends to infinity
         '''
         assert t[0] == 0
+        assert np.isinf(t[-1])
         assert all(np.diff(t) > 0)
         assert all(y > 0)
         assert n > 1
@@ -52,6 +53,7 @@ class DemEnt():
         x = np.insert(x, 0, 1)
         M2 = np.tile(np.array([1 / self.binom_array]).transpose(), (1, k)) * np.cumprod((x[np.newaxis, :-1] ** self.binom_array[:, np.newaxis]), axis=1)
         y_diff = np.insert(np.diff(y), 0, y[0])
+        y_diff[-1] = 0.
         c = M2.dot(y_diff)
         if not jacobian:
             return c
