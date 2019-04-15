@@ -20,7 +20,6 @@ class DemEnt():
         The last epoch in t extends to infinity
         '''
         assert t[0] == 0
-        assert t[-1] == np.inf
         assert all(np.diff(t) > 0)
         assert all(y > 0)
         assert n > 1
@@ -56,11 +55,33 @@ class DemEnt():
         c = M2.dot(y_diff)
         if not jacobian:
             return c
+        raise NotImplementedError('Jacobian not implemented yet')
         dM2dy = np.zeros((M2.shape[0], M2.shape[1], k))
         for depth in range(k):
             dM2dy[:, (depth + 1):, depth] = self.binom_array[:, np.newaxis] * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) * M2[:, (depth + 1):]
         J = np.tensordot(dM2dy, y_diff, ([1], [0])) + M2 @ (np.eye(k) - np.eye(k, k=-1))
         return c, J
+    # def c(self, y, jacobian=False):
+    #     '''
+    #     coalescence vector computed by trapezoidal quadrature on eqn (1) from Rosen et al.
+    #     '''
+    #     # M_2 from Rosen et al. (2018)
+    #     k = len(y)
+    #     x = (y[1:] / y[:-1] - 1)**(-self.s / np.diff(y))
+    #     print(y)
+    #     print(x)
+    #     # x = np.insert(x, 0, 1)
+    #
+    #     c = np.ones(self.n - 1)
+    #     for m in range(2, len(c) + 2):
+    #         m_choose_2 = self.binom_array[m - 2]
+    #         c[m - 2] = (m_choose_2 / 2) * (self.s * np.cumprod(x ** m_choose_2) * (1 / y[:-1] + x ** m_choose_2 / y[1:])).sum()
+    #     print(c)
+    #
+    #     if not jacobian:
+    #         return c
+    #     else:
+    #         raise NotImplementedError()
 
     def xi(self, y):
         xi = self.A.dot(self.c(y))
@@ -88,10 +109,10 @@ class DemEnt():
 
     def plot(self, y=None, y_label=None):
         '''
-        plot the true η(t), the
+        plot the true η(t), and optionally a fitted y
         '''
         assert self.y is not None
-        fig, axes = plt.subplots(1, 2)
+        fig, axes = plt.subplots(1, 2, figsize=(6, 3))
         axes[0].step(self.t[:-1], self.y,
                      'r', where='post', label='true', alpha=.5)
         axes[0].plot([self.t[-2], 1.5 * self.t[-2]], [self.y[-1], self.y[-1]],
@@ -104,9 +125,10 @@ class DemEnt():
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\eta(t)$')
         axes[0].legend()
-        axes[0].set_xscale('symlog')
-        axes[0].set_yscale('log')
-        axes[0].set_xlim([None, 1.5 * self.t[-2]])
+        axes[0].set_xlim([0, 1.5 * self.t[-2]])
+        axes[0].set_ylim([0, None])
+        # axes[0].set_xscale('symlog')
+        # axes[0].set_yscale('log')
 
         axes[1].plot(range(1, len(self.sfs) + 1), self.sfs, 'r.', alpha=.5,
                  label=r'simulated sfs')
