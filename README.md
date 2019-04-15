@@ -24,12 +24,16 @@ The coalescent model we're using for the site-frequency spectrum:
 
  - Polanski, A., and M. Kimmel. 2003. [New Explicit Expressions for Relative Frequencies of Single-Nucleotide Polymorphisms with Application to Statistical Inference on Population Growth.](http://www.genetics.org/cgi/pmidlookup?view=long&pmid=14504247) _Genetics_ 165 (1): 427–36.
 
+ - Bhaskar, Anand, Y. X. Rachel Wang, and Yun S. Song. 2015. [Efficient Inference of Population Size Histories and Locus-Specific Mutation Rates from Large-Sample Genomic Variation Data.](http://dx.doi.org/10.1101/gr.178756.114) Genome Research 25 (2): 268–79.
+
 This paper shows that SFS-based methods and LD-based methods (sequential Markov coalescent), are inconsistent. Kelley says:
  > I think the most critical challenge for new demographic inference methods will be to resolve this issue
 
  - Beichman, Annabel C., Tanya N. Phung, and Kirk E. Lohmueller. 2017. [Comparison of Single Genome and Allele Frequency Data Reveals Discordant Demographic Histories.](http://dx.doi.org/10.1534/g3.117.300259) G3  7 (11): 3605–20.
 
-Some notable papers using the forward diffusion framework:
+Notable papers about the forward diffusion framework:
+
+  - Ragsdale, Aaron P., Claudia Moreau, and Simon Gravel. 2018. [Genomic Inference Using Diffusion Models and the Allele Frequency Spectrum.](http://dx.doi.org/10.1016/j.gde.2018.10.001) Current Opinion in Genetics & Development 53 (October): 140–47.
 
   - Gutenkunst, Ryan N., Ryan D. Hernandez, Scott H. Williamson, and Carlos D. Bustamante. 2009. [Inferring the Joint Demographic History of Multiple Populations from Multidimensional SNP Frequency Data.](http://dx.doi.org/10.1371/journal.pgen.1000695) _PLoS Genetics_ 5 (10): e1000695.
 
