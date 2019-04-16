@@ -4,10 +4,14 @@
 import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson
-import matplotlib as mplt
-from matplotlib import pyplot as plt
-mplt.rc('text', usetex=True)
-mplt.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
+import matplotlib
+from matplotlib import pyplot as plt, rc_context
+from matplotlib import patheffects
+plt.xkcd()
+matplotlib.rcParams['path.effects'] = [patheffects.withStroke(linewidth=0, foreground="w")]
+
+# matplotlib.rc('text', usetex=True)
+# matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 class DemEnt():
     '''
@@ -113,34 +117,37 @@ class DemEnt():
         plot the true η(t), and optionally a fitted y
         '''
         assert self.y is not None
-        fig, axes = plt.subplots(1, 2, figsize=(6, 3))
+        fig, axes = plt.subplots(1, 2, figsize=(8, 3))
         axes[0].step(self.t[:-1], self.y,
-                     'r', where='post', label='true', alpha=.5)
+                     'k', where='post', label='true')
         if y is not None:
             axes[0].step(self.t[:-1], y,
-                         'k', where='post', label=y_label, alpha=.5)
+                         'r', where='post', label=y_label)
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\eta(t)$')
         axes[0].legend()
+        axes[0].legend(loc=(1.04,.5))
         axes[0].set_ylim([0, None])
         # axes[0].set_xscale('symlog')
         # axes[0].set_yscale('log')
 
-        axes[1].plot(range(1, len(self.sfs) + 1), self.sfs, 'r.', alpha=.5,
-                 label=r'simulated sfs')
         if y is not None:
             xi = self.xi(y)
             xi_lower = poisson.ppf(.025, xi)
             xi_upper = poisson.ppf(.975, xi)
-            axes[1].plot(range(1, len(xi) + 1), xi, 'k--', label=r'$\boldsymbol{\xi}$')
+            axes[1].plot(range(1, len(xi) + 1), xi, 'r--', label=r'$\xi$')
             axes[1].fill_between(range(1, len(xi) + 1), xi_lower, xi_upper,
-                             facecolor='k', alpha=0.25,
-                             label='inner 95\% quantile')
+                             facecolor='r', alpha=0.25,
+                             label='inner 95%\nquantile')
+        axes[1].plot(range(1, len(self.sfs) + 1), self.sfs,
+                     'k.', alpha=.5, markersize=2,
+                     label=r'simulated')
         axes[1].set_xlabel('$i$')
         axes[1].set_ylabel(r'$\xi_i$')
         axes[1].set_xscale('log')
         axes[1].set_yscale('symlog')
         axes[1].legend()
+        axes[1].legend(loc=(1.04,.5))
 
         plt.tight_layout()
         plt.show()
