@@ -18,7 +18,7 @@ class DemEnt():
     A class that implements the model of Rosen et al., but adds a Poisson random
     field for generating the SFS from ξ
     '''
-    def __init__(self, n: int, t, y):
+    def __init__(self, n: int, t, y, infinite=False):
         '''
         n is number of sampled haplotypes
         The last epoch in t extends to infinity in Rosen, but we truncate instead
@@ -28,23 +28,30 @@ class DemEnt():
         assert all(np.diff(t) > 0)
         assert all(y > 0)
         assert n > 1
+        self.infinite = infinite
         self.n = n
         self.t = t
         self.y = y
-        # The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
-        # Using notation of Rosen et al. (2018)
-        self.A = np.zeros((n - 1, n - 1))
+        self._binom_array = binom(np.arange(2, n + 1), 2) # 2 choose 2 to (n+1) choose 2
+        self.A = self._init_A(n)
+        self.s = np.diff(self.t)
+        self.simulate_sfs()
+
+    def _init_A(self, n):
+        '''
+        The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
+        Using notation of Rosen et al. (2018)
+        '''
+        A = np.zeros((n - 1, n - 1))
         b = np.arange(1, n - 1 + 1)
-        self.A[:, 0] = 6 / (n + 1)
-        self.A[:, 1] = 30 * (n - 2 * b) / (n + 1) / (n + 2)
+        A[:, 0] = 6 / (n + 1)
+        A[:, 1] = 30 * (n - 2 * b) / (n + 1) / (n + 2)
         for col in range(n - 3):
             j = col + 2
             c1 = - (1 + j) * (3 + 2 * j) * (n - j) / j / (2 * j - 1) / (n + j + 1)
             c2 = (3 + 2 * j) * (n - 2 * b) / j / (n + j + 1)
-            self.A[:, col + 2] = c1 * self.A[:, col] + c2 * self.A[:, col + 1]
-        self.s = np.diff(self.t)
-        self.binom_array = binom(np.arange(2, n + 1), 2)
-        self.simulate_sfs()
+            A[:, col + 2] = c1 * A[:, col] + c2 * A[:, col + 1]
+        return A
 
     def c(self, y, jacobian=False):
         '''
@@ -52,18 +59,25 @@ class DemEnt():
         input y is vector of constant pieces for the demography
         '''
         # M_2 from Rosen et al. (2018)
-        k = len(y)
         x = np.exp(- self.s / y)
         x = np.insert(x, 0, 1)
-        M2 = np.tile(np.array([1 / self.binom_array]).transpose(), (1, k)) * np.cumprod((x[np.newaxis, :-1] ** self.binom_array[:, np.newaxis]), axis=1)
         y_diff = np.insert(np.diff(y), 0, y[0])
+        binom_array = self._binom_array
+        if self.infinite:
+            # when using infinite domain, extend last point to infty
+            x = np.concatenate((x, [0])) # final exponential is zero
+            y_diff = np.concatenate((y_diff, [0])) # final diff is zero
+        k = len(y_diff)
+        M2 = np.tile(np.array([1 / binom_array]).transpose(), (1, k)) \
+          * np.cumprod((x[np.newaxis, :-1] ** binom_array[:, np.newaxis]), axis=1)            
         c = M2.dot(y_diff)
         if not jacobian:
             return c
         raise NotImplementedError('Jacobian not implemented yet')
         dM2dy = np.zeros((M2.shape[0], M2.shape[1], k))
         for depth in range(k):
-            dM2dy[:, (depth + 1):, depth] = self.binom_array[:, np.newaxis] * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) * M2[:, (depth + 1):]
+            dM2dy[:, (depth + 1):, depth] = binom_array[:, np.newaxis] \
+              * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) * M2[:, (depth + 1):]
         J = np.tensordot(dM2dy, y_diff, ([1], [0])) + M2 @ (np.eye(k) - np.eye(k, k=-1))
         return c, J
     # def c(self, y, jacobian=False):
@@ -91,7 +105,6 @@ class DemEnt():
     def xi(self, y):
         xi = self.A.dot(self.c(y))
         return xi
-
 
     def simulate_sfs(self, plot=False):
         '''
