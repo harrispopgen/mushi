@@ -32,6 +32,7 @@ class DemEnt():
         self.n = n
         self.t = t
         self.y = y
+        self._binom_array = binom(np.arange(2, n + 1), 2) # 2 choose 2 to (n+1) choose 2
         self.A = self._init_A(n)
         self.s = np.diff(self.t)
         self.simulate_sfs()
@@ -61,7 +62,7 @@ class DemEnt():
         x = np.exp(- self.s / y)
         x = np.insert(x, 0, 1)
         y_diff = np.insert(np.diff(y), 0, y[0])
-        binom_array = binom(np.arange(2, self.n + 1), 2) # 2 choose 2 to (n+1) choose 2
+        binom_array = self.binom_array
         if self.infinite:
             # when using infinite domain, extend last point to infty
             x = np.concatenate((x, [0])) # final exponential is zero
@@ -75,7 +76,7 @@ class DemEnt():
         raise NotImplementedError('Jacobian not implemented yet')
         dM2dy = np.zeros((M2.shape[0], M2.shape[1], k))
         for depth in range(k):
-            dM2dy[:, (depth + 1):, depth] = self.binom_array[:, np.newaxis] \
+            dM2dy[:, (depth + 1):, depth] = binom_array[:, np.newaxis] \
               * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) * M2[:, (depth + 1):]
         J = np.tensordot(dM2dy, y_diff, ([1], [0])) + M2 @ (np.eye(k) - np.eye(k, k=-1))
         return c, J
