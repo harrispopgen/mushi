@@ -17,10 +17,10 @@ class DemEnt():
     def __init__(self, n: int, t, y):
         '''
         n is number of sampled haplotypes
-        The last epoch in t extends to infinity
+        The last epoch in t extends to infinity in Rosen, but we truncate instead
         '''
         assert t[0] == 0
-        assert np.isinf(t[-1])
+        assert not np.isinf(t[-1])
         assert all(np.diff(t) > 0)
         assert all(y > 0)
         assert n > 1
@@ -53,7 +53,6 @@ class DemEnt():
         x = np.insert(x, 0, 1)
         M2 = np.tile(np.array([1 / self.binom_array]).transpose(), (1, k)) * np.cumprod((x[np.newaxis, :-1] ** self.binom_array[:, np.newaxis]), axis=1)
         y_diff = np.insert(np.diff(y), 0, y[0])
-        y_diff[-1] = 0.
         c = M2.dot(y_diff)
         if not jacobian:
             return c
@@ -117,17 +116,17 @@ class DemEnt():
         fig, axes = plt.subplots(1, 2, figsize=(6, 3))
         axes[0].step(self.t[:-1], self.y,
                      'r', where='post', label='true', alpha=.5)
-        axes[0].plot([self.t[-2], 1.5 * self.t[-2]], [self.y[-1], self.y[-1]],
+        axes[0].plot([self.t[-1], 1.5 * self.t[-1]], [self.y[-1], self.y[-1]],
                      'r', alpha=.5, lw=3)
         if y is not None:
             axes[0].step(self.t[:-1], y,
                          'k', where='post', label=y_label, alpha=.5)
-            axes[0].plot([self.t[-2], 1.5 * self.t[-2]], [y[-1], y[-1]],
+            axes[0].plot([self.t[-1], 1.5 * self.t[-1]], [y[-1], y[-1]],
                          'k', alpha=.5, lw=3)
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\eta(t)$')
         axes[0].legend()
-        axes[0].set_xlim([0, 1.5 * self.t[-2]])
+        axes[0].set_xlim([0, 1.5 * self.t[-1]])
         axes[0].set_ylim([0, None])
         # axes[0].set_xscale('symlog')
         # axes[0].set_yscale('log')
