@@ -116,17 +116,12 @@ class DemEnt():
         fig, axes = plt.subplots(1, 2, figsize=(6, 3))
         axes[0].step(self.t[:-1], self.y,
                      'r', where='post', label='true', alpha=.5)
-        axes[0].plot([self.t[-1], 1.5 * self.t[-1]], [self.y[-1], self.y[-1]],
-                     'r', alpha=.5, lw=3)
         if y is not None:
             axes[0].step(self.t[:-1], y,
                          'k', where='post', label=y_label, alpha=.5)
-            axes[0].plot([self.t[-1], 1.5 * self.t[-1]], [y[-1], y[-1]],
-                         'k', alpha=.5, lw=3)
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\eta(t)$')
         axes[0].legend()
-        axes[0].set_xlim([0, 1.5 * self.t[-1]])
         axes[0].set_ylim([0, None])
         # axes[0].set_xscale('symlog')
         # axes[0].set_yscale('log')
