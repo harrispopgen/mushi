@@ -28,17 +28,20 @@ class DemEnt():
         assert all(np.diff(t) > 0)
         assert all(y > 0)
         assert n > 1
+        self.infinite = infinite
         self.n = n
         self.t = t
         self.y = y
-        self.A = _init_A(n)
+        self.A = self._init_A(n)
         self.s = np.diff(self.t)
         self.binom_array = binom(np.arange(2, n + 1), 2)
         self.simulate_sfs()
 
-    def _init_A(n):
-        # The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
-        # Using notation of Rosen et al. (2018)
+    def _init_A(self, n):
+        '''
+        The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
+        Using notation of Rosen et al. (2018)
+        '''
         A = np.zeros((n - 1, n - 1))
         b = np.arange(1, n - 1 + 1)
         A[:, 0] = 6 / (n + 1)
@@ -49,7 +52,7 @@ class DemEnt():
             c2 = (3 + 2 * j) * (n - 2 * b) / j / (n + j + 1)
             A[:, col + 2] = c1 * A[:, col] + c2 * A[:, col + 1]
         return A
-        
+
     def c(self, y, jacobian=False):
         '''
         coalescence vector computed by eqn (3) of Rosen et al. (2018), and it's jacobian
@@ -57,10 +60,16 @@ class DemEnt():
         '''
         # M_2 from Rosen et al. (2018)
         k = len(y)
-        x = np.exp(- self.s / y)
+        if self.infinite:
+            # when using infinite domain, extend last point to infty
+            x = np.exp(- np.concatenate((self.s, [np.inf])) / np.concatenate((y, y[-1])))
+        else:
+            x = np.exp(- self.s / y)
         x = np.insert(x, 0, 1)
         M2 = np.tile(np.array([1 / self.binom_array]).transpose(), (1, k)) * np.cumprod((x[np.newaxis, :-1] ** self.binom_array[:, np.newaxis]), axis=1)
         y_diff = np.insert(np.diff(y), 0, y[0])
+        if self.infinite:
+            y_diff = np.concatenate((y_diff, [0])) # final diff is zero
         c = M2.dot(y_diff)
         if not jacobian:
             return c
