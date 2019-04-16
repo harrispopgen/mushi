@@ -62,7 +62,7 @@ class DemEnt():
         x = np.exp(- self.s / y)
         x = np.insert(x, 0, 1)
         y_diff = np.insert(np.diff(y), 0, y[0])
-        binom_array = self.binom_array
+        binom_array = self._binom_array
         if self.infinite:
             # when using infinite domain, extend last point to infty
             x = np.concatenate((x, [0])) # final exponential is zero
