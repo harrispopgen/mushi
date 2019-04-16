@@ -2,7 +2,8 @@ DemEnt
 ====
 Demographic inference as an inverse problem
 
-## Dependencies
+Dependencies
+---
   - python3.6+
   - numpy
   - scipy
@@ -16,9 +17,10 @@ Code
 
 
 References
-----
+---
 
-The coalescent model we're using for the site-frequency spectrum:
+- #### SFS Model
+The coalescent model we're using for the site-frequency spectrum.
 
  - Rosen, Zvi, Anand Bhaskar, Sebastien Roch, and Yun S. Song. 2018. [Geometry of the Sample Frequency Spectrum and the Perils of Demographic Inference.](http://dx.doi.org/10.1534/genetics.118.300733) _Genetics_, July, genetics.300733.2018.
 
@@ -26,12 +28,13 @@ The coalescent model we're using for the site-frequency spectrum:
 
  - Bhaskar, Anand, Y. X. Rachel Wang, and Yun S. Song. 2015. [Efficient Inference of Population Size Histories and Locus-Specific Mutation Rates from Large-Sample Genomic Variation Data.](http://dx.doi.org/10.1101/gr.178756.114) Genome Research 25 (2): 268–79.
 
-This paper shows that SFS-based methods and LD-based methods (sequential Markov coalescent), are inconsistent. Kelley says:
- > I think the most critical challenge for new demographic inference methods will be to resolve this issue
+- #### Entropy-based regularization
 
- - Beichman, Annabel C., Tanya N. Phung, and Kirk E. Lohmueller. 2017. [Comparison of Single Genome and Allele Frequency Data Reveals Discordant Demographic Histories.](http://dx.doi.org/10.1534/g3.117.300259) G3  7 (11): 3605–20.
+ - Regularization with a Bregman divergence from the last iterate is known as [Mirror Descent](https://blogs.princeton.edu/imabandit/2013/04/16/orf523-mirror-descent-part-iii/).
+ - Will knows it as the "Maximum Entropy Method" from his old physics paper.
 
-Notable papers about the forward diffusion framework:
+
+- #### Forward diffusion framework:
 
   - Ragsdale, Aaron P., Claudia Moreau, and Simon Gravel. 2018. [Genomic Inference Using Diffusion Models and the Allele Frequency Spectrum.](http://dx.doi.org/10.1016/j.gde.2018.10.001) Current Opinion in Genetics & Development 53 (October): 140–47.
 
@@ -40,7 +43,13 @@ Notable papers about the forward diffusion framework:
   - Jouganous, Julien, Will Long, Aaron P. Ragsdale, and Simon Gravel. 2017. [Inferring the Joint Demographic History of Multiple Populations: Beyond the Diffusion Approximation.](http://dx.doi.org/10.1534/genetics.117.200493) _Genetics_ 206 (3): 1549–67.
 
 
-Some optimization stuff:
-- https://en.wikipedia.org/wiki/Penalty_method
-- https://en.wikipedia.org/wiki/Augmented_Lagrangian_method
-- https://en.wikipedia.org/wiki/Interior-point_method
+- #### Optimization:
+  - https://en.wikipedia.org/wiki/Penalty_method
+  - https://en.wikipedia.org/wiki/Augmented_Lagrangian_method
+  - https://en.wikipedia.org/wiki/Interior-point_method
+
+- #### SFS Vs LD discordance
+This paper shows that SFS-based methods and LD-based methods (sequential Markov coalescent), are inconsistent. Kelley says:
+ > I think the most critical challenge for new demographic inference methods will be to resolve this issue
+
+ - Beichman, Annabel C., Tanya N. Phung, and Kirk E. Lohmueller. 2017. [Comparison of Single Genome and Allele Frequency Data Reveals Discordant Demographic Histories.](http://dx.doi.org/10.1534/g3.117.300259) G3  7 (11): 3605–20.
