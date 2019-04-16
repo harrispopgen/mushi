@@ -18,7 +18,7 @@ class DemEnt():
     A class that implements the model of Rosen et al., but adds a Poisson random
     field for generating the SFS from ξ
     '''
-    def __init__(self, n: int, t, y):
+    def __init__(self, n: int, t, y, infinite=False):
         '''
         n is number of sampled haplotypes
         The last epoch in t extends to infinity in Rosen, but we truncate instead
@@ -31,21 +31,25 @@ class DemEnt():
         self.n = n
         self.t = t
         self.y = y
-        # The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
-        # Using notation of Rosen et al. (2018)
-        self.A = np.zeros((n - 1, n - 1))
-        b = np.arange(1, n - 1 + 1)
-        self.A[:, 0] = 6 / (n + 1)
-        self.A[:, 1] = 30 * (n - 2 * b) / (n + 1) / (n + 2)
-        for col in range(n - 3):
-            j = col + 2
-            c1 = - (1 + j) * (3 + 2 * j) * (n - j) / j / (2 * j - 1) / (n + j + 1)
-            c2 = (3 + 2 * j) * (n - 2 * b) / j / (n + j + 1)
-            self.A[:, col + 2] = c1 * self.A[:, col] + c2 * self.A[:, col + 1]
+        self.A = _init_A(n)
         self.s = np.diff(self.t)
         self.binom_array = binom(np.arange(2, n + 1), 2)
         self.simulate_sfs()
 
+    def _init_A(n):
+        # The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
+        # Using notation of Rosen et al. (2018)
+        A = np.zeros((n - 1, n - 1))
+        b = np.arange(1, n - 1 + 1)
+        A[:, 0] = 6 / (n + 1)
+        A[:, 1] = 30 * (n - 2 * b) / (n + 1) / (n + 2)
+        for col in range(n - 3):
+            j = col + 2
+            c1 = - (1 + j) * (3 + 2 * j) * (n - j) / j / (2 * j - 1) / (n + j + 1)
+            c2 = (3 + 2 * j) * (n - 2 * b) / j / (n + j + 1)
+            A[:, col + 2] = c1 * A[:, col] + c2 * A[:, col + 1]
+        return A
+        
     def c(self, y, jacobian=False):
         '''
         coalescence vector computed by eqn (3) of Rosen et al. (2018), and it's jacobian
@@ -91,7 +95,6 @@ class DemEnt():
     def xi(self, y):
         xi = self.A.dot(self.c(y))
         return xi
-
 
     def simulate_sfs(self, plot=False):
         '''
