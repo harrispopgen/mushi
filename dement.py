@@ -7,8 +7,8 @@ from scipy.stats import poisson
 import matplotlib
 from matplotlib import pyplot as plt, rc_context
 from matplotlib import patheffects
-plt.xkcd()
-matplotlib.rcParams['path.effects'] = [patheffects.withStroke(linewidth=0, foreground="w")]
+# plt.xkcd()
+# matplotlib.rcParams['path.effects'] = [patheffects.withStroke(linewidth=0, foreground="w")]
 
 # matplotlib.rc('text', usetex=True)
 # matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
@@ -69,7 +69,7 @@ class DemEnt():
             y_diff = np.concatenate((y_diff, [0])) # final diff is zero
         k = len(y_diff)
         M2 = np.tile(np.array([1 / binom_array]).transpose(), (1, k)) \
-          * np.cumprod((x[np.newaxis, :-1] ** binom_array[:, np.newaxis]), axis=1)            
+          * np.cumprod((x[np.newaxis, :-1] ** binom_array[:, np.newaxis]), axis=1)
         c = M2.dot(y_diff)
         if not jacobian:
             return c
