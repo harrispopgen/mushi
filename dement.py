@@ -18,10 +18,13 @@ class DemEnt():
     A class that implements the model of Rosen et al., but adds a Poisson random
     field for generating the SFS from ξ
     '''
-    def __init__(self, n: int, t, y, infinite=False):
+    def __init__(self, n: int, t, y, mutation_rate=1, infinite=False):
         '''
         n is number of sampled haplotypes
-        The last epoch in t extends to infinity in Rosen, but we truncate instead
+        t is the time axis
+        The last epoch in t extends to infinity in Rosen, but we truncate if infinite=False
+        y is the vector of eta pieces
+        mutation_rate is per genome per generation
         '''
         assert t[0] == 0
         assert not np.isinf(t[-1])
@@ -33,11 +36,11 @@ class DemEnt():
         self.t = t
         self.y = y
         self._binom_array = binom(np.arange(2, n + 1), 2) # 2 choose 2 to (n+1) choose 2
-        self.A = self._init_A(n)
+        self.A = self._init_A(n, mutation_rate=mutation_rate)
         self.s = np.diff(self.t)
         self.simulate_sfs()
 
-    def _init_A(self, n):
+    def _init_A(self, n, mutation_rate=1):
         '''
         The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
         Using notation of Rosen et al. (2018)
@@ -51,7 +54,7 @@ class DemEnt():
             c1 = - (1 + j) * (3 + 2 * j) * (n - j) / j / (2 * j - 1) / (n + j + 1)
             c2 = (3 + 2 * j) * (n - 2 * b) / j / (n + j + 1)
             A[:, col + 2] = c1 * A[:, col] + c2 * A[:, col + 1]
-        return A
+        return mutation_rate * A
 
     def c(self, y, jacobian=False):
         '''
