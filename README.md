@@ -43,6 +43,10 @@ The coalescent model we're using for the site-frequency spectrum.
   - Jouganous, Julien, Will Long, Aaron P. Ragsdale, and Simon Gravel. 2017. [Inferring the Joint Demographic History of Multiple Populations: Beyond the Diffusion Approximation.](http://dx.doi.org/10.1534/genetics.117.200493) _Genetics_ 206 (3): 1549–67.
 
 
+- #### SMC++ (Yun's group):
+There's some regularization / spline regression we might want to look at here
+ - Terhorst, Jonathan, John A. Kamm, and Yun S. Song. 2017. [Robust and Scalable Inference of Population History from Hundreds of Unphased Whole Genomes.](http://dx.doi.org/10.1038/ng.3748) Nature Genetics 49 (2): 303–9.
+
 - #### Optimization:
   - https://en.wikipedia.org/wiki/Penalty_method
   - https://en.wikipedia.org/wiki/Augmented_Lagrangian_method
