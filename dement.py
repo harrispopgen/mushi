@@ -36,7 +36,7 @@ class DemEnt():
         self.t = t
         self.y_true = y
         self.r = r
-        self._binom_array = binom(np.arange(2, n + 1), 2)
+        self._binom_array = binom(np.arange(2, n + 1), 2)[:, np.newaxis]
         self.A = DemEnt.A(n)
         self._s = np.diff(self.t)
         self.simulate_sfs()  # this sets self.sfs
@@ -77,19 +77,19 @@ class DemEnt():
             # when using infinite domain, extend last point to infty
             x = np.concatenate((x, [0]))  # final exponential is zero
             y_diff = np.concatenate((y_diff, [0]))  # final diff is zero
-        k = len(y_diff)
-        M2 = np.tile(np.array([1 / self._binom_array]).transpose(), (1, k)) * \
-             np.cumprod((x[np.newaxis, :-1] ** self._binom_array[:, np.newaxis]),
-                        axis=1)
+        M2 = np.cumprod(x[np.newaxis, :-1] ** self._binom_array, axis=1) \
+            / self._binom_array
         c = M2.dot(y_diff)
         if not jacobian:
             return c
         raise NotImplementedError('Jacobian not implemented yet')
         # dM2dy = np.zeros((M2.shape[0], M2.shape[1], k))
         # for depth in range(k):
-        #     dM2dy[:, (depth + 1):, depth] = binom_array[:, np.newaxis] \
-        #       * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) * M2[:, (depth + 1):]
-        # J = np.tensordot(dM2dy, y_diff, ([1], [0])) + M2 @ (np.eye(k) - np.eye(k, k=-1))
+        #     dM2dy[:, (depth + 1):, depth] = binom_array \
+        #       * (self.t[depth + 1] - self.t[depth]) / (y[depth] ** 2) \
+        #       * M2[:, (depth + 1):]
+        # J = np.tensordot(dM2dy, y_diff, ([1], [0])) \
+        #     + M2 @ (np.eye(k) - np.eye(k, k=-1))
         # return c, J
 
     def xi(self, y: np.ndarray = None) -> np.ndarray:
@@ -196,13 +196,15 @@ class DemEnt():
             T_sigma = np.sqrt(T_var)
             # time indices where we're within +/- 2 sigma of the expectation
             horizon_zone = np.flatnonzero((T_exp - 2 * T_sigma < self.t[:-1])
-                                          & (self.t[:-1] < T_exp + 2 * T_sigma))
+                                          & (self.t[:-1] < T_exp + 2 * T_sigma)
+                                          )
             # weights based on coalescent horizon
             # ramp up to a maximum at exp + 2 * sigma
             # we want one for each element of np.diff(y)
             weights = np.ones(len(self.t) - 2)
             max_weight = 1000
-            weights[horizon_zone[:-1]] += np.linspace(0, max_weight, len(horizon_zone) - 1)
+            weights[horizon_zone[:-1]] += np.linspace(0, max_weight,
+                                                      len(horizon_zone) - 1)
             weights[horizon_zone[-2]:] = max_weight
         else:
             weights = None
@@ -239,9 +241,6 @@ class DemEnt():
 
         label: optional plot label for self.y_inferred
         '''
-        # plt.xkcd()
-        # matplotlib.rcParams['path.effects'] = [patheffects.withStroke(linewidth=0,
-        #                                                               foreground="w")]
         fig, axes = plt.subplots(1, 2, figsize=(8, 3))
         axes[0].step(self.t[:-1], self.y_true,
                      'k', where='post', label='true')
