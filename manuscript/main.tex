@@ -1,0 +1,110 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage[round,semicolon]{natbib}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{bbm}
+
+\usepackage{hyperref}
+
+\DeclareMathOperator{\erf}{erf}
+
+% NOTE
+% one sentence per line for nice git diffs
+% WD: I'm a fan of initialed source comments like this
+
+\title{Demographic inference under the coalescent as an ill-posed nonlinear inverse problem}
+
+\author{
+W. DeWitt$^{1}$, K. Harris$^{2}$, and K. Harris$^{1}$\\
+\small{Departments of $^1$Genome Sciences and $^2$Biology, University of Washington, Seattle, USA}\\
+% \small{$^\ast$ Equal contribution}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Abstraction
+\end{abstract}
+
+\section*{Introduction}\label{sec:intro}
+
+
+\subsection*{The tale of two bananas}\label{sec:intro:bananas}
+
+What do we need to say about \cite{Rosen2018-bb}? See section~\ref{sec:model:stopping}
+
+
+\section*{Model}\label{sec:model}
+
+\subsection*{P and K}\label{sec:model:PandK}
+
+\cite{Polanski2003-ll}
+
+
+\subsection*{Constant MLE}\label{sec:model:constant}
+
+We initialize by fitting a constant population size.
+According to WSD's scribbles, the MLE assuming $\eta(t) = \eta_0$ (constant) is $\hat \eta_0 = \frac{S}{2 r H_{n-1}}$, where $S$ is the number of segregating sites (the sum of the observed SFS vector), $r$ is the mutation rate per genome per generation, and $H_{n-1}$ is the $n$th harmonic number.
+This was derived by using the well-known result (cited in Rosen et al.) that the expected SFS for a constant population is given by $\xi_i = \frac{2\eta_0}{i}$.
+Then the likelihood for $\eta_0$ is a Poisson random field parameterized by the $\xi_i$.
+
+
+\subsection*{Regularized loss as a penalized log-likelihood}\label{sec:model:penalization}
+
+
+\subsection*{The coalescent horizon: tempora incognita (see what I did there? ;))}\label{sec:model:horizon}
+
+The coalescent tree height determines the time scale within which the SFS contains demographic information.
+The expected height for n samples and a constant history $\eta(t)=\eta_0$ is the sum of the independent exponentially-distributed intercoalescent expectations:
+\[
+\mathbb{E}[T_n] = \sum_{k=2}^n \frac{\eta_0}{\binom{k}{2}} = 2\eta_0\left(1-\frac{1}{n}\right),
+\]
+where the last equality follows by recognizing the telescoping series.
+Likewise for the variance:
+\[
+\text{Var}[T_n] = \sum_{k=2}^n \left(\frac{\eta_0}{\binom{k}{2}}\right)^2 = \frac{4 \eta _0^2 \left(-6 n^2 \psi ^{(1)}(n)+\left(\left(\pi ^2-9\right) n+6\right) n+3\right)}{3 n^2},
+\]
+where $\psi ^{(1)}(n)$ is the derivative of the digamma function \url{https://en.wikipedia.org/wiki/Trigamma_function}.
+
+
+\subsection*{Asymptotically constant boundary condition}\label{sec:model:boundary}
+
+We must deal with the asymptotically constant boundary condition.
+Standard regularizers blow up on the infinite epoch.
+Let's use half Gaussian instead of Lebesgue measure on time to induce integrability: $\mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t,$
+where $\tau$ is the characteristic time to asmptopia (the boundary of our time grid).
+For example, a modified $L2$ would be
+\[
+R\left[\eta(t)\right] = \int_0^\infty \eta(t)^2 \mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\int_0^\infty \eta(t)^2 \exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t.
+\]
+So the discretized problem is expressed in terms of the error function $\erf(\cdot)$ if $\eta(t)$ is piecewise constant.
+This will give extra (but finite) weight / penalty to the infinite epoch based on the survival function of $\mathrm{d}\mu(t)$.
+We can tune how much weight the boundary epoch gets by tuning the width of the Gaussian.
+
+
+\subsection*{Stopping criteria based on Rosen et al.\ Thm (8)}\label{sec:model:stopping}
+
+Thm (8) of Rosen et al. \cite{Rosen2018-bb} tells us that we can always find a piecewise MLE.
+But we're interested in finding smooth solutions that have the same likelihood as that piecewise MLE.
+Perhaps this provides a stopping criteria in our penalized likelihood iterates.
+
+
+\section*{Results}\label{sec:results}
+
+Do we need results?
+
+\section*{Discussion}\label{sec:discussion}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+
+
+
+
+
+\end{document}

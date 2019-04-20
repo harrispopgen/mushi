@@ -9,11 +9,23 @@ Dependencies
   - scipy
   - matplotlib
   - jupyter
+  - scons
 
 Code
 ---
 - [`dement.py`](dement.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in Rosen et al., and adding the Poisson random field for a full generative model.
 - [`regularization.ipynb`](regularization.ipynb): Jupyter notebook exploring penalized likelihood optimization.
+
+
+Writing
+---
+Protomanuscript forming here:
+- LaTeX: [manuscript/main.tex](manuscript/main.tex)
+- References: [manuscript/refs.bib](manuscript/refs.bib)
+- build `_build/main.pdf` by issuing the following command from within the `manuscript` subdirectory
+```bash
+$ scons
+```
 
 
 References
