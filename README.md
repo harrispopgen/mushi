@@ -32,6 +32,8 @@ $ scons
 References
 ---
 
+(more exhaustive list in [manuscript/refs.bib]())
+
 #### SFS Model
 The coalescent model we're using for the site-frequency spectrum.
 
