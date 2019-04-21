@@ -11,8 +11,7 @@ from typing import Tuple
 
 
 class DemEnt():
-    '''
-    A class that implements the model of Rosen et al., but adds a Poisson
+    '''A class that implements the model of Rosen et al., but adds a Poisson
     random field for generating the SFS from ξ
     '''
 
@@ -43,8 +42,7 @@ class DemEnt():
 
     @staticmethod
     def A(n: int) -> np.ndarray:
-        '''
-        The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
+        '''The A_n matrix of Polanski and Kimmel (2003) (equations 13–15)
         Using notation of Rosen et al. (2018)
 
         n: number of sampled haplotypes
@@ -61,11 +59,11 @@ class DemEnt():
         return A
 
     def c(self, y: np.ndarray = None, jacobian: bool = False) -> np.ndarray:
-        '''
-        coalescence vector computed by eqn (3) of Rosen et al. (2018), and it's
-        Jacobian
+        '''coalescence vector computed by eqn (3) of Rosen et al. (2018), and
+        it's Jacobian
 
         y: η(t) values
+        jacobian: compute jacobian if True
         '''
         if y is None:
             y = self.y_true
@@ -93,8 +91,7 @@ class DemEnt():
         # return c, J
 
     def xi(self, y: np.ndarray = None) -> np.ndarray:
-        '''
-        The expected SFS vector as in Rosen et al., but with an explicit
+        '''The expected SFS vector as in Rosen et al., but with an explicit
         mutation rate that controls noise
 
         y: optional η(t) values, uses self.y_true if None
@@ -102,14 +99,11 @@ class DemEnt():
         return self.r * self.A.dot(self.c(y))
 
     def simulate_sfs(self) -> None:
-        '''
-        simulate a SFS under the Poisson random field model
-        '''
+        '''simulate a SFS under the Poisson random field model'''
         self.sfs = poisson.rvs(self.xi())
 
     def ell(self, y: np.ndarray = None) -> float:
-        '''
-        Poisson random field log-likelihood
+        '''Poisson random field log-likelihood
 
         y: η(t) values, use self.y_true if None
         '''
@@ -121,8 +115,7 @@ class DemEnt():
 
     @staticmethod
     def constant_MLE(n: int, S: int, r: float) -> float:
-        '''
-        MLE for constant demography (see TeX)
+        '''MLE for constant demography
 
         n: number of sampled haplotypes
         S: number of segregating sites (sum of SFS entries)
@@ -133,9 +126,11 @@ class DemEnt():
 
     @staticmethod
     def coalescent_horizon(n: int, eta_0: float) -> Tuple[float, float]:
-        '''
-        return the expectation and variance of the TMRCA of n samples from
+        '''return the expectation and variance of the TMRCA of n samples from
         a population of size eta_0
+
+        n: number of sampled haplotypes
+        eta_0: constant population size
         '''
         T_exp = 2 * eta_0 * (1 - 1 / n)
         T_var = 4 * (3 + n * (6 + n * (-9 + np.pi**2))
@@ -145,9 +140,8 @@ class DemEnt():
 
     def loss(self, y, y_prior, lambda_prior: float = 0, lambda_diff: float = 0,
              weights: np.ndarray = None) -> float:
-        '''
-        negative log likelihood (Poisson random field) and regularizations on
-        divergence from a prior and on the derivative
+        '''negative log likelihood (Poisson random field) and regularizations
+        on divergence from a prior and on the derivative
 
         y: list of η(t) values
         y_prior: list of η(t) values
@@ -176,21 +170,25 @@ class DemEnt():
         return - self.ell(y) + lambda_prior * R_prior + lambda_diff * R_diff
 
     def invert(self, iterates: int = 1, lambda_prior: float = 1,
-               lambda_diff: float = 1, weight_ramp: bool = False):
-        '''
-        infer the demography given the simulated sfs
+               lambda_diff: float = 1, lambda_diff_ramp: float = None):
+        '''infer the demography given the simulated sfs
 
+        iterates: number of outer iterates
         lambda_prior: initial regularization for prior
         lambda_diff: regularization for derivative
-        iterates: number of outer iterates
-        weight_ramp: ramp derivative penalty as we approach coalescent horizon
+        lambda_diff_ramp: ramp derivative penalty to this value as we approach
+                          coalescent horizon (no ramp if None)
         '''
         # Initialize with a MLE constant demography
         eta_0 = DemEnt.constant_MLE(self.n, self.sfs.sum(), self.r)
         y_constant = eta_0 * np.ones(len(self.t) - 1)
         self.y_inferred = y_constant
 
-        if weight_ramp:
+        if lambda_diff_ramp is not None:
+            if lambda_diff_ramp < lambda_diff:
+                raise ValueError('lambda_diff_ramp {} must be greater than '
+                                 'lambda_diff {}'.format(lambda_diff_ramp,
+                                                         lambda_diff))
             # approximate the horizon zone under the constant fit (see TeX)
             T_exp, T_var = DemEnt.coalescent_horizon(self.n, eta_0)
             T_sigma = np.sqrt(T_var)
@@ -202,8 +200,8 @@ class DemEnt():
             # ramp up to a maximum at exp + 2 * sigma
             # we want one for each element of np.diff(y)
             weights = np.ones(len(self.t) - 2)
-            max_weight = 1000
-            weights[horizon_zone[:-1]] += np.linspace(0, max_weight,
+            max_weight = lambda_diff_ramp / lambda_diff
+            weights[horizon_zone[:-1]] += np.linspace(1, max_weight,
                                                       len(horizon_zone) - 1)
             weights[horizon_zone[-2]:] = max_weight
         else:
@@ -235,11 +233,8 @@ class DemEnt():
                 lambda_prior /= 10
 
     def plot(self) -> None:
-        '''
-        plot the true η(t), and optionally a fitted one y if self.y_inferred is
-        not None
-
-        label: optional plot label for self.y_inferred
+        '''plot the true η(t), and optionally a fitted one y if self.y_inferred
+        is not None
         '''
         fig, axes = plt.subplots(1, 2, figsize=(8, 3))
         axes[0].step(self.t[:-1], self.y_true,
