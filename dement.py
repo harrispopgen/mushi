@@ -5,7 +5,6 @@ import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
-from scipy.special import polygamma
 from scipy.optimize import minimize
 from typing import Tuple
 
@@ -113,108 +112,92 @@ class DemEnt():
         ell = - xi.sum() + self.sfs.dot(np.log(xi))
         return ell
 
-    @staticmethod
-    def constant_MLE(n: int, S: int, r: float) -> float:
-        '''MLE for constant demography
-
-        n: number of sampled haplotypes
-        S: number of segregating sites (sum of SFS entries)
-        r: mutation rate per genome per generation
+    def constant_MLE(self) -> float:
+        '''MLE for constant demography. Updates the instance's self.y_inferred
+        based on the constant MLE
         '''
-        H = (1 / np.arange(1, n - 1)).sum()
-        return (S / 2 / H / r)
+        # number of segregating sites
+        S = self.sfs.sum()
+        # Harmonic number
+        H = (1 / np.arange(1, self.n - 1)).sum()
+        # constant MLE
+        self.y_inferred = (S / 2 / H / self.r) * np.ones(len(self.t) - 1)
 
-    @staticmethod
-    def coalescent_horizon(n: int, eta_0: float) -> Tuple[float, float]:
-        '''return the expectation and variance of the TMRCA of n samples from
-        a population of size eta_0
-
-        n: number of sampled haplotypes
-        eta_0: constant population size
+    def tmrca_cdf(self) -> np.ndarray:
+        '''return the CDF of the TMRCA of n samples from a population of size
+        eta_0, using eqn (3.39) from Wakeley, at each time in self.t.
         '''
-        T_exp = 2 * eta_0 * (1 - 1 / n)
-        T_var = 4 * (3 + n * (6 + n * (-9 + np.pi**2))
-                     - 6 * n ** 2 * polygamma(1, n)) \
-                  * eta_0 ** 2 / (3 * n ** 2)
-        return T_exp, T_var
+        if (np.diff(self.y_inferred) != 0).sum() > 0:
+            raise NotImplementedError('tmrca_cdf() only available for constant'
+                                      'demographies')
+        eta_0 = self.y_inferred[0]
+        with np.errstate(divide='ignore'):
+            binom_factors = self._binom_array / (self._binom_array - self._binom_array.T)
+        binom_factors[np.isinf(binom_factors)] = 1
+        binom_prod = np.prod(binom_factors, axis=0)
 
-    def loss(self, y, y_prior, lambda_prior: float = 0, lambda_diff: float = 0,
-             weights: np.ndarray = None) -> float:
+        return 1 - np.exp(-self._binom_array * self.t / eta_0).T @ binom_prod
+
+    def loss(self, y, y_prior, lambda_prior: float = 0,
+             lambda_diff: np.ndarray = None) -> float:
         '''negative log likelihood (Poisson random field) and regularizations
         on divergence from a prior and on the derivative
 
         y: list of η(t) values
         y_prior: list of η(t) values
         lambda_prior: regularization strength on Bregman divergence from prior
-        lambda_diff: regularization strength on derivative
-        weights: optional weights adjusting derivative penalization
+        lambda_diff: regularization strength on derivative at each time
         '''
-        # Lebesgue measure on the modeled time interval
-        # This may seem pedantic, but it's nicely robust to a non-regular time
-        # grid (i.e. np.logspace)
-        dmu = np.diff(self.t)
-
-        # gaussian transformed measure (see TeX)
-        # tau = 100 * dement.t[-2]
-        # dmu = np.diff(erf(dement.t / tau / np.sqrt(2)))
-
-        # generalized KL divergence (a Bregman divergence) from prior y_prior
-        R_prior = ((y * np.log(y/y_prior) - y + y_prior) * dmu).sum()
+        # generalized KL divergence (a Bregman divergence) from y_prior
+        # we need the factor of self._s to encode the Lebesgue measure,
+        # especially for a non-regular time grid (i.e. log)
+        R_prior = lambda_prior * ((y * np.log(y/y_prior)
+                                   - y + y_prior) * self._s).sum()
 
         # L2 on derivative
-        if weights is None:
-            weights = np.ones(len(y) - 1)
-        R_diff = (weights * np.diff(y)**2 * dmu[:-1]).sum()
-    #     return - dement.ell(y) + lambda_ * (R_prior + 1e-1 * R_diff)
-        # NOTE: this one fixes diff penalty
-        return - self.ell(y) + lambda_prior * R_prior + lambda_diff * R_diff
+        # note the differential self._s cancels with the denominator
+        # differential in the derivative dη/dt, so we just use diff(y) ~ dη
+        if lambda_diff is None:
+            lambda_diff = np.zeros(len(self.t))
+        R_diff = (lambda_diff[:-2] * np.diff(y)**2).sum()
+
+        return - self.ell(y) + R_prior + R_diff
 
     def invert(self, iterates: int = 1, lambda_prior: float = 1,
-               lambda_diff: float = 1, lambda_diff_ramp: float = None):
+               lambda_diff_min: float = 1, lambda_diff_max: float = None):
         '''infer the demography given the simulated sfs
 
         iterates: number of outer iterates
         lambda_prior: initial regularization for prior
-        lambda_diff: regularization for derivative
-        lambda_diff_ramp: ramp derivative penalty to this value as we approach
+        lambda_diff_min: minimum regularization for derivative
+        lambda_diff_max: ramp derivative penalty to this value as we approach
                           coalescent horizon (no ramp if None)
         '''
         # Initialize with a MLE constant demography
-        eta_0 = DemEnt.constant_MLE(self.n, self.sfs.sum(), self.r)
-        y_constant = eta_0 * np.ones(len(self.t) - 1)
-        self.y_inferred = y_constant
+        self.constant_MLE()
+        print('constant MLE initialization')
+        self.plot()
 
-        if lambda_diff_ramp is not None:
-            if lambda_diff_ramp < lambda_diff:
-                raise ValueError('lambda_diff_ramp {} must be greater than '
-                                 'lambda_diff {}'.format(lambda_diff_ramp,
-                                                         lambda_diff))
-            # approximate the horizon zone under the constant fit (see TeX)
-            T_exp, T_var = DemEnt.coalescent_horizon(self.n, eta_0)
-            T_sigma = np.sqrt(T_var)
-            # time indices where we're within +/- 2 sigma of the expectation
-            horizon_zone = np.flatnonzero((T_exp - 2 * T_sigma < self.t[:-1])
-                                          & (self.t[:-1] < T_exp + 2 * T_sigma)
-                                          )
-            # weights based on coalescent horizon
-            # ramp up to a maximum at exp + 2 * sigma
-            # we want one for each element of np.diff(y)
-            weights = np.ones(len(self.t) - 2)
-            max_weight = lambda_diff_ramp / lambda_diff
-            weights[horizon_zone[:-1]] += np.linspace(1, max_weight,
-                                                      len(horizon_zone) - 1)
-            weights[horizon_zone[-2]:] = max_weight
+        # derivative penalty ramp based on TMRCA CDF
+        if lambda_diff_max is None:
+            self._lambda_diff = None
         else:
-            weights = None
+            if lambda_diff_max < lambda_diff_min:
+                raise ValueError('lambda_diff_ramp {} must be greater than '
+                                 'lambda_diff {}'.format(lambda_diff_max,
+                                                         lambda_diff_min))
+            self._lambda_diff = (lambda_diff_min
+                                 + (lambda_diff_max
+                                    - lambda_diff_min) * self.tmrca_cdf())
 
-        # prior set to the constant population MLE
-        y_prior = y_constant
+        # prior set to the initial (constant population MLE)
+        y_prior = self.y_inferred
 
-        for _ in range(iterates):
+        # (meta-)optimization
+        for iterate in range(1, iterates + 1):
             result = minimize(self.loss,
                               y_prior,
-                              args=(y_prior, lambda_prior, lambda_diff,
-                                    weights),
+                              args=(y_prior, lambda_prior, self._lambda_diff),
                               # jac=gradF,
                               method='L-BFGS-B',
                               options=dict(
@@ -228,6 +211,10 @@ class DemEnt():
                 # update inference and prior
                 self.y_inferred = result.x
                 y_prior = result.x
+                print('iteration {}: λ_prior = {}, '
+                      'ℓ = {}'.format(iterate,
+                                      lambda_prior,
+                                      self.ell(self.y_inferred)))
                 self.plot()
                 # increment regularization strength
                 lambda_prior /= 10
@@ -236,19 +223,24 @@ class DemEnt():
         '''plot the true η(t), and optionally a fitted one y if self.y_inferred
         is not None
         '''
-        fig, axes = plt.subplots(1, 2, figsize=(8, 3))
-        axes[0].step(self.t[:-1], self.y_true,
-                     'k', where='post', label='true')
+        fig, axes = plt.subplots(1, 2, figsize=(7, 3))
+        axes[0].step(self.t[:-1], self.y_true, 'k', where='post', label='true')
         if hasattr(self, 'y_inferred'):
-            axes[0].step(self.t[:-1], self.y_inferred,
-                         'r', where='post', label='inverted')
+            axes[0].step(self.t[:-1], self.y_inferred, 'r', where='post',
+                         label='inverted')
+        if hasattr(self, '_lambda_diff'):
+            ax_right = axes[0].twinx()
+            ax_right.set_ylabel('$\\lambda_{\\eta\'}$', color='tab:blue')
+            ax_right.plot(self.t, self._lambda_diff, 'tab:blue')
+            ax_right.tick_params(axis='y', labelcolor='tab:blue')
+            ax_right.set_yscale('log')
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\\eta(t)$')
         axes[0].legend()
-        axes[0].legend(loc=(1.04, 0.5))
+        axes[0].legend(loc='upper center')
         axes[0].set_ylim([0, None])
-        # self.axes[0].set_xscale('symlog')
-        # self.axes[0].set_yscale('log')
+        axes[0].set_xscale('log')
+        # axes[0].set_yscale('log')
 
         if hasattr(self, 'y_inferred'):
             xi = self.xi(self.y_inferred)
@@ -266,7 +258,7 @@ class DemEnt():
         axes[1].set_xscale('log')
         axes[1].set_yscale('symlog')
         axes[1].legend()
-        axes[1].legend(loc=(1.04, 0.5))
+        axes[1].legend(loc='upper right')
 
         plt.tight_layout()
         plt.show()
