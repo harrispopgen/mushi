@@ -24,11 +24,14 @@ class DemEnt():
         r: mutation rate is per genome per generation (controls SFS noise)
         infinite: extend to infinity with constant size (otherwise truncate)
         '''
-        assert t[0] == 0
-        assert not np.isinf(t[-1])
-        assert all(np.diff(t) > 0)
-        assert all(y > 0)
-        assert n > 1
+        if t[0] != 0:
+            raise ValueError('the first element of t must be 0')
+        if any(np.diff(t) <= 0) or np.isinf(t).sum():
+            raise ValueError('t must be monotonically increasing and finite')
+        if any(y <= 0) or np.isinf(t).sum():
+            raise ValueError('elements of y must be finite and positive')
+        if n < 2:
+            raise ValueError('n must be larger than 1')
         self.infinite = infinite
         self.n = n
         self.t = t
@@ -106,8 +109,8 @@ class DemEnt():
 
         y: η(t) values, use self.y_true if None
         '''
-        # we must have previously run the simulate_sfs method
-        assert hasattr(self, 'sfs')
+        if not hasattr(self, 'sfs'):
+            raise ValueError('use simulate_sfs() to generate data first')
         xi = self.xi(y)
         ell = - xi.sum() + self.sfs.dot(np.log(xi))
         return ell
@@ -132,7 +135,8 @@ class DemEnt():
                                       'demographies')
         eta_0 = self.y_inferred[0]
         with np.errstate(divide='ignore'):
-            binom_factors = self._binom_array / (self._binom_array - self._binom_array.T)
+            binom_factors = self._binom_array / (self._binom_array
+                                                 - self._binom_array.T)
         binom_factors[np.isinf(binom_factors)] = 1
         binom_prod = np.prod(binom_factors, axis=0)
 
