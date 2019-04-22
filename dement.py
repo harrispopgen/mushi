@@ -115,6 +115,20 @@ class DemEnt():
         ell = - xi.sum() + self.sfs.dot(np.log(xi))
         return ell
 
+    def d_kl(self, y: np.ndarray = None) -> float:
+        '''Kullback-Liebler divergence between normalized SFS and its
+        expectation
+
+        y: η(t) values, use self.y_true if None
+        '''
+        if not hasattr(self, 'sfs'):
+            raise ValueError('use simulate_sfs() to generate data first')
+        xi = self.xi(y)
+        xi_hat = xi / xi.sum()
+        sfs_hat = self.sfs / self.sfs.sum()
+        d = - sfs_hat.dot(np.log(xi_hat / sfs_hat))
+        return d
+
     def constant_MLE(self) -> float:
         '''MLE for constant demography. Updates the instance's self.y_inferred
         based on the constant MLE
@@ -143,7 +157,7 @@ class DemEnt():
         return 1 - np.exp(-self._binom_array * self.t / eta_0).T @ binom_prod
 
     def loss(self, y, y_prior, lambda_prior: float = 0,
-             lambda_diff: np.ndarray = None) -> float:
+             lambda_diff: np.ndarray = None, fit_func: str = 'prf') -> float:
         '''negative log likelihood (Poisson random field) and regularizations
         on divergence from a prior and on the derivative
 
@@ -151,6 +165,7 @@ class DemEnt():
         y_prior: list of η(t) values
         lambda_prior: regularization strength on Bregman divergence from prior
         lambda_diff: regularization strength on derivative at each time
+        fit_func: 'prf' for Poisson random field, or 'kl' for Kullback-Liebler
         '''
         # generalized KL divergence (a Bregman divergence) from y_prior
         # we need the factor of self._s to encode the Lebesgue measure,
@@ -165,10 +180,18 @@ class DemEnt():
             lambda_diff = np.zeros(len(self.t))
         R_diff = (lambda_diff[:-2] * np.diff(y)**2).sum()
 
-        return - self.ell(y) + R_prior + R_diff
+        if fit_func == 'prf':
+            misfit = - self.ell(y)
+        elif fit_func == 'kl':
+            misfit = self.d_kl(y)
+        else:
+            raise ValueError('fit_func {} not recognized'.format(fit_func))
+
+        return misfit + R_prior + R_diff
 
     def invert(self, iterates: int = 1, lambda_prior: float = 1,
-               lambda_diff_min: float = 1, lambda_diff_max: float = None):
+               lambda_diff_min: float = 1, lambda_diff_max: float = None,
+               fit_func: str = 'prf'):
         '''infer the demography given the simulated sfs
 
         iterates: number of outer iterates
@@ -176,6 +199,7 @@ class DemEnt():
         lambda_diff_min: minimum regularization for derivative
         lambda_diff_max: ramp derivative penalty to this value as we approach
                           coalescent horizon (no ramp if None)
+        fit_func: 'prf' for Poisson random field, or 'kl' for Kullback-Liebler
         '''
         # Initialize with a MLE constant demography
         self.constant_MLE()
@@ -201,7 +225,8 @@ class DemEnt():
         for iterate in range(1, iterates + 1):
             result = minimize(self.loss,
                               y_prior,
-                              args=(y_prior, lambda_prior, self._lambda_diff),
+                              args=(y_prior, lambda_prior,
+                                    self._lambda_diff, fit_func),
                               # jac=gradF,
                               method='L-BFGS-B',
                               options=dict(
@@ -215,10 +240,8 @@ class DemEnt():
                 # update inference and prior
                 self.y_inferred = result.x
                 y_prior = result.x
-                print('iteration {}: λ_prior = {}, '
-                      'ℓ = {}'.format(iterate,
-                                      lambda_prior,
-                                      self.ell(self.y_inferred)))
+                print('iteration {}: λ_prior = {}'.format(iterate,
+                                                          lambda_prior))
                 self.plot()
                 # increment regularization strength
                 lambda_prior /= 10
