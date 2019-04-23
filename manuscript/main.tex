@@ -18,7 +18,7 @@
 
 \author{
 W. DeWitt$^{1}$, K. Harris$^{2}$, and K. Harris$^{1}$\\
-\small{Departments of $^1$Genome Sciences and $^2$Biology, University of Washington, Seattle, USA}\\
+\small{Departments of $^1$Genome Sciences and $^2$Biology, University of Washington, Seattle, USA}
 % \small{$^\ast$ Equal contribution}
 }
 
@@ -73,19 +73,27 @@ where $\psi ^{(1)}(n)$ is the derivative of the digamma function \url{https://en
 
 \subsection*{Asymptotically constant boundary condition}\label{sec:model:boundary}
 
-We must deal with the asymptotically constant boundary condition.
-Standard regularizers blow up on the infinite epoch.
-Let's use half Gaussian instead of Lebesgue measure on time to induce integrability: $\mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t,$
-where $\tau$ is the characteristic time to asmptopia (the boundary of our time grid).
-For example, a modified $L2$ would be
+% Kelley's eqn
+In real data (or realistic simulations) the time region where the SFS has lost information is determined by the expected number of coalescent trees $\rho\ell$, where $\rho$ is the recombination rate and $\ell$ is the genome size.
+For $t$ such that the expected number of trees that have $T_{\text{MRCA}} > t$ becomes less that one, the SFS does not contain information beyond $t$.
+To wit,
 \[
-R\left[\eta(t)\right] = \int_0^\infty \eta(t)^2 \mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\int_0^\infty \eta(t)^2 \exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t.
+\mathbb{P}\left(T_{\text{MRCA}}>t\right) < \frac{1}{\rho \ell}.
 \]
-So the discretized problem is expressed in terms of the error function $\erf(\cdot)$ if $\eta(t)$ is piecewise constant.
-This will give extra (but finite) weight / penalty to the infinite epoch based on the survival function of $\mathrm{d}\mu(t)$.
-We can tune how much weight the boundary epoch gets by tuning the width of the Gaussian.
+The P\&K model doesn't model finite genome size, so it makes sense to use the CDF of $T_{\text{MRCA}}$ in that setting.
 
-%WD The above is BS, but we should talk about the weight ramp idea here
+
+% We must deal with the asymptotically constant boundary condition.
+% Standard regularizers blow up on the infinite epoch.
+% Let's use half Gaussian instead of Lebesgue measure on time to induce integrability: $\mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t,$
+% where $\tau$ is the characteristic time to asmptopia (the boundary of our time grid).
+% For example, a modified $L2$ would be
+% \[
+% R\left[\eta(t)\right] = \int_0^\infty \eta(t)^2 \mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\int_0^\infty \eta(t)^2 \exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t.
+% \]
+% So the discretized problem is expressed in terms of the error function $\erf(\cdot)$ if $\eta(t)$ is piecewise constant.
+% This will give extra (but finite) weight / penalty to the infinite epoch based on the survival function of $\mathrm{d}\mu(t)$.
+% We can tune how much weight the boundary epoch gets by tuning the width of the Gaussian.
 
 \subsection*{Stopping criteria based on Rosen et al.\ Thm (8)}\label{sec:model:stopping}
 
