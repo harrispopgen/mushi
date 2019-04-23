@@ -191,7 +191,8 @@ class DemEnt():
 
     def invert(self, iterates: int = 1, lambda_prior: float = 1,
                lambda_diff_min: float = 1, lambda_diff_max: float = None,
-               fit_func: str = 'prf'):
+               fit_func: str = 'prf',
+               plot_initial: bool = False):
         '''infer the demography given the simulated sfs
 
         iterates: number of outer iterates
@@ -200,11 +201,13 @@ class DemEnt():
         lambda_diff_max: ramp derivative penalty to this value as we approach
                           coalescent horizon (no ramp if None)
         fit_func: 'prf' for Poisson random field, or 'kl' for Kullback-Liebler
+        plot_initial: if True show the initial constant demography MLE
         '''
         # Initialize with a MLE constant demography
         self.constant_MLE()
-        print('constant MLE initialization')
-        self.plot()
+        if plot_initial:
+            print('constant MLE initialization')
+            self.plot()
 
         # derivative penalty ramp based on TMRCA CDF
         if lambda_diff_max is None:
@@ -264,9 +267,9 @@ class DemEnt():
         axes[0].set_xlabel('$t$')
         axes[0].set_ylabel('$\\eta(t)$')
         axes[0].legend()
-        axes[0].legend(loc='upper center')
+        axes[0].legend(loc=0)
         axes[0].set_ylim([0, None])
-        axes[0].set_xscale('log')
+        axes[0].set_xscale('symlog')
         # axes[0].set_yscale('log')
 
         if hasattr(self, 'y_inferred'):
@@ -285,7 +288,7 @@ class DemEnt():
         axes[1].set_xscale('log')
         axes[1].set_yscale('symlog')
         axes[1].legend()
-        axes[1].legend(loc='upper right')
+        axes[1].legend(loc=0)
 
         plt.tight_layout()
         plt.show()
