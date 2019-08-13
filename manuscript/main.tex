@@ -14,10 +14,10 @@
 % one sentence per line for nice git diffs
 % WD: I'm a fan of initialed source comments like this
 
-\title{Demographic inference under the coalescent as an ill-posed nonlinear inverse problem}
+\title{Coalescent inference of mutation spectrum histories from nucleotide context-resolved sample frequency spectra}
 
 \author{
-W. DeWitt$^{1}$, K. Harris$^{2}$, and K. Harris$^{1}$\\
+W. DeWitt$^{1}$, K. Harris (if he's into it?)$^{2}$, and K. Harris$^{1}$\\
 \small{Departments of $^1$Genome Sciences and $^2$Biology, University of Washington, Seattle, USA}
 % \small{$^\ast$ Equal contribution}
 }
@@ -27,84 +27,130 @@ W. DeWitt$^{1}$, K. Harris$^{2}$, and K. Harris$^{1}$\\
 \maketitle
 
 \begin{abstract}
-Abstraction
+
+Single nucleotide variant (SNV) frequencies partitioned according to triplet nucleotide context vary among human ancestry groups and among great ape species, indicating variation and divergence of the mutation process.
+The sample frequency spectrum (SFS)---the distribution of derived allele frequencies among sampled haplotypes---is a well-studied population genetic summary statistic that is sensitive to demographic history.
+We extend a coalescent framework for demographic inference from the SFS to accommodate inference of mutation spectrum histories from the triplet-resolved sample frequency spectrum (3-SFS).
+We formulate inference of mutation spectrum histories from the 3-SFS as a (linear?) inverse problem.
+
 \end{abstract}
+
 
 \section*{Introduction}\label{sec:intro}
 
+Kelley's paper \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and also used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
+We want to do some coalescent theory to formulate how the expected 3-SFS depends on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation rates as a function of time into the past).
+This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{?}), but is much faster, more flexibly parameterized, and extendable to joint inference of demographic and mutation spectrum histories.
 
-\subsection*{The tale of two bananas}\label{sec:intro:bananas}
-
-What do we need to say about \cite{Rosen2018-bb}? See section~\ref{sec:model:stopping}
+The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
+We will retrace the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
+We will make use of important results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} which facilitate numerical computation under this model, and formulate the expected 3-SFS under given demographic and mutation spectrum histories following the notation of \cite{Rosen2018-bb} for the expected SFS with a constant mutation process.
 
 
 \section*{Model}\label{sec:model}
 
-\subsection*{P and K}\label{sec:model:PandK}
+Suppose $n$ haplotypes are sampled in the present, and let rvs $T = T_2,\dots,T_n$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
+As in \cite{Griffiths1998-qf} \S3, we consider a marked Poisson process in which every mutation is assigned a random label drawn iid from the uniform distribution on $(0,1)$.
+This is tantamount to an (uncountably) infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
+Further suppose that mutation rate is not constant, but a specified function of time $\mu(t) > 0$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present).
+A given line in the coalescent tree then acquires mutations on a genomic region $M\subset(0,1)$ at rate $|M|\mu(t)$, where $|M|$ is the Lebesgue measure of $M$ (e.g.\ if $M$ is a subinterval, $|M|$ is the length of $M$).
 
-\cite{Polanski2003-ll}
+Let $C_h$ denote the event that there is a mutation with label $U\in(x,x+h)\subseteq(0,1)$ that subtends $b$ haplotypes in the sample, and let $I_k$ denote the event that this mutation arose at a time when the sample had $k$ ancestral lines.
+For small $h$ we then have
+\begin{align*}
+\mathbbm{P}(C_h\mid T) &= \sum_{k=2}^n \mathbbm{P}(C_h, I_k\mid T) = \sum_{k=2}^n p_{n,k}(b)\mathbbm{P}(I_k, U\in(x,x+h)\mid T)\\
+&= \sum_{k=2}^n p_{n,k}(b)\left(kh\int_{T_{k-1}}^{T_k}\mu(t)dt + O(h)\right),
+\end{align*}
+where $p_{n,k}(b) = \binom{n-b-1}{k-2}/\binom{n-1}{k-1}$ is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9).
+Marginalizing $T$ gives
+\begin{align*}
+\mathbbm{P}(C_h) &\simeq h\sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right] = h\sum_{k=2}^n p_{n,k}(b)\ k\ \left(\mathbbm{E}\left[\nu(T_{k})\right] - \mathbbm{E}\left[\nu(T_{k-1})\right]\right),
+\end{align*}
+where $\nu(t)\equiv\int\mu(t)dt$.
+% Now, since $\mu(t) > 0$ we have $\nu(t) \nearrow$.
+% With $\pi_k(t_k)$ denoting the marginal density of $T_k$, define rv $X_k \equiv \nu(T_k)$, which has density $f_{X_k}(x_k) = \pi_k(\nu^{-1}(x_k))$.
+Using eqns 5-8 from \cite{Polanski2003-kg} we can write
+\begin{align*}
+\mathbbm{E}\left[\nu(T_{k})\right] &= \sum_{j=k}^n A_j^k\int_0^\infty\nu(t)q_j(t)dt
+\end{align*}
+where
+\begin{align*}
+A_j^k &\equiv \frac{\prod_{l=k\ne j}^{n}\binom{l}{2}}{\prod_{l=k\ne j}^{n}\left[\binom{l}{2}-\binom{j}{2}\right]}, k\le j\le n,\\
+A_n^n &\equiv 1,\\
+q_j(t) &\equiv \frac{\binom{j}{2}}{\eta(t)}\exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right],
+\end{align*}
+and $\eta(t)$ is the haploid effective population size history.
+Note that $q_j(t)$ is the density of the time to the first coalescent event among any subset of $j$ individuals in the present.
+This can be made explicit by defining the inhomogeneous Poisson process intensity function $\lambda_j(t) = \binom{j}{2}/\eta(t)$.
 
+The $b$-th component of the expected SFS is then
 
-\subsection*{Constant MLE}\label{sec:model:constant}
-
-We initialize by fitting a constant population size.
-According to WSD's scribbles, the MLE assuming $\eta(t) = \eta_0$ (constant) is $\hat \eta_0 = \frac{S}{2 r H_{n-1}}$, where $S$ is the number of segregating sites (the sum of the observed SFS vector), $r$ is the mutation rate per genome per generation, and $H_{n-1}$ is the $n$th harmonic number.
-This was derived by using the well-known result (cited in Rosen et al.) that the expected SFS for a constant population is given by $\xi_i = \frac{2\eta_0}{i}$.
-Then the likelihood for $\eta_0$ is a Poisson random field parameterized by the $\xi_i$.
-
-
-\subsection*{Regularized loss as a penalized log-likelihood}\label{sec:model:penalization}
-
-
-\subsection*{The coalescent horizon: tempora incognita (see what I did there? ;))}\label{sec:model:horizon}
-
-The coalescent tree height determines the time scale within which the SFS contains demographic information.
-The expected height for n samples and a constant history $\eta(t)=\eta_0$ is the sum of the independent exponentially-distributed intercoalescent expectations:
+\begin{align*}
+\xi_b &= \sum_{k=2}^n p_{n,k}(b) k \left(\mathbbm{E}\left[\nu(T_{k})\right] - \mathbbm{E}\left[\nu(T_{k-1})\right]\right)\\
+&= \sum_{k=2}^n p_{n,k}(b) k \sum_{j=k-1}^{n}B_j^k\int_0^\infty\nu(t)q_j(t)dt
+\end{align*}
+where
 \[
-\mathbb{E}[T_n] = \sum_{k=2}^n \frac{\eta_0}{\binom{k}{2}} = 2\eta_0\left(1-\frac{1}{n}\right),
+B_j^k \equiv
+\begin{cases}
+A_{k-1}^{k-1}, j=k-1\\
+A_j^k - A_j^{k-1}, k\le j\le n\\
+\end{cases}
 \]
-where the last equality follows by recognizing the telescoping series.
-Likewise for the variance:
+Exchanging the order of integration and summation yields a manifestly linear expression for the expected SFS as a function of the integrated mutation intensity $\nu(t)$:
 \[
-\text{Var}[T_n] = \sum_{k=2}^n \left(\frac{\eta_0}{\binom{k}{2}}\right)^2 = \frac{4 \eta _0^2 \left(-6 n^2 \psi ^{(1)}(n)+\left(\left(\pi ^2-9\right) n+6\right) n+3\right)}{3 n^2},
+\xi_b = \left<\psi_b, \nu\right>,
 \]
-where $\psi ^{(1)}(n)$ is the derivative of the digamma function \url{https://en.wikipedia.org/wiki/Trigamma_function}.
+where
+\begin{align*}
+\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k q_j(t).
+\end{align*}
 
-
-\subsection*{Asymptotically constant boundary condition}\label{sec:model:boundary}
-
-% Kelley's eqn
-In real data (or realistic simulations) the time region where the SFS has lost information is determined by the expected number of coalescent trees $\rho\ell$, where $\rho$ is the recombination rate and $\ell$ is the genome size.
-For $t$ such that the expected number of trees that have $T_{\text{MRCA}} > t$ becomes less that one, the SFS does not contain information beyond $t$.
-To wit,
-\[
-\mathbb{P}\left(T_{\text{MRCA}}>t\right) < \frac{1}{\rho \ell}.
-\]
-The P\&K model doesn't model finite genome size, so it makes sense to use the CDF of $T_{\text{MRCA}}$ in that setting.
-
-
-% We must deal with the asymptotically constant boundary condition.
-% Standard regularizers blow up on the infinite epoch.
-% Let's use half Gaussian instead of Lebesgue measure on time to induce integrability: $\mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t,$
-% where $\tau$ is the characteristic time to asmptopia (the boundary of our time grid).
-% For example, a modified $L2$ would be
+% DEPRECATED:
+%
+% \subsection*{Constant MLE}\label{sec:model:constant}
+%
+% We initialize by fitting a constant population size.
+% According to WSD's scribbles, the MLE assuming $\eta(t) = \eta_0$ (constant) is $\hat \eta_0 = \frac{S}{2 r H_{n-1}}$, where $S$ is the number of segregating sites (the sum of the observed SFS vector), $r$ is the mutation rate per genome per generation, and $H_{n-1}$ is the $n$th harmonic number.
+% This was derived by using the well-known result (cited in Rosen et al.) that the expected SFS for a constant population is given by $\xi_i = \frac{2\eta_0}{i}$.
+% Then the likelihood for $\eta_0$ is a Poisson random field parameterized by the $\xi_i$.
+%
+%
+% \subsection*{The coalescent horizon: tempora incognita (see what I did there? ;))}\label{sec:model:horizon}
+%
+% The coalescent tree height determines the time scale within which the SFS contains demographic information.
+% The expected height for n samples and a constant history $\eta(t)=\eta_0$ is the sum of the independent exponentially-distributed intercoalescent expectations:
 % \[
-% R\left[\eta(t)\right] = \int_0^\infty \eta(t)^2 \mathrm{d}\mu(t) = \frac{\sqrt{2}}{\sqrt{\pi}\tau}\int_0^\infty \eta(t)^2 \exp\left(-\frac{1}{2}\left(\frac{t}{\tau}\right)^2\right)\mathrm{d}t.
+% \mathbb{E}[T_n] = \sum_{k=2}^n \frac{\eta_0}{\binom{k}{2}} = 2\eta_0\left(1-\frac{1}{n}\right),
 % \]
-% So the discretized problem is expressed in terms of the error function $\erf(\cdot)$ if $\eta(t)$ is piecewise constant.
-% This will give extra (but finite) weight / penalty to the infinite epoch based on the survival function of $\mathrm{d}\mu(t)$.
-% We can tune how much weight the boundary epoch gets by tuning the width of the Gaussian.
-
-\subsection*{Stopping criteria based on Rosen et al.\ Thm (8)}\label{sec:model:stopping}
-
-Thm (8) of Rosen et al. \cite{Rosen2018-bb} tells us that we can always find a piecewise MLE.
-But we're interested in finding smooth solutions that have the same likelihood as that piecewise MLE.
-Perhaps this provides a stopping criteria in our penalized likelihood iterates.
+% where the last equality follows by recognizing the telescoping series.
+% Likewise for the variance:
+% \[
+% \text{Var}[T_n] = \sum_{k=2}^n \left(\frac{\eta_0}{\binom{k}{2}}\right)^2 = \frac{4 \eta _0^2 \left(-6 n^2 \psi ^{(1)}(n)+\left(\left(\pi ^2-9\right) n+6\right) n+3\right)}{3 n^2},
+% \]
+% where $\psi ^{(1)}(n)$ is the derivative of the digamma function \url{https://en.wikipedia.org/wiki/Trigamma_function}.
+%
+%
+% \subsection*{Asymptotically constant boundary condition}\label{sec:model:boundary}
+%
+% % Kelley's eqn
+% In real data (or realistic simulations) the time region where the SFS has lost information is determined by the expected number of coalescent trees $\rho\ell$, where $\rho$ is the recombination rate and $\ell$ is the genome size.
+% For $t$ such that the expected number of trees that have $T_{\text{MRCA}} > t$ becomes less that one, the SFS does not contain information beyond $t$.
+% To wit,
+% \[
+% \mathbb{P}\left(T_{\text{MRCA}}>t\right) < \frac{1}{\rho \ell}.
+% \]
+% The P\&K model doesn't model finite genome size, so it makes sense to use the CDF of $T_{\text{MRCA}}$ in that setting.
 
 
 \section*{Results}\label{sec:results}
 
-Do we need results?
+Todo:
+\begin{itemize}
+\item repeat 1KG analysis like in \cite{Harris2017-fw}, see if we recapitulate Kelley's simulation-based pulse results
+\item cluster triplet time series to see if we pull in minor components. Dynamic time warping?
+\end{itemize}
+
 
 \section*{Discussion}\label{sec:discussion}
 
