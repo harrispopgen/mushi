@@ -14,7 +14,7 @@
 % one sentence per line for nice git diffs
 % WD: I'm a fan of initialed source comments like this
 
-\title{Coalescent inference of mutation spectrum histories from nucleotide context-resolved sample frequency spectra}
+\title{Coalescent inference of mutation spectrum histories from sample frequency spectra}
 
 \author{
 W. DeWitt$^{1}$, K. Harris (if he's into it?)$^{2}$, and K. Harris$^{1}$\\
@@ -93,8 +93,8 @@ where
 \[
 B_j^k \equiv
 \begin{cases}
-A_{k-1}^{k-1}, j=k-1\\
-A_j^k - A_j^{k-1}, k\le j\le n\\
+A_{k-1}^{k-1},\ j=k-1\\
+A_j^k - A_j^{k-1},\ k\le j\le n\\
 \end{cases}
 \]
 Exchanging the order of integration and summation yields a manifestly linear expression for the expected SFS as a function of the integrated mutation intensity $\nu(t)$:
