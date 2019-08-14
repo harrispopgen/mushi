@@ -1,6 +1,9 @@
-DemEnt
+mushi
 ====
-Demographic inference as an inverse problem
+
+[mu]tation [s]pectrum [h]istory [i]nference
+
+Dope bible, manga, and hardcore punk things that share this name: https://en.wikipedia.org/wiki/Mushi
 
 Dependencies
 ---
@@ -11,13 +14,6 @@ Dependencies
   - jupyter
   - scons
 
-Code
----
-- [`dement.py`](dement.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in Rosen et al., and adding the Poisson random field for a full generative model.
-- [`regularization.ipynb`](regularization.ipynb): Jupyter notebook exploring penalized likelihood optimization.
-- [`A_matrix.ipynb`](A_matrix.ipynb): Investigating properties of Polanski and Kimmel's A_n matrix.
-
-
 Writing
 ---
 Protomanuscript forming here:
@@ -27,6 +23,12 @@ Protomanuscript forming here:
 ```bash
 $ scons
 ```
+
+Code
+---
+- [`dement.py`](dement.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in Rosen et al., and adding the Poisson random field for a full generative model.
+- [`regularization.ipynb`](regularization.ipynb): Jupyter notebook exploring penalized likelihood optimization.
+- [`A_matrix.ipynb`](A_matrix.ipynb): Investigating properties of Polanski and Kimmel's A_n matrix.
 
 
 References
