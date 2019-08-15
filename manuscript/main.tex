@@ -66,7 +66,7 @@ Marginalizing $T$ gives
 \begin{align*}
 \mathbbm{P}(C_h) &\simeq h\sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right] = h\sum_{k=2}^n p_{n,k}(b)\ k\ \left(\mathbbm{E}\left[\nu(T_{k})\right] - \mathbbm{E}\left[\nu(T_{k-1})\right]\right),
 \end{align*}
-where $\nu(t)\equiv\int\mu(t)dt$.
+where $\nu(t)\equiv\int_0^t\mu(t)dt$.
 % Now, since $\mu(t) > 0$ we have $\nu(t) \nearrow$.
 % With $\pi_k(t_k)$ denoting the marginal density of $T_k$, define rv $X_k \equiv \nu(T_k)$, which has density $f_{X_k}(x_k) = \pi_k(\nu^{-1}(x_k))$.
 Using eqns 5-8 from \cite{Polanski2003-kg} we can write
@@ -97,13 +97,23 @@ A_{k-1}^{k-1},\ j=k-1\\
 A_j^k - A_j^{k-1},\ k\le j\le n\\
 \end{cases}
 \]
-Exchanging the order of integration and summation yields a manifestly linear expression for the expected SFS as a function of the integrated mutation intensity $\nu(t)$:
+Using the definition of $\nu$ and exchanging integration order gives
+\begin{align*}
+\int_0^\infty\nu(t)q_j(t)dt &= \int_0^\infty \left(\int_0^t\mu(x)dx\right) q_j(t)dt\\
+&= \int_0^\infty \int_0^\infty 1_{[0<x<t]}(x)\mu(x)dx\ q_j(t)dt\\
+&= \int_0^\infty \left(\int_0^\infty 1_{[0<x<t]}(x)q_j(t)dt\right)\mu(x) dx\\
+&= \int_0^\infty \left(1-\int_0^x q_j(t)dt\right)\mu(x) dx\\
+&= \int_0^\infty \left(1-Q_j(t)\right)\mu(x) dx,
+\end{align*}
+where $Q_j$ is the distribution function corresponding to density $q_j$.
+
+We then have a manifestly linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
 \[
-\xi_b = \left<\psi_b, \nu\right>,
+\xi_b = \left<\psi_b, \mu\right>,
 \]
 where
 \begin{align*}
-\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k q_j(t).
+\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k \left(1-Q_j(t)\right).
 \end{align*}
 
 % DEPRECATED:
