@@ -86,13 +86,14 @@ Using the explicit bounds of the coalescent intervals gives
 &= \sum_{k=2}^n B_{b,k} \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right],
 \end{align}
 where
-\[
+\begin{equation}
+\label{eqn:B}
 B_{b,k}\equiv
 \begin{cases}
 k p_{n,k}(b),& k=2\\
 k p_{n,k}(b) - (k-1) p_{n,k-1}(b),& k > 2
 \end{cases}
-\]
+\end{equation}
 
 \cite{Polanski2003-kg} (eqns 5-8) give the marginal density for the coalescent time $T_k$ as
 \begin{equation}
@@ -126,17 +127,48 @@ corresponding to density $q_j(t)$.
 Using \eqref{eqn:exp} in \eqref{eqn:xi} gives
 \begin{align}
 \label{eqn:xi2}
-\xi_b &= \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}\int_0^\infty r_j(t)\mu(t)dt.
+\xi_b &= \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}\int_0^\infty r_j(t)\mu(t)dt\nonumber\\
+&= \sum_{j=2}^n \left(\sum_{k=2}^j B_{b,k} A_{k,j}\right) \int_0^\infty r_j(t)\mu(t)dt.
 \end{align}
 
 We then have a manifestly linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
+\begin{equation}
+\label{eqn:xivec}
+\boldsymbol\xi = C \int_0^\infty \boldsymbol r(t)\mu(t)dt,
+\end{equation}
+where the $(n-1)$ by $(n-1)$ matrix
 \[
-\xi_b = \left<\psi_b, \mu\right>,
+C_{b,j} \equiv \sum_{k=2}^j B_{b,k} A_{k,j}
 \]
-where
+is constant wrt $\mu$ \emph{and} $\eta$.
+
+We next develop an efficient recursive procedure for computing $C$.
+Using \ref{eqn:B}
 \begin{align*}
-\psi_b(t) &\equiv \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}r_j(t).
+C_{b,j} &= \sum_{k=2}^j k p_{n,k}(b) A_{k,j} - \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}\\
+&= W_{b,j} - W'_{b,j}
 \end{align*}
+Where $W$ is defined recursively in \cite{Polanski2003-ll} (eqs 13-15), and we define
+\begin{equation}
+\label{eqn:W'}
+W'_{b,j} = \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}.
+\end{equation}
+\cite{Polanski2003-ll} (eqn 11) show that $A$ can be expressed as
+\[
+A_{k,j} = \frac{n! (n-1)!}{(j+n-1)! (n-j)!} \frac{(2 j-1)}{j (j-1)} \frac{(j+k-2)!}{ (k-1)! (k-2)! (j-k)! }(-1)^{j-k},
+\]
+so, given the form of $p_{n,k}(b)$ in \ref{eqn:p} it's clear that \ref{eqn:W'} is a definite sum over geometric terms.
+Zeilberger's algorithm \citep{petkovvsek1996b, paule1995mathematica} can thus be used to yield the following second-order recursion in $j$:
+\begin{align*}
+&W'_{b,2} = 0\\
+&W'_{b,3} = \frac{(-1)^{j-3} (2 j-1) (b-1)! (j+1)! n! (-b+n-1)! \binom{n-2}{b-1}}{(j-1) j (j-3)! (n-j)! (j+n-1)!}\\
+&W'_{b,j+2} = \frac{(2 j+3) (j-n+1)}{j} \left(\frac{(j+1)}{(2 j-1) (j+n)}W'_{b,j}-\frac{(j (j+1) (2 b-n+1)-2 (n+1))}{(j-1) (j+2) (j-n) (j+n+1)}W'_{b,j+1}\right)
+\end{align*}
+
+This completes the discrete mathematics needed to frame mutation rate inference as a linear inverse problem.
+We next consider eqn \ref{eqn:xivec} as a problem in numerical analysis.
+
+
 
 % DEPRECATED:
 %
