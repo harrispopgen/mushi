@@ -38,8 +38,8 @@ We formulate inference of mutation spectrum histories from the 3-SFS as a linear
 
 \section*{Introduction}\label{sec:intro}
 
-Kelley's paper \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and also used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
-We want to do some coalescent theory to formulate how the expected 3-SFS depends on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation rates as a function of time into the past).
+\cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
+We develop coalescent theory for the dependence of the expected 3-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation rates as a function of time into the past).
 This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{Tennessen2012-dq}), but is much faster, more flexibly parameterized, and extendable to joint inference of demographic and mutation spectrum histories.
 
 The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
@@ -57,11 +57,12 @@ A given line in the coalescent tree then acquires mutations on a genomic subinte
 The following argument can be generalized to a nonuniform distribution of mutation intensity over the genome without changing the results.
 
 Let rv $M_{\delta x, b}$ denote the event that a mutation subtending $b$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (identical for all $x$, given the uniform labeling distribution).
-Let rv $M_{\delta x, b, k}$ denote the event that this mutation occurred at a time when the sample had $k$ ancestral lines (during the $k$th intercoalescent time interval).
+Let $I_k$ denote the $k$th intercoalescent time interval, i.e.\ $I_n = (0, T_n),\ I_{n-1} = (T_n, T_{n-1}),\ \dots,\ I_2 = (T_3, T_2)$.
+Let rv $M_{\delta x, b, k}$ denote the event that the mutation $M_{\delta x, b}$ occurred during $I_k$.
 For small $\delta x$ and finite $\mu(t)$ we have
 \begin{align*}
 \mathbbm{P}(M_{\delta x, b}\mid T) &= \sum_{k=2}^n \mathbbm{P}(M_{\delta x, b, k}\mid T)\\
-&= \sum_{k=2}^n p_{n,k}(b)\left(k\delta x\int_{T_{k-1}}^{T_k}\mu(t)dt + O(\delta x)\right),
+&= \sum_{k=2}^n p_{n,k}(b)\left(k\delta x\int_{t\in I_k}\mu(t)dt + O(\delta x)\right),
 \end{align*}
 where
 \begin{equation}
@@ -71,24 +72,37 @@ p_{n,k}(b) = \frac{\binom{n-b-1}{k-2}}{\binom{n-1}{k-1}}
 is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9), and the quantity in parenthesis is the probability that a mutation arose during the $k$th intercoalescent interval in a small genomic interval of size $\delta x$.
 Marginalizing $T$ gives
 \begin{align*}
-\mathbbm{P}(M_{\delta x, b}) &\simeq \delta x\sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right].
+\mathbbm{P}(M_{\delta x, b}) &\simeq \delta x\sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right].
 \end{align*}
 For small $\delta x$, each such interval contains zero or one mutations, so the expected number of mutations subtending $b$ haplotypes (i.e.\ the $b$th component of the SFS) is
+\[
+\xi_b = \int d\mathbbm{P}(M_{dx, b}) = \sum_{k=2}^n k p_{n,k}(b)\mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right]\nonumber
+\]
+Using the explicit bounds of the coalescent intervals gives
 \begin{align}
 \label{eqn:xi}
-\xi_b &= \int d\mathbbm{P}(M_{dx, b}) = \sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right]\nonumber\\
-&= \sum_{k=2}^n p_{n,k}(b)\ k\ \left(\mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \mathbbm{E}_{T_{k-1}}\left[\int_0^{T_{k-1}}\mu(t)dt\right]\right)
+\xi_b &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=2}^{n-1} k p_{n,k}(b) \mathbbm{E}_{T_{k+1}}\left[\int_0^{T_{k+1}}\mu(t)dt\right]\nonumber\\
+&= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=3}^{n} (k-1) p_{n,k-1}(b) \mathbbm{E}_{T_{k}}\left[\int_0^{T_k}\mu(t)dt\right]\nonumber\\
+&= \sum_{k=2}^n B_{b,k} \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right],
 \end{align}
+where
+\[
+B_{b,k}\equiv
+\begin{cases}
+k p_{n,k}(b),& k=2\\
+k p_{n,k}(b) - (k-1) p_{n,k-1}(b),& k > 2
+\end{cases}
+\]
 
 \cite{Polanski2003-kg} (eqns 5-8) give the marginal density for the coalescent time $T_k$ as
 \begin{equation}
 \label{eqn:pi}
-\pi_k(t_k) = \sum_{j=k}^n A_j^k q_j(t_k)
+\pi_k(t_k) = \sum_{j=k}^n A_{k,j} q_j(t_k)
 \end{equation}
 where
 \begin{align*}
-A_j^k &\equiv \frac{\prod_{l=k\ne j}^{n}\binom{l}{2}}{\prod_{l=k\ne j}^{n}\left[\binom{l}{2}-\binom{j}{2}\right]}, k\le j\le n,\\
-A_n^n &\equiv 1,\\
+A_{k,j} &\equiv \frac{\prod_{l=k\ne j}^{n}\binom{l}{2}}{\prod_{l=k\ne j}^{n}\left[\binom{l}{2}-\binom{j}{2}\right]}, k\le j\le n,\\
+A_{n,n} &\equiv 1,\\
 q_j(t) &\equiv \frac{\binom{j}{2}}{\eta(t)}\exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right],
 \end{align*}
 and $\eta(t)$ is the haploid effective population size history.
@@ -98,8 +112,9 @@ The expectations in \eqref{eqn:xi} can be expressed using \eqref{eqn:pi} as
 \begin{align}
 \label{eqn:exp}
 \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] &= \int_0^\infty\pi_k(t_k)\int_0^{t_k}\mu(t)dt dt_k\nonumber\\
-&= \sum_{j=k}^n A_j^k\int_0^\infty q_j(t_k)\int_0^{t_k}\mu(t)dt dt_k\nonumber\\
-&= \sum_{j=k}^n A_j^k\int_0^\infty r_j(t)\mu(t)dt
+&= \sum_{j=k}^n A_{k,j}\int_0^\infty q_j(t_k)\int_0^{t_k}\mu(t)dt dt_k\nonumber\\
+&= \sum_{j=k}^n A_{k,j}\int_0^\infty q_j(t_k)\int_0^\infty 1_{[0<t<t_k]}(t)\mu(t)dt dt_k\nonumber\\
+&= \sum_{j=k}^n A_{k,j}\int_0^\infty r_j(t)\mu(t)dt
 \end{align}
 where in the last line we've exchanged integration order and defined the inhomogeneous Poisson survival function
 \begin{equation}
@@ -107,20 +122,12 @@ where in the last line we've exchanged integration order and defined the inhomog
 r_j(t) \equiv \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]
 \end{equation}
 corresponding to density $q_j(t)$.
+
 Using \eqref{eqn:exp} in \eqref{eqn:xi} gives
 \begin{align}
 \label{eqn:xi2}
-\xi_b &= \sum_{k=2}^n p_{n,k}(b)\ k\ \left(\sum_{j=k}^n A_j^k\int_0^\infty r_j(t)\mu(t)dt - \sum_{j=k-1}^n A_j^{k-1}\int_0^\infty r_j(t)\mu(t)dt\right)\nonumber\\
-&= \sum_{k=2}^n p_{n,k}(b) k \sum_{j=k-1}^n B_j^k\int_0^\infty r_j(t)\mu(t)dt
+\xi_b &= \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}\int_0^\infty r_j(t)\mu(t)dt.
 \end{align}
-where
-\[
-B_j^k \equiv
-\begin{cases}
-A_{k-1}^{k-1},\ j=k-1\\
-A_j^k - A_j^{k-1},\ k\le j\le n\\
-\end{cases}
-\]
 
 We then have a manifestly linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
 \[
@@ -128,7 +135,7 @@ We then have a manifestly linear expression for the expected SFS as a function o
 \]
 where
 \begin{align*}
-\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k r_j(t).
+\psi_b(t) &\equiv \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}r_j(t).
 \end{align*}
 
 % DEPRECATED:
