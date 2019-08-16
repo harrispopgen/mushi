@@ -52,27 +52,39 @@ We will make use of important results of \cite{Polanski2003-kg} and \cite{Polans
 Suppose $n$ haplotypes are sampled in the present, and let rvs $T = T_2,\dots,T_n$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
 As in \cite{Griffiths1998-qf} \S3, we consider a marked Poisson process in which every mutation is assigned a random label drawn iid from the uniform distribution on $(0,1)$.
 This is tantamount to an (uncountably) infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
-Further suppose that mutation rate is not constant, but a specified function of time $\mu(t) > 0$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present).
-A given line in the coalescent tree then acquires mutations on a genomic region $M\subset(0,1)$ at rate $|M|\mu(t)$, where $|M|$ is the Lebesgue measure of $M$ (e.g.\ if $M$ is a subinterval, $|M|$ is the length of $M$).
+Further suppose that mutation rate is not constant, but a specified function of time $\mu(t) \ge 0$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
+A given line in the coalescent tree then acquires mutations on a genomic subinterval $(x,x+\delta x)$ at rate $\mu(t)\delta x$.
+The following argument can be generalized to a nonuniform distribution of mutation intensity over the genome without changing the results.
 
-Let $C_h$ denote the event that there is a mutation with label $U\in(x,x+h)\subseteq(0,1)$ that subtends $b$ haplotypes in the sample, and let $I_k$ denote the event that this mutation arose at a time when the sample had $k$ ancestral lines.
-For small $h$ we then have
+Let rv $M_{\delta x, b}$ denote the event that a mutation subtending $b$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (identical for all $x$, given the uniform labeling distribution).
+Let rv $M_{\delta x, b, k}$ denote the event that this mutation occurred at a time when the sample had $k$ ancestral lines (during the $k$th intercoalescent time interval).
+For small $\delta x$ and finite $\mu(t)$ we have
 \begin{align*}
-\mathbbm{P}(C_h\mid T) &= \sum_{k=2}^n \mathbbm{P}(C_h, I_k\mid T) = \sum_{k=2}^n p_{n,k}(b)\mathbbm{P}(I_k, U\in(x,x+h)\mid T)\\
-&= \sum_{k=2}^n p_{n,k}(b)\left(kh\int_{T_{k-1}}^{T_k}\mu(t)dt + O(h)\right),
+\mathbbm{P}(M_{\delta x, b}\mid T) &= \sum_{k=2}^n \mathbbm{P}(M_{\delta x, b, k}\mid T)\\
+&= \sum_{k=2}^n p_{n,k}(b)\left(k\delta x\int_{T_{k-1}}^{T_k}\mu(t)dt + O(\delta x)\right),
 \end{align*}
-where $p_{n,k}(b) = \binom{n-b-1}{k-2}/\binom{n-1}{k-1}$ is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9).
+where
+\begin{equation}
+\label{eqn:p}
+p_{n,k}(b) = \frac{\binom{n-b-1}{k-2}}{\binom{n-1}{k-1}}
+\end{equation}
+is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9), and the quantity in parenthesis is the probability that a mutation arose during the $k$th intercoalescent interval in a small genomic interval of size $\delta x$.
 Marginalizing $T$ gives
 \begin{align*}
-\mathbbm{P}(C_h) &\simeq h\sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right] = h\sum_{k=2}^n p_{n,k}(b)\ k\ \left(\mathbbm{E}\left[\nu(T_{k})\right] - \mathbbm{E}\left[\nu(T_{k-1})\right]\right),
+\mathbbm{P}(M_{\delta x, b}) &\simeq \delta x\sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right].
 \end{align*}
-where $\nu(t)\equiv\int_0^t\mu(t)dt$.
-% Now, since $\mu(t) > 0$ we have $\nu(t) \nearrow$.
-% With $\pi_k(t_k)$ denoting the marginal density of $T_k$, define rv $X_k \equiv \nu(T_k)$, which has density $f_{X_k}(x_k) = \pi_k(\nu^{-1}(x_k))$.
-Using eqns 5-8 from \cite{Polanski2003-kg} we can write
-\begin{align*}
-\mathbbm{E}\left[\nu(T_{k})\right] &= \sum_{j=k}^n A_j^k\int_0^\infty\nu(t)q_j(t)dt
-\end{align*}
+For small $\delta x$, each such interval contains zero or one mutations, so the expected number of mutations subtending $b$ haplotypes (i.e.\ the $b$th component of the SFS) is
+\begin{align}
+\label{eqn:xi}
+\xi_b &= \int d\mathbbm{P}(M_{dx, b}) = \sum_{k=2}^n p_{n,k}(b)\ k\ \mathbbm{E}_T\left[\int_{T_{k-1}}^{T_k}\mu(t)dt\right]\nonumber\\
+&= \sum_{k=2}^n p_{n,k}(b)\ k\ \left(\mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \mathbbm{E}_{T_{k-1}}\left[\int_0^{T_{k-1}}\mu(t)dt\right]\right)
+\end{align}
+
+\cite{Polanski2003-kg} (eqns 5-8) give the marginal density for the coalescent time $T_k$ as
+\begin{equation}
+\label{eqn:pi}
+\pi_k(t_k) = \sum_{j=k}^n A_j^k q_j(t_k)
+\end{equation}
 where
 \begin{align*}
 A_j^k &\equiv \frac{\prod_{l=k\ne j}^{n}\binom{l}{2}}{\prod_{l=k\ne j}^{n}\left[\binom{l}{2}-\binom{j}{2}\right]}, k\le j\le n,\\
@@ -80,15 +92,27 @@ A_n^n &\equiv 1,\\
 q_j(t) &\equiv \frac{\binom{j}{2}}{\eta(t)}\exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right],
 \end{align*}
 and $\eta(t)$ is the haploid effective population size history.
-Note that $q_j(t)$ is the density of the time to the first coalescent event among any subset of $j$ individuals in the present.
-This can be made explicit by defining the inhomogeneous Poisson process intensity function $\lambda_j(t) = \binom{j}{2}/\eta(t)$.
+Note that $q_j(t)$ is the density of the time to the first coalescent event among any subset of $j$ individuals in the present, with inhomogeneous Poisson intensity function $\binom{j}{2}/\eta(t)$.
 
-The $b$-th component of the expected SFS is then
-
-\begin{align*}
-\xi_b &= \sum_{k=2}^n p_{n,k}(b) k \left(\mathbbm{E}\left[\nu(T_{k})\right] - \mathbbm{E}\left[\nu(T_{k-1})\right]\right)\\
-&= \sum_{k=2}^n p_{n,k}(b) k \sum_{j=k-1}^{n}B_j^k\int_0^\infty\nu(t)q_j(t)dt
-\end{align*}
+The expectations in \eqref{eqn:xi} can be expressed using \eqref{eqn:pi} as
+\begin{align}
+\label{eqn:exp}
+\mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] &= \int_0^\infty\pi_k(t_k)\int_0^{t_k}\mu(t)dt dt_k\nonumber\\
+&= \sum_{j=k}^n A_j^k\int_0^\infty q_j(t_k)\int_0^{t_k}\mu(t)dt dt_k\nonumber\\
+&= \sum_{j=k}^n A_j^k\int_0^\infty r_j(t)\mu(t)dt
+\end{align}
+where in the last line we've exchanged integration order and defined the inhomogeneous Poisson survival function
+\begin{equation}
+\label{eqn:r}
+r_j(t) \equiv \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]
+\end{equation}
+corresponding to density $q_j(t)$.
+Using \eqref{eqn:exp} in \eqref{eqn:xi} gives
+\begin{align}
+\label{eqn:xi2}
+\xi_b &= \sum_{k=2}^n p_{n,k}(b)\ k\ \left(\sum_{j=k}^n A_j^k\int_0^\infty r_j(t)\mu(t)dt - \sum_{j=k-1}^n A_j^{k-1}\int_0^\infty r_j(t)\mu(t)dt\right)\nonumber\\
+&= \sum_{k=2}^n p_{n,k}(b) k \sum_{j=k-1}^n B_j^k\int_0^\infty r_j(t)\mu(t)dt
+\end{align}
 where
 \[
 B_j^k \equiv
@@ -97,15 +121,6 @@ A_{k-1}^{k-1},\ j=k-1\\
 A_j^k - A_j^{k-1},\ k\le j\le n\\
 \end{cases}
 \]
-Using the definition of $\nu$ and exchanging integration order gives
-\begin{align*}
-\int_0^\infty\nu(t)q_j(t)dt &= \int_0^\infty \left(\int_0^t\mu(x)dx\right) q_j(t)dt\\
-&= \int_0^\infty \int_0^\infty 1_{[0<x<t]}(x)\mu(x)dx\ q_j(t)dt\\
-&= \int_0^\infty \left(\int_0^\infty 1_{[0<x<t]}(x)q_j(t)dt\right)\mu(x) dx\\
-&= \int_0^\infty \left(1-\int_0^x q_j(t)dt\right)\mu(x) dx\\
-&= \int_0^\infty \left(1-Q_j(t)\right)\mu(x) dx,
-\end{align*}
-where $Q_j$ is the distribution function corresponding to density $q_j$.
 
 We then have a manifestly linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
 \[
@@ -113,7 +128,7 @@ We then have a manifestly linear expression for the expected SFS as a function o
 \]
 where
 \begin{align*}
-\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k \left(1-Q_j(t)\right).
+\psi_b(t) &\equiv \sum_{k=2}^n p_{n,k}(b)\ k \sum_{j=k-1}^{n}B_j^k r_j(t).
 \end{align*}
 
 % DEPRECATED:
