@@ -9,6 +9,7 @@
 \usepackage{hyperref}
 
 \DeclareMathOperator{\erf}{erf}
+\DeclareMathOperator{\lngamma}{\ln\!\Gamma}
 
 % NOTE
 % one sentence per line for nice git diffs
@@ -138,7 +139,7 @@ We then have a manifestly linear expression for the expected SFS as a function o
 \label{eqn:xivec}
 \boldsymbol\xi = C \boldsymbol d,
 \end{equation}
-where the $(n-1)$ by $(n-1)$ matrix
+where the $(n-1)\times(n-1)$ matrix
 \[
 C_{b,j} \equiv \sum_{k=2}^j B_{b,k} A_{k,j}
 \]
@@ -155,23 +156,31 @@ We next develop an efficient recursive procedure for computing $C$.
 Using \ref{eqn:B}
 \begin{align*}
 C_{b,j} &= \sum_{k=2}^j k p_{n,k}(b) A_{k,j} - \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}\\
-&= W_{b,j} - W'_{b,j}
+&= W_{b,j}^{(1)} - W_{b,j}^{(2)},
 \end{align*}
-Where $W$ is defined recursively in \cite{Polanski2003-ll} (eqns 13-15), and we define $W'$ by
-\begin{equation}
-\label{eqn:W'}
-W'_{b,j} = \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}.
-\end{equation}
+where
+\begin{align}
+\label{eqn:W1}
+W_{b,j}^{(1)} &\equiv \sum_{k=2}^j k p_{n,k}(b) A_{k,j}\\
+\label{eqn:W2}
+W_{b,j}^{(2)} &\equiv \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}.
+\end{align}
 \cite{Polanski2003-ll} (eqn 11) show that $A$ can be expressed as
 \[
 A_{k,j} = \frac{n! (n-1)!}{(j+n-1)! (n-j)!} \frac{(2 j-1)}{j (j-1)} \frac{(j+k-2)!}{ (k-1)! (k-2)! (j-k)! }(-1)^{j-k},
 \]
-so, given the form of $p_{n,k}(b)$ in \ref{eqn:p} it's clear that \ref{eqn:W'} is a definite sum over geometric terms.
-Zeilberger's algorithm \citep{petkovvsek1996b, paule1995mathematica} can thus be used to yield the following second-order recursion in $j$:
+so, given the form of $p_{n,k}(b)$ in \ref{eqn:p} it's clear that \ref{eqn:W1} and \ref{eqn:W2} are definite sums over geometric terms.
+Zeilberger's algorithm \citep{petkovvsek1996b, paule1995mathematica} can thus be used to yield the following procedurally generated second-order recursions in $j$:
 \begin{align*}
-&W'_{b,2} = 0\\
-&W'_{b,3} = \frac{20 (n-2)}{(n+1)(n+2)}\\
-&W'_{b,j+2} = \frac{(2 j+3) (j-n+1)}{j} \left(\frac{(j+1)}{(2 j-1) (j+n)}W'_{b,j}-\frac{(j (j+1) (2 b-n+1)-2 (n+1))}{(j-1) (j+2) (j-n) (j+n+1)}W'_{b,j+1}\right)
+&W_{b,2}^{(1)} = \frac{6}{(n+1)}\\
+&W_{b,3}^{(1)} = \frac{10(5n-6b-4)}{(n+2)(n+1)}\\
+&W_{b,j+2}^{(1)} = -\frac{(2 j+3) \left(-(2 j-1) W_{b,j+1}^{(1)}  \left(2 j (j+1) \left(b^2 \left(j^2+j-2\right)-6 b-j (j+1)-2\right)-j (j+1) n \left(3 b \left(j^2+j+2\right)+j^2+j-2\right)+\left(j (j+1) \left(j^2+j+6\right)+4\right) n^2+4 n\right)-(j-1) (j+1)^2 (j-n) W_{b,j}^{(1)}  (4 (n+1)-j (j+2) (b-n-1))\right)}{j^2 (j+2) (2 j-1) (j+n+1) \left(-b j^2+b+\left(j^2+3\right) (n+1)\right)}
+\end{align*}
+and
+\begin{align*}
+&W_{b,2}^{(2)} = 0\\
+&W_{b,3}^{(2)} = \frac{20 (n-2)}{(n+1)(n+2)}\\
+&W_{b,j+2}^{(2)} = \frac{(2 j+3) (j-n+1)}{j} \left(\frac{(j+1)}{(2 j-1) (j+n)}W_{b,j}^{(2)}-\frac{(j (j+1) (2 b-n+1)-2 (n+1))}{(j-1) (j+2) (j-n) (j+n+1)}W_{b,j+1}^{(2)}\right)
 \end{align*}
 This completes the framing of mutation rate inference as a linear inverse problem.
 
@@ -183,9 +192,10 @@ Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)) let $R_\eta(t) \equ
 d_j = \int_0^\infty \exp\left[-\binom{j}{2}\tau\right] \tilde\eta(\tau)\tilde\mu(\tau)dt,
 \end{equation}
 where $\tilde\eta(\tau) \equiv \eta(R^{-1}(\tau))$ and $\tilde\mu(\tau) \equiv \mu(R^{-1}(\tau))$.
-We consider piecewise constant $\eta$ and $\mu$ on $\ell$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{\ell-1}, t_\ell)$ where $0=t_0 < t_1 < \dots < t_{\ell-1} < t_\ell=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:model:xi}).
-Let $(y_1,\dots,y_\ell)$ denote the constant population size $eta(t)$ during each epoch, and let $(z_1,\dots,z_\ell)$ denote the constant mutation rate $mu(t)$ during each epoch.
-Let $x_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=2,\dots,t_\ell$, and $x_0\equiv 1$.
+We consider piecewise constant $\eta$ and $\mu$ on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:model:xi}).
+We take the epochs as fixed parameters, and in practice make them dense so as to approximate infinite dimensional histories.
+Let $(y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $(z_1,\dots,z_m)$ denote the constant mutation rate $\mu(t)$ during each epoch.
+Let $u_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=2,\dots,t_m$, and $u_0\equiv 1$.
 With this we can follow the proof of Prop.\ (1) in \cite{Rosen2018-bb} mutatis mutandis to arrive at
 \begin{equation}
 \label{eqn:d3}
@@ -202,20 +212,20 @@ M(\boldsymbol y) \equiv
   &             &        & \frac{1}{\binom{n}{2}}
 \end{bmatrix}
 \begin{bmatrix}
-1       & x_1                & \hdots & \prod_{i=1}^{\ell-1}x_i               \\
-1       & x_1^3              & \hdots & \prod_{i=1}^{\ell-1}x_i^3             \\
+1       & u_1                & \hdots & \prod_{i=1}^{m-1}u_i               \\
+1       & u_1^3              & \hdots & \prod_{i=1}^{m-1}u_i^3             \\
 \vdots  & \vdots             & \ddots & \vdots                                \\
-1       & x_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{\ell-1}x_i^{\binom{n}{2}}
+1       & u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
 \end{bmatrix}
 \begin{bmatrix}
 y_1  &      &        &             &       \\
 -y_1 & y_2  &        &             &       \\
      & -y_2 & y_3    &             &       \\
      &      & \ddots & \ddots      &       \\
-     &      &        & -y_{\ell-1} & y_\ell
+     &      &        & -y_{m-1} & y_m
 \end{bmatrix}.
 \end{equation}
-Note that the $(n-1)$ by $\ell$ matrix $M(\boldsymbol y)$ is a nonlinear function of the demographic history $\boldsymbol y$ because the $x_l$ are nonlinear functions of $\boldsymbol y$.
+Note that the $(n-1)\times m$ matrix $M(\boldsymbol y)$ is a nonlinear function of the demographic history $\boldsymbol y$ because the $u_l$ are nonlinear functions of $\boldsymbol y$.
 
 Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse problem
 \begin{equation}
@@ -224,41 +234,59 @@ Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse proble
 \end{equation}
 
 
-% DEPRECATED:
-%
-% \subsection*{Constant MLE}\label{sec:model:constant}
-%
-% We initialize by fitting a constant population size.
-% According to WSD's scribbles, the MLE assuming $\eta(t) = \eta_0$ (constant) is $\hat \eta_0 = \frac{S}{2 r H_{n-1}}$, where $S$ is the number of segregating sites (the sum of the observed SFS vector), $r$ is the mutation rate per genome per generation, and $H_{n-1}$ is the $n$th harmonic number.
-% This was derived by using the well-known result (cited in Rosen et al.) that the expected SFS for a constant population is given by $\xi_i = \frac{2\eta_0}{i}$.
-% Then the likelihood for $\eta_0$ is a Poisson random field parameterized by the $\xi_i$.
-%
-%
-% \subsection*{The coalescent horizon: tempora incognita (see what I did there? ;))}\label{sec:model:horizon}
-%
-% The coalescent tree height determines the time scale within which the SFS contains demographic information.
-% The expected height for n samples and a constant history $\eta(t)=\eta_0$ is the sum of the independent exponentially-distributed intercoalescent expectations:
-% \[
-% \mathbb{E}[T_n] = \sum_{k=2}^n \frac{\eta_0}{\binom{k}{2}} = 2\eta_0\left(1-\frac{1}{n}\right),
-% \]
-% where the last equality follows by recognizing the telescoping series.
-% Likewise for the variance:
-% \[
-% \text{Var}[T_n] = \sum_{k=2}^n \left(\frac{\eta_0}{\binom{k}{2}}\right)^2 = \frac{4 \eta _0^2 \left(-6 n^2 \psi ^{(1)}(n)+\left(\left(\pi ^2-9\right) n+6\right) n+3\right)}{3 n^2},
-% \]
-% where $\psi ^{(1)}(n)$ is the derivative of the digamma function \url{https://en.wikipedia.org/wiki/Trigamma_function}.
-%
-%
-% \subsection*{Asymptotically constant boundary condition}\label{sec:model:boundary}
-%
-% % Kelley's eqn
-% In real data (or realistic simulations) the time region where the SFS has lost information is determined by the expected number of coalescent trees $\rho\ell$, where $\rho$ is the recombination rate and $\ell$ is the genome size.
-% For $t$ such that the expected number of trees that have $T_{\text{MRCA}} > t$ becomes less that one, the SFS does not contain information beyond $t$.
-% To wit,
-% \[
-% \mathbb{P}\left(T_{\text{MRCA}}>t\right) < \frac{1}{\rho \ell}.
-% \]
-% The P\&K model doesn't model finite genome size, so it makes sense to use the CDF of $T_{\text{MRCA}}$ in that setting.
+\subsection{Tempora incognita: regularization and the coalescent horizon}\label{sec:model:loss}
+
+In linkage equilibrium the log likelihood function of the history $(\boldsymbol y, \boldsymbol z)$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ is the Poisson random field \citep{}
+\begin{align}
+\ell(\boldsymbol y, \boldsymbol z) &= \sum_{b=1}^{n-1}\left(x_b\log(\xi_b) - \xi_b - \log(x_b!)\right)\\
+&= \boldsymbol x^\intercal\log(\boldsymbol\xi) - \boldsymbol 1^\intercal\left(\boldsymbol\xi + \lngamma(\boldsymbol x + \boldsymbol 1)\right)\\
+&= \boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) - \boldsymbol 1^\intercal\left(C M(\boldsymbol y) \boldsymbol z + \lngamma(\boldsymbol x + \boldsymbol 1)\right),
+\end{align}
+where $\log(\cdot)$ and the log-gamma function $\lngamma(\cdot)$ operate on vectors elementwise.
+
+The inverse problem \eqref{eqn:xivec2} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
+To penalize oscillatory solutions we introduce regularizers on the history derivatives.
+Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
+Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
+To do this we should like to use the CDF of the TMRCA to define a ramp of weights.
+At times for which the CDF is near unity, the TMRCA has probably occurred, so we should penalize heavily because the data are not informative about the history at this time.
+At times for which the CDF is small, the TMRCA has probably not yet occurred, and we should penalize less heavily.
+From \eqref{eqn:r} the CDF $1 - r_2(t)$, so we define the regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ as
+\begin{align}
+\rho_\eta[\eta(t)] &\equiv \int_0^\infty\left(\frac{d\eta(t)}{dt}\right)\left(1-r_2(t)\right)dt,\\
+\rho_\mu[\eta(t), \mu(t)] &\equiv \int_0^\infty\left(\frac{d\mu(t)}{dt}\right)\left(1-r_2(t)\right)dt.
+\end{align}
+With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and it is straightforward to show (using notation as in section \ref{sec:model:pcsws}) that these become
+\begin{align}
+\rho_\eta(\boldsymbol y) &= \|\Gamma(\boldsymbol y) \boldsymbol y\|_2^2,\\
+\rho_\mu(\boldsymbol y, \boldsymbol z) &= \|\Gamma(\boldsymbol y) \boldsymbol z\|_2^2.
+\end{align}
+where
+\begin{equation}
+\label{eqn:Gamma}
+\Gamma(\boldsymbol y) \equiv
+\begin{bmatrix}
+\sqrt{1-u_0} &     &        &                       \\
+  & \sqrt{1-u_0 u_1} &        &                       \\
+  &     & \ddots &                       \\
+  &     &        & \sqrt{1-\prod_{i=1}^{m-1}u_i}
+\end{bmatrix}
+\begin{bmatrix}
+1  &      &        &             &       \\
+-1 & 1  &        &             &       \\
+     & -1 & 1    &             &       \\
+     &      & \ddots & \ddots      &       \\
+     &      &        & -1 & 1
+\end{bmatrix}.
+\end{equation}
+Note that if $\boldsymbol y$ is fixed $\Gamma(\boldsymbol y)$ is a constant and thus a proper Tinkhonov matrix.
+
+Our regularized loss function is then
+\begin{align}
+L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \rho_\eta(\boldsymbol y) + \lambda_\mu \rho_\mu(\boldsymbol y, \boldsymbol z)\\
+&= \boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) - \boldsymbol 1^\intercal C M(\boldsymbol y) \boldsymbol z + \lambda_\eta \|\Gamma(\boldsymbol y) \boldsymbol y\|_2^2 + \lambda_\mu \|\Gamma(\boldsymbol y) \boldsymbol z\|_2^2
+\end{align}
+where $\lambda_\eta$ and $\lambda_\mu$ are parameters tuning the regularization strength, and we've dropped the constant term from $\ell$.
 
 
 \section{Results}\label{sec:results}
