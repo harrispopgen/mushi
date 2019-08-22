@@ -6,7 +6,6 @@ from scipy.special import binom
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
 from scipy.optimize import minimize
-from typing import Tuple
 
 
 class DemEnt():
@@ -129,7 +128,7 @@ class DemEnt():
         d = - sfs_hat.dot(np.log(xi_hat / sfs_hat))
         return d
 
-    def constant_MLE(self) -> float:
+    def constant_MLE(self) -> None:
         '''MLE for constant demography. Updates the instance's self.y_inferred
         based on the constant MLE
         '''
