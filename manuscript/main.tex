@@ -81,7 +81,7 @@ For small $\delta x$, each such interval contains zero or one mutations, so the 
 \[
 \xi_b = \int d\mathbbm{P}(\mathcal{E}_{dx, b}) = \sum_{k=2}^n k p_{n,k}(b)\mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right]\nonumber
 \]
-Using the explicit bounds of the coalescent intervals gives
+Using the explicit bounds of the intercoalescent intervals gives
 \begin{align}
 \label{eqn:xi}
 \xi_b &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=2}^{n-1} k p_{n,k}(b) \mathbbm{E}_{T_{k+1}}\left[\int_0^{T_{k+1}}\mu(t)dt\right]\nonumber\\
@@ -195,7 +195,7 @@ where $\tilde\eta(\tau) \equiv \eta(R^{-1}(\tau))$ and $\tilde\mu(\tau) \equiv \
 We consider piecewise constant $\eta$ and $\mu$ on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:model:xi}).
 We take the epochs as fixed parameters, and in practice make them dense so as to approximate infinite dimensional histories.
 Let $(y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $(z_1,\dots,z_m)$ denote the constant mutation rate $\mu(t)$ during each epoch.
-Let $u_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=2,\dots,t_m$, and $u_0\equiv 1$.
+Let $u_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=1,\dots,m$.%, and $u_0\equiv 1$.
 With this we can follow the proof of Prop.\ (1) in \cite{Rosen2018-bb} mutatis mutandis to arrive at
 \begin{equation}
 \label{eqn:d3}
@@ -218,11 +218,18 @@ M(\boldsymbol y) \equiv
 1       & u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
 \end{bmatrix}
 \begin{bmatrix}
-y_1  &      &        &             &       \\
--y_1 & y_2  &        &             &       \\
-     & -y_2 & y_3    &             &       \\
+1  &      &        &             &       \\
+-1 & 1  &        &             &       \\
+     & -1 & 1    &             &       \\
      &      & \ddots & \ddots      &       \\
-     &      &        & -y_{m-1} & y_m
+     &      &        & -1 & 1
+\end{bmatrix}
+\begin{bmatrix}
+y_1 &     &      &             &       \\
+    & y_2 &      &             &       \\
+     &     & y_3 &             &       \\
+     &      &    & \ddots      &       \\
+     &      &        &  & y_m
 \end{bmatrix}.
 \end{equation}
 Note that the $(n-1)\times m$ matrix $M(\boldsymbol y)$ is a nonlinear function of the demographic history $\boldsymbol y$ because the $u_l$ are nonlinear functions of $\boldsymbol y$.
@@ -234,7 +241,7 @@ Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse proble
 \end{equation}
 
 
-\subsection{Tempora incognita: regularization and the coalescent horizon}\label{sec:model:loss}
+\subsection{Tempora incognita: regularization toward the coalescent horizon}\label{sec:model:loss}
 
 In linkage equilibrium the log likelihood function of the history $(\boldsymbol y, \boldsymbol z)$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ is the Poisson random field \citep{}
 \begin{align}
@@ -251,26 +258,35 @@ Thus, we will find it useful to penalize complexity in the history more heavily 
 To do this we should like to use the CDF of the TMRCA to define a ramp of weights.
 At times for which the CDF is near unity, the TMRCA has probably occurred, so we should penalize heavily because the data are not informative about the history at this time.
 At times for which the CDF is small, the TMRCA has probably not yet occurred, and we should penalize less heavily.
-From \eqref{eqn:r} the CDF $1 - r_2(t)$, so we define the regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ as
+From \eqref{eqn:pi} and \eqref{eqn:r} the CDF is
 \begin{align}
-\rho_\eta[\eta(t)] &\equiv \int_0^\infty\left(\frac{d\eta(t)}{dt}\right)\left(1-r_2(t)\right)dt,\\
-\rho_\mu[\eta(t), \mu(t)] &\equiv \int_0^\infty\left(\frac{d\mu(t)}{dt}\right)\left(1-r_2(t)\right)dt.
+F_2(t) &= 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
+&= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
+\end{align}
+We define $L_2$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ to have unit weight when the CDF is zero, and approach weight $h$ as the CDF approaches unity:
+\begin{align}
+\rho_\eta[\eta(t); h] &\equiv \int_0^\infty\left(\frac{d\eta(t)}{dt}\right)^2\left[1+(h-1)F_2(t)\right]dt,\\
+\rho_\mu[\eta(t), \mu(t); h] &\equiv \int_0^\infty\left(\frac{d\mu(t)}{dt}\right)^2\left[1+(h-1)F_2(t)\right]dt.
 \end{align}
 With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and it is straightforward to show (using notation as in section \ref{sec:model:pcsws}) that these become
 \begin{align}
-\rho_\eta(\boldsymbol y) &= \|\Gamma(\boldsymbol y) \boldsymbol y\|_2^2,\\
-\rho_\mu(\boldsymbol y, \boldsymbol z) &= \|\Gamma(\boldsymbol y) \boldsymbol z\|_2^2.
+\rho_\eta(\boldsymbol y, h) &= \|\Gamma(\boldsymbol y, h) \boldsymbol y\|_2^2,\\
+\rho_\mu(\boldsymbol y, \boldsymbol z, h) &= \|\Gamma(\boldsymbol y, h) \boldsymbol z\|_2^2.
 \end{align}
 where
-\begin{equation}
+
+\emph{this is wrong, see notes!}
+
+\begin{align}
 \label{eqn:Gamma}
-\Gamma(\boldsymbol y) \equiv
+\Gamma(\boldsymbol y, h) \equiv&
 \begin{bmatrix}
-\sqrt{1-u_0} &     &        &                       \\
-  & \sqrt{1-u_0 u_1} &        &                       \\
+\sqrt{h+(1-h)\sum_2^n A_{2,j}u_0^{\binom{j}{2}}} &     &        &                       \\
+  & \sqrt{h+(1-h)\sum_2^n A_{2,j}(u_0u_1)^{\binom{j}{2}}} &        &                       \\
   &     & \ddots &                       \\
-  &     &        & \sqrt{1-\prod_{i=1}^{m-1}u_i}
-\end{bmatrix}
+  &     &        & \sqrt{h+(1-h)\sum_2^n A_{2,j}\left(\prod_{i=1}^{m-1}u_i\right)^{\binom{j}{2}}}
+\end{bmatrix}\\
+&\times
 \begin{bmatrix}
 1  &      &        &             &       \\
 -1 & 1  &        &             &       \\
@@ -278,13 +294,13 @@ where
      &      & \ddots & \ddots      &       \\
      &      &        & -1 & 1
 \end{bmatrix}.
-\end{equation}
+\end{align}
 Note that if $\boldsymbol y$ is fixed $\Gamma(\boldsymbol y)$ is a constant and thus a proper Tinkhonov matrix.
 
 Our regularized loss function is then
 \begin{align}
 L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \rho_\eta(\boldsymbol y) + \lambda_\mu \rho_\mu(\boldsymbol y, \boldsymbol z)\\
-&= \boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) - \boldsymbol 1^\intercal C M(\boldsymbol y) \boldsymbol z + \lambda_\eta \|\Gamma(\boldsymbol y) \boldsymbol y\|_2^2 + \lambda_\mu \|\Gamma(\boldsymbol y) \boldsymbol z\|_2^2
+&= -\boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) + \boldsymbol 1^\intercal C M(\boldsymbol y) \boldsymbol z + \lambda_\eta \|\Gamma(\boldsymbol y, h) \boldsymbol y\|_2^2 + \lambda_\mu \|\Gamma(\boldsymbol y, h) \boldsymbol z\|_2^2
 \end{align}
 where $\lambda_\eta$ and $\lambda_\mu$ are parameters tuning the regularization strength, and we've dropped the constant term from $\ell$.
 
