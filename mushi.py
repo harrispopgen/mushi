@@ -77,22 +77,22 @@ class SFS():
     '''The SFS model described in the text
     '''
 
-    def __init__(self, n: int = None, sfs: np.ndarray = None):
+    def __init__(self, n: int = None, x: np.ndarray = None):
         '''
         pass one of these arguments
         n: number of sampled haplotypes
         sfs: observed sfs vector
         '''
-        if sfs is not None:
-            self.sfs = sfs
-            self.n = len(sfs) + 1
-            assert n is None, 'pass only one of n or sfs'
+        if x is not None:
+            self.x = x
+            self.n = len(x) + 1
+            assert n is None, 'pass only one of n or x'
         elif n is not None:
-            self.sfs = None
+            self.x = None
             self.n = n
-            assert sfs is None, 'pass only one of n or sfs'
+            assert x is None, 'pass only one of n or x'
         else:
-            raise ValueError('must pass either n or sfs')
+            raise ValueError('must pass either n or x')
         if self.n < 2:
             raise ValueError('n must be larger than 1')
         self._binom_vec = binom(np.arange(2, self.n + 1), 2)
@@ -146,7 +146,12 @@ class SFS():
     @lru_cache(maxsize=1)
     def M(self, history: History) -> np.ndarray:
         '''The M matrix defined in the text
+
+        history: η history
         '''
+        if history.z is not None:
+            raise ValueError('history must be only η, not μ. Consider using '
+                             'the History.η() method on a joint history')
         # epoch durations
         s = np.diff(history.t)
         u = np.exp(-s / history.y)
@@ -162,8 +167,12 @@ class SFS():
     def Γ(self, history: History, h: np.float = 1) -> np.ndarray:
         '''The Gamma matrix defined in the text
 
+        history: η history
         h: relative increase in penalty as we approach coalescent horizon
         '''
+        if history.z is not None:
+            raise ValueError('history must be only η, not μ. Consider using '
+                             'the History.η() method on a joint history')
         # epoch durations
         s = np.diff(history.t)
         u = np.exp(-s / history.y)
@@ -190,22 +199,36 @@ class SFS():
     def simulate(self, history: History) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
         '''
-        self.sfs = poisson.rvs(self.ξ(history))
+        self.x = poisson.rvs(self.ξ(history))
 
     def ℓ(self, history: History) -> np.float:
         '''Poisson random field log-likelihood of history
         '''
-        if self.sfs is None:
+        if self.x is None:
             raise ValueError('use simulate() to generate data first')
         ξ = self.ξ(history)
-        return (self.sfs * np.log(ξ) - ξ - gammaln(self.sfs + 1)).sum()
+        return (self.x * np.log(ξ) - ξ - gammaln(self.x + 1)).sum()
+
+    def constant_μ_MLE(self, history: History):
+        '''gives the MLE for a constant mutation spectrum
+
+        history: η history
+        '''
+        if history.z is not None:
+            raise ValueError('history must be only η, not μ. Consider using '
+                             'the History.η() method on a joint history')
+        if self.x is None:
+            raise ValueError('use simulate() to generate data first')
+
+        return self.x.sum() / (SFS.C(self.n) @ self.M(history)).sum()
 
     def L(self, history: History,
-             λ_η: np.float = 0, λ_μ: np.float = 0,
-             h: np.float = 1) -> np.float:
-        '''loss: negative log likelihood (Poisson random field) and regularization
-        as described in the text
+          λ_η: np.float = 0, λ_μ: np.float = 0,
+          h: np.float = 1) -> np.float:
+        '''loss: negative log likelihood (Poisson random field) and
+        regularization as described in the text
 
+        history: η and μ joint history
         λ_η: regularization strength on η
         λ_μ: regularization strength on μ
         h: relative increase in penalty as we approach coalescent horizon
@@ -218,14 +241,21 @@ class SFS():
         ρ_μ = ((Γ @ history.z)**2).sum()
         return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
 
-    def infer_μ(self, history: History, λ_μ: np.float = 0,
+    def infer_μ(self, history: History = None, λ_μ: np.float = 0,
                 h: np.float = 1) -> History:
         '''infer the μ history given the simulated sfs and η history
 
-        history: initial history
+        history: η history
         λ_μ: regularization strength
         h: relative increase in penalty as we approach coalescent horizon
         '''
+        if history.z is not None:
+            raise ValueError('history must be only η, not μ. Consider using '
+                             'the History.η() method on a joint history')
+        # initialize joint history using constant MLE
+        history = History(history.t[1:-1],
+                          history.y,
+                          self.constant_μ_MLE(history) * np.ones_like(history.y))
         def f(z) -> np.float:
             return self.L(History(history.t[1:-1], history.y, z),
                           λ_η=0, λ_μ=λ_μ, h=h)
@@ -235,7 +265,7 @@ class SFS():
                           # jac=gradF,
                           method='L-BFGS-B',
                           options=dict(
-                                       # ftol=1e-10,
+                                       ftol=1e-10,
                                        maxfun=np.inf
                                        ),
                           bounds=[(1e-10, None)] * history.m
@@ -277,7 +307,7 @@ class SFS():
     #                              xi_lower, xi_upper,
     #                              facecolor='r', alpha=0.25,
     #                              label='inner 95%\nquantile')
-    #     axes[1].plot(range(1, len(self.sfs) + 1), self.sfs,
+    #     axes[1].plot(range(1, len(self.x) + 1), self.x,
     #                  'k.', alpha=.25, label=r'simulated')
     #     axes[1].set_xlabel('$i$')
     #     axes[1].set_ylabel(r'$\xi_i$')
