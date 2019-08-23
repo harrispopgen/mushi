@@ -51,6 +51,27 @@ class History():
     def μ(self):
         return History(self.t[1:-1], z=self.z)
 
+    def __hash__(self):
+        '''needed for hashability
+        '''
+        return hash((tuple(self.t) if self.t is not None else self.t,
+                     tuple(self.y) if self.y is not None else self.y,
+                     tuple(self.z) if self.z is not None else self.z))
+
+    def __eq__(self, other) -> bool:
+        '''needed for hashability
+        '''
+        if self.t is not None:
+            if any(self.t != other.t):
+                return False
+        if self.y is not None:
+            if any(self.y != other.y):
+                return False
+        if self.z is not None:
+            if any(self.z != other.z):
+                return False
+        return True
+
 
 class SFS():
     '''The SFS model described in the text
@@ -132,7 +153,8 @@ class SFS():
         u = np.insert(u, 0, 1)
 
         return self._binom_array_recip \
-               @ np.cumprod(u[np.newaxis, :-1], axis=1) ** self._binom_vec[:, np.newaxis] \
+               @ np.cumprod(u[np.newaxis, :-1],
+                            axis=1) ** self._binom_vec[:, np.newaxis] \
                @ (np.eye(history.m, k=0) - np.eye(history.m, k=-1)) \
                @ np.diag(history.y)
 
@@ -196,7 +218,8 @@ class SFS():
         ρ_μ = ((Γ @ history.z)**2).sum()
         return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
 
-    def infer_μ(self, history: History, λ_μ: np.float = 0, h: np.float = 1):
+    def infer_μ(self, history: History, λ_μ: np.float = 0,
+                h: np.float = 1) -> History:
         '''infer the μ history given the simulated sfs and η history
 
         history: initial history
@@ -204,9 +227,8 @@ class SFS():
         h: relative increase in penalty as we approach coalescent horizon
         '''
         def f(z) -> np.float:
-            _history = history
-            _history.z = z
-            return self.L(_history, λ_η=0, λ_μ=λ_μ, h=h)
+            return self.L(History(history.t[1:-1], history.y, z),
+                          λ_η=0, λ_μ=λ_μ, h=h)
 
         result = minimize(f,
                           history.z,
@@ -219,10 +241,8 @@ class SFS():
                           bounds=[(1e-10, None)] * history.m
                           )
         if not result.success:
-            raise ValueError(result.message)
-        else:
-            history.z = result.x
-            return history
+            print(result.message)
+        return History(history.t[1:-1], y=history.y, z=result.x)
 
     #
     # def plot(self, history) -> None:
