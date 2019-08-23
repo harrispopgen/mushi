@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 import numpy as np
 from scipy.special import binom
 from functools import lru_cache
@@ -10,67 +11,99 @@ from matplotlib import pyplot as plt
 from scipy.optimize import minimize
 
 
-class History():
-    '''piecewise constant history of population size η and mutation rate μ
+@dataclass(frozen=True)
+class PiecewiseConstantHistory():
+    '''The first epoch starts at zero, and the last epoch extends to infinity.
+    Can be used for η or μ
+
+    change_points: epoch change points (times)
+    vals: vector of constant values for each epoch
     '''
+    change_points: np.array
+    vals: np.ndarray
 
-    def __init__(self, t: np.array,
-                 y: np.ndarray = None, z: np.ndarray = None):
+    def __post_init__(self):
+        if any(np.diff(self.change_points) <= 0) or any(
+           np.isinf(self.change_points)) or any(self.change_points <= 0):
+            raise ValueError('change_points must be increasing, finite, and '
+                             'positive')
+        if len(self.vals) != len(self.change_points) + 1:
+            raise ValueError(f'len(change_points) = {len(self.change_points)} implies '
+                             f'{len(self.change_points) + 1} epochs, but len(vals) = '
+                             f'{len(self.vals)}')
+        if any(self.vals <= 0) or np.isinf(self.vals).sum():
+            raise ValueError('elements of vals must be finite and positive')
+
+    def m(self):
+        '''number of epochs
         '''
-        t: The time axis, given as epoch change points. The first epoch starts
-           at zero, and the last epoch extends to infinity
-        y: vector of constant η(t) pieces
-        z: vector of constant μ(t) pieces
-        '''
-        if any(np.diff(t) <= 0) or np.isinf(t).sum() or any(t <= 0):
-            raise ValueError('t must be increasing, finite, and positive')
-        self.t = np.concatenate(([0], t, [np.inf]))
-        self.m = len(self.t) - 1
-        if y is not None:
-            if len(y) != len(t) + 1:
-                raise ValueError(f'len(t) = {len(t)} implies {len(t) + 1} '
-                                 f'epochs, but len(y) = {len(y)}')
-            if any(y <= 0) or np.isinf(y).sum():
-                raise ValueError('elements of y must be finite and positive')
-            self.y = y
-        else:
-            self.y = None
-        if z is not None:
-            if len(z) != len(t) + 1:
-                raise ValueError(f'len(t) = {len(t)} implies {len(t) + 1} '
-                                 f'epochs, but len(z) = {len(z)}')
-            if any(z <= 0) or np.isinf(z).sum():
-                raise ValueError('elements of z must be finite and positive')
-            self.z = z
-        else:
-            self.z = None
-
-    def η(self):
-        return History(self.t[1:-1], y=self.y)
-
-    def μ(self):
-        return History(self.t[1:-1], z=self.z)
+        return len(self.vals)
 
     def __hash__(self):
         '''needed for hashability
         '''
-        return hash((tuple(self.t) if self.t is not None else self.t,
-                     tuple(self.y) if self.y is not None else self.y,
-                     tuple(self.z) if self.z is not None else self.z))
+        return hash((tuple(self.change_points), tuple(self.vals)))
 
     def __eq__(self, other) -> bool:
         '''needed for hashability
         '''
-        if self.t is not None:
-            if any(self.t != other.t):
-                return False
-        if self.y is not None:
-            if any(self.y != other.y):
-                return False
-        if self.z is not None:
-            if any(self.z != other.z):
-                return False
+        if any(self.change_points != other.change_points):
+            return False
+        if any(self.vals != other.vals):
+            return False
         return True
+
+    def plot(self, **kwargs) -> None:
+        '''plot the history
+
+        kwargs: key word arguments passed to plt.step
+        '''
+        t = np.insert(self.change_points, 0, 0)
+        plt.step(t, self.vals, where='post', **kwargs)
+        if 'label' in kwargs:
+            plt.legend()
+
+
+@dataclass()
+class JointHistory():
+    '''Piecewise constant history of population size η and mutation rate μ.
+    both histories must use the same time grid
+
+    η: effective population size history
+    μ: mutation rate history
+    '''
+    η: PiecewiseConstantHistory
+    μ: PiecewiseConstantHistory
+
+    def __post_init__(self):
+        if any(self.η.change_points != self.μ.change_points):
+            raise ValueError('η and μ histories must use the same time grid')
+
+    def plot(self, **kwargs) -> np.ndarray:
+        '''plot the history
+
+        kwargs: keyword arguments passed to plotting calls
+        pass fig=<plt.figure object> to add to current axes
+        '''
+        fig = kwargs.pop('fig', None)
+        if fig:
+            axes = fig.axes
+        else:
+            fig, axes = plt.subplots(2, 1, sharex=True)
+        plt.sca(axes[0])
+        self.η.plot(**kwargs)
+        plt.ylabel('$η(t)$')
+        plt.ylim([0, None])
+        plt.xscale('symlog')
+
+        plt.sca(axes[1])
+        self.μ.plot(**kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$μ(t)$')
+        plt.ylim([0, None])
+        plt.xscale('symlog')
+
+        return fig
 
 
 class SFS():
@@ -78,8 +111,8 @@ class SFS():
     '''
 
     def __init__(self, n: int = None, x: np.ndarray = None):
-        '''
-        pass one of these arguments
+        '''pass one of these arguments
+
         n: number of sampled haplotypes
         sfs: observed sfs vector
         '''
@@ -144,38 +177,35 @@ class SFS():
         return SFS.W1(n) - SFS.W2(n)
 
     @lru_cache(maxsize=1)
-    def M(self, history: History) -> np.ndarray:
+    def M(self, η: PiecewiseConstantHistory) -> np.ndarray:
         '''The M matrix defined in the text
 
-        history: η history
+        η: η history
         '''
-        if history.z is not None:
-            raise ValueError('history must be only η, not μ. Consider using '
-                             'the History.η() method on a joint history')
+        t = np.concatenate(([0], η.change_points, [np.inf]))
         # epoch durations
-        s = np.diff(history.t)
-        u = np.exp(-s / history.y)
+        s = np.diff(t)
+        u = np.exp(-s / η.vals)
         u = np.insert(u, 0, 1)
 
         return self._binom_array_recip \
                @ np.cumprod(u[np.newaxis, :-1],
                             axis=1) ** self._binom_vec[:, np.newaxis] \
-               @ (np.eye(history.m, k=0) - np.eye(history.m, k=-1)) \
-               @ np.diag(history.y)
+               @ (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1)) \
+               @ np.diag(η.vals)
 
     @lru_cache(maxsize=1)
-    def Γ(self, history: History, h: np.float = 1) -> np.ndarray:
+    def Γ(self, η: PiecewiseConstantHistory,
+          h: np.float = 1) -> np.ndarray:
         '''The Gamma matrix defined in the text
 
-        history: η history
+        η: η history
         h: relative increase in penalty as we approach coalescent horizon
         '''
-        if history.z is not None:
-            raise ValueError('history must be only η, not μ. Consider using '
-                             'the History.η() method on a joint history')
+        t = np.concatenate(([0], η.change_points, [np.inf]))
         # epoch durations
-        s = np.diff(history.t)
-        u = np.exp(-s / history.y)
+        s = np.diff(t)
+        u = np.exp(-s / η.vals)
         u = np.insert(u, 0, 1)
 
         # the A_2j product of these terms
@@ -185,23 +215,24 @@ class SFS():
         np.fill_diagonal(A2_terms, 1)
         A2 = np.prod(A2_terms, axis=0)
 
-        return (np.diag(np.insert(h * np.ones(history.m - 1), 0, h - 1)) + (1 - h)
+        return (np.diag(np.insert(h * np.ones(η.m() - 1), 0, h - 1)) + (1 - h)
                 * np.diagflat(A2[np.newaxis, :]
                           @ np.cumprod(u[np.newaxis, :-1],
                                        axis=1) ** self._binom_vec[:, np.newaxis])) \
-               @ (np.eye(history.m, k=0) - np.eye(history.m, k=-1))
+               @ (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
 
-    def ξ(self, history: History) -> np.ndarray:
+    def ξ(self, history: JointHistory) -> np.ndarray:
         '''expected sfs vector
         '''
-        return self.C @ self.M(history.η()) @ history.z
+        z = history.μ.vals
+        return self.C @ self.M(history.η) @ z
 
-    def simulate(self, history: History) -> None:
+    def simulate(self, history: JointHistory) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
         '''
         self.x = poisson.rvs(self.ξ(history))
 
-    def ℓ(self, history: History) -> np.float:
+    def ℓ(self, history: JointHistory) -> np.float:
         '''Poisson random field log-likelihood of history
         '''
         if self.x is None:
@@ -209,20 +240,18 @@ class SFS():
         ξ = self.ξ(history)
         return (self.x * np.log(ξ) - ξ - gammaln(self.x + 1)).sum()
 
-    def constant_μ_MLE(self, history: History):
-        '''gives the MLE for a constant mutation spectrum
+    def constant_μ_MLE(self, η: PiecewiseConstantHistory
+                       ) -> PiecewiseConstantHistory:
+        '''gives the MLE for a constant μ history
 
-        history: η history
+        η: η history
         '''
-        if history.z is not None:
-            raise ValueError('history must be only η, not μ. Consider using '
-                             'the History.η() method on a joint history')
         if self.x is None:
             raise ValueError('use simulate() to generate data first')
+        z0 = (self.x.sum() / (SFS.C(self.n) @ self.M(η)).sum())
+        return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
 
-        return self.x.sum() / (SFS.C(self.n) @ self.M(history)).sum()
-
-    def L(self, history: History,
+    def L(self, history: JointHistory,
           λ_η: np.float = 0, λ_μ: np.float = 0,
           h: np.float = 1) -> np.float:
         '''loss: negative log likelihood (Poisson random field) and
@@ -233,88 +262,68 @@ class SFS():
         λ_μ: regularization strength on μ
         h: relative increase in penalty as we approach coalescent horizon
         '''
-        Γ = self.Γ(history.η(), h)
-        ρ_η = ((Γ @ history.y)**2).sum()
+        Γ = self.Γ(history.η, h)
+        y = history.η.vals
+        z = history.μ.vals
+        ρ_η = ((Γ @ y)**2).sum()
         # ρ_μ = ((np.diff(history.z))**2).sum()
         # ρ_μ = (history.z**2).sum()
         # ρ_μ = (np.abs(np.diff(history.z))).sum()
-        ρ_μ = ((Γ @ history.z)**2).sum()
+        ρ_μ = ((Γ @ z)**2).sum()
         return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
 
-    def infer_μ(self, history: History = None, λ_μ: np.float = 0,
-                h: np.float = 1) -> History:
+    def infer_μ(self,
+                η: PiecewiseConstantHistory = None,
+                λ_μ: np.float = 0,
+                h: np.float = 1) -> PiecewiseConstantHistory:
         '''infer the μ history given the simulated sfs and η history
 
-        history: η history
+        η: η history
         λ_μ: regularization strength
         h: relative increase in penalty as we approach coalescent horizon
         '''
-        if history.z is not None:
-            raise ValueError('history must be only η, not μ. Consider using '
-                             'the History.η() method on a joint history')
-        # initialize joint history using constant MLE
-        history = History(history.t[1:-1],
-                          history.y,
-                          self.constant_μ_MLE(history) * np.ones_like(history.y))
-        def f(z) -> np.float:
-            return self.L(History(history.t[1:-1], history.y, z),
-                          λ_η=0, λ_μ=λ_μ, h=h)
-
-        result = minimize(f,
-                          history.z,
+        result = minimize(lambda z: self.L(JointHistory(η, PiecewiseConstantHistory(η.change_points, z)), λ_η=0, λ_μ=λ_μ, h=h),
+                          self.constant_μ_MLE(η).vals,
                           # jac=gradF,
                           method='L-BFGS-B',
                           options=dict(
                                        ftol=1e-10,
                                        maxfun=np.inf
                                        ),
-                          bounds=[(1e-10, None)] * history.m
+                          bounds=[(1e-10, None)] * η.m()
                           )
         if not result.success:
             print(result.message)
-        return History(history.t[1:-1], y=history.y, z=result.x)
+        return JointHistory(η, PiecewiseConstantHistory(η.change_points,
+                                                        result.x))
 
-    #
-    # def plot(self, history) -> None:
-    #     '''plot the true η(t), and optionally a fitted one y if self.y_inferred
-    #     is not None
-    #     '''
-    #     fig, axes = plt.subplots(1, 2, figsize=(7, 3))
-    #     axes[0].step(self.t[:-1], self.y_true, 'k', where='post', label='true')
-    #     if hasattr(self, 'y_inferred'):
-    #         axes[0].step(self.t[:-1], self.y_inferred, 'r', where='post',
-    #                      label='inverted')
-    #     if hasattr(self, '_λ_diff'):
+    def plot(self, history: JointHistory = None):
+        '''plot the SFS data and optionally the expected SFS under history
+
+        history: joint η and μ history
+        '''
+        if history is not None:
+            ξ = self.ξ(history)
+            ξ_lower = poisson.ppf(.025, ξ)
+            ξ_upper = poisson.ppf(.975, ξ)
+            plt.plot(range(1, self.n), ξ, 'r--', label=r'$\xi$')
+            plt.fill_between(range(1, self.n),
+                             ξ_lower, ξ_upper,
+                             facecolor='r', alpha=0.25,
+                             label='inner 95%\nquantile')
+        plt.plot(range(1, len(self.x) + 1), self.x,
+                     'k.', alpha=.25, label=r'data')
+        plt.xlabel('$b$')
+        plt.ylabel(r'$ξ_b$')
+        plt.xscale('log')
+        plt.yscale('symlog')
+        plt.legend()
+        plt.legend(loc=0)
+
+
+
     #         ax_right = axes[0].twinx()
     #         ax_right.set_ylabel('$\\λ_{\\eta\'}$', color='tab:blue')
     #         ax_right.plot(self.t, λ_diff, 'tab:blue')
     #         ax_right.tick_params(axis='y', labelcolor='tab:blue')
     #         ax_right.set_yscale('log')
-    #     axes[0].set_xlabel('$t$')
-    #     axes[0].set_ylabel('$\\eta(t)$')
-    #     axes[0].legend()
-    #     axes[0].legend(loc=0)
-    #     axes[0].set_ylim([0, None])
-    #     axes[0].set_xscale('symlog')
-    #     # axes[0].set_yscale('log')
-    #
-    #     if hasattr(self, 'y_inferred'):
-    #         xi = self.xi(self.y_inferred)
-    #         xi_lower = poisson.ppf(.025, xi)
-    #         xi_upper = poisson.ppf(.975, xi)
-    #         axes[1].plot(range(1, len(xi) + 1), xi, 'r--', label=r'$\xi$')
-    #         axes[1].fill_between(range(1, len(xi) + 1),
-    #                              xi_lower, xi_upper,
-    #                              facecolor='r', alpha=0.25,
-    #                              label='inner 95%\nquantile')
-    #     axes[1].plot(range(1, len(self.x) + 1), self.x,
-    #                  'k.', alpha=.25, label=r'simulated')
-    #     axes[1].set_xlabel('$i$')
-    #     axes[1].set_ylabel(r'$\xi_i$')
-    #     axes[1].set_xscale('log')
-    #     axes[1].set_yscale('symlog')
-    #     axes[1].legend()
-    #     axes[1].legend(loc=0)
-    #
-    #     plt.tight_layout()
-    #     plt.show()
