@@ -7,7 +7,7 @@ Dope bible, manga, and hardcore punk things that share this name: https://en.wik
 
 Dependencies
 ---
-  - python3.6+
+  - python3.7+
   - numpy
   - scipy
   - matplotlib
