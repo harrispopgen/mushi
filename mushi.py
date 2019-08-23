@@ -25,6 +25,7 @@ class History():
         if any(np.diff(t) <= 0) or np.isinf(t).sum() or any(t <= 0):
             raise ValueError('t must be increasing, finite, and positive')
         self.t = np.concatenate(([0], t, [np.inf]))
+        self.m = len(self.t) - 1
         if y is not None:
             if len(y) != len(t) + 1:
                 raise ValueError(f'len(t) = {len(t)} implies {len(t) + 1} '
@@ -132,12 +133,11 @@ class SFS():
 
         return self._binom_array_recip \
                @ np.cumprod(u[np.newaxis, :-1], axis=1) ** self._binom_vec[:, np.newaxis] \
-               @ (np.eye(len(history.y), k=0) - np.eye(len(history.y), k=-1)) \
+               @ (np.eye(history.m, k=0) - np.eye(history.m, k=-1)) \
                @ np.diag(history.y)
 
-    @staticmethod
     @lru_cache(maxsize=1)
-    def Γ(history: History, h: np.float = 1) -> np.ndarray:
+    def Γ(self, history: History, h: np.float = 1) -> np.ndarray:
         '''The Gamma matrix defined in the text
 
         h: relative increase in penalty as we approach coalescent horizon
@@ -146,9 +146,19 @@ class SFS():
         s = np.diff(history.t)
         u = np.exp(-s / history.y)
         u = np.insert(u, 0, 1)
-        return np.diag(np.sqrt(h - (h - 1) * np.cumprod(u[:-1]))
-                       ) @ (np.diag(np.ones_like(history.y), k=0)
-                             - np.diag(np.ones_like(history.y[:-1]), k=-1))
+
+        # the A_2j product of these terms
+        l = np.array(range(2, self.n + 1))[:, np.newaxis]
+        with np.errstate(divide='ignore'):
+            A2_terms = l * (l-1) / (l * (l-1) - l.T * (l.T-1))
+        np.fill_diagonal(A2_terms, 1)
+        A2 = np.prod(A2_terms, axis=0)
+
+        return (np.diag(np.insert(h * np.ones(history.m - 1), 0, h - 1)) + (1 - h)
+                * np.diagflat(A2[np.newaxis, :]
+                          @ np.cumprod(u[np.newaxis, :-1],
+                                       axis=1) ** self._binom_vec[:, np.newaxis])) \
+               @ (np.eye(history.m, k=0) - np.eye(history.m, k=-1))
 
     def ξ(self, history: History) -> np.ndarray:
         '''expected sfs vector
@@ -178,12 +188,12 @@ class SFS():
         λ_μ: regularization strength on μ
         h: relative increase in penalty as we approach coalescent horizon
         '''
-        Γ = SFS.Γ(history.η(), h)
+        Γ = self.Γ(history.η(), h)
         ρ_η = ((Γ @ history.y)**2).sum()
-        ρ_μ = ((np.diff(history.z))**2).sum()
+        # ρ_μ = ((np.diff(history.z))**2).sum()
         # ρ_μ = (history.z**2).sum()
         # ρ_μ = (np.abs(np.diff(history.z))).sum()
-        # ρ_μ = ((Γ @ history.z)**2).sum()
+        ρ_μ = ((Γ @ history.z)**2).sum()
         return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
 
     def infer_μ(self, history: History, λ_μ: np.float = 0, h: np.float = 1):
@@ -196,7 +206,7 @@ class SFS():
         def f(z) -> np.float:
             _history = history
             _history.z = z
-            return self.L(_history, λ_η=0, λ_μ=λ_μ)
+            return self.L(_history, λ_η=0, λ_μ=λ_μ, h=h)
 
         result = minimize(f,
                           history.z,
@@ -206,7 +216,7 @@ class SFS():
                                        # ftol=1e-10,
                                        maxfun=np.inf
                                        ),
-                          bounds=[(1e-10, None)] * len(history.z)
+                          bounds=[(1e-10, None)] * history.m
                           )
         if not result.success:
             raise ValueError(result.message)
