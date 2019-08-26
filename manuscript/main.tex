@@ -5,7 +5,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{bbm}
-
+\usepackage{graphicx}
 \usepackage{hyperref}
 
 \DeclareMathOperator{\erf}{erf}
@@ -45,7 +45,7 @@ This is similar in spirit to Kelley's simulation-based approach (which assumed t
 
 The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
 We will retrace the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
-We will make use of important results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} which facilitate numerical computation under this model, and formulate the expected 3-SFS under given demographic and mutation spectrum histories following the notation of \cite{Rosen2018-bb} for the expected SFS with a constant mutation process.
+We will make use of important results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} which facilitate numerical computation under this model, and formulate the expected 3-SFS under piecewise constant demographic and mutation spectrum histories building on the notation of \cite{Rosen2018-bb} for the expected SFS with a piecewise constant demographic history and constant mutation process.
 
 
 \section{Model}\label{sec:model}
@@ -58,6 +58,17 @@ This is tantamount to an (uncountably) infinite sites assumption, with the unit 
 Further suppose that mutation rate is not constant, but a specified function of time $\mu(t) \ge 0$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
 A given line in the coalescent tree then acquires mutations on a genomic subinterval $(x,x+\delta x)$ at rate $\mu(t)\delta x$.
 The following argument can be generalized to a nonuniform distribution of mutation intensity over the genome without changing the results.
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/model}
+\caption{Schematic of the marked Poisson process model with $n=4$.
+We condition on coalescent times $T_4=t_4,T_3=t_3,T_2=t_2$ and consider mutation intensity function $\mu(t)$.
+Red dots indicate mutation events placed by time $t$, genomic position $x$, and coalescent line (which are depicted as extruded in the genomic coordinate axis, grey rectangles).
+The probability that a differential element $dxdt$ on a given sheet contains a mutation is proportional to the instantaneous mutation intensity $\mu(t)$.
+}
+\label{fig:model}
+\end{figure}
 
 Let rv $\mathcal{E}_{\delta x, b}$ denote the event that a mutation subtending $b$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (identical for all $x$, given the uniform labeling distribution).
 Let $I_k$ denote the $k$th intercoalescent time interval, i.e.\ $I_n = (0, T_n),\ I_{n-1} = (T_n, T_{n-1}),\ \dots,\ I_2 = (T_3, T_2)$.
@@ -330,7 +341,7 @@ To optimize with $p=1$ we use the alternating direction method of multipliers (A
 Todo:
 \begin{itemize}
 \item repeat 1KG analysis like in \cite{Harris2017-fw}, see if we recapitulate Kelley's simulation-based pulse results
-\item cluster triplet time series to see if we pull in minor components. Dynamic time warping?
+\item cluster triplet time series to see if we pull in minor components.
 \end{itemize}
 
 
