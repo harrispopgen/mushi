@@ -6,7 +6,6 @@ import numpy as np
 from scipy.special import binom
 from functools import lru_cache
 from scipy.stats import poisson
-from scipy.special import gammaln
 from matplotlib import pyplot as plt
 from scipy.optimize import minimize
 
@@ -28,9 +27,9 @@ class PiecewiseConstantHistory():
             raise ValueError('change_points must be increasing, finite, and '
                              'positive')
         if len(self.vals) != len(self.change_points) + 1:
-            raise ValueError(f'len(change_points) = {len(self.change_points)} implies '
-                             f'{len(self.change_points) + 1} epochs, but len(vals) = '
-                             f'{len(self.vals)}')
+            raise ValueError(f'len(change_points) = {len(self.change_points)}'
+                             f' implies {len(self.change_points) + 1} epochs,'
+                             f' but len(vals) = {len(self.vals)}')
         if any(self.vals <= 0) or np.isinf(self.vals).sum():
             raise ValueError('elements of vals must be finite and positive')
 
@@ -89,19 +88,17 @@ class JointHistory():
         if fig:
             axes = fig.axes
         else:
-            fig, axes = plt.subplots(2, 1, sharex=True)
+            fig, axes = plt.subplots(2, 1, sharex=True, figsize=(6, 6))
         plt.sca(axes[0])
         self.η.plot(**kwargs)
         plt.ylabel('$η(t)$')
-        plt.ylim([0, None])
-        plt.xscale('symlog')
 
         plt.sca(axes[1])
         self.μ.plot(**kwargs)
         plt.xlabel('$t$')
+        plt.xscale('symlog')
         plt.ylabel('$μ(t)$')
         plt.ylim([0, None])
-        plt.xscale('symlog')
 
         return fig
 
@@ -209,6 +206,7 @@ class SFS():
         u = np.insert(u, 0, 1)
 
         # the A_2j product of these terms
+        # NOTE: using letter  "l" as a variable name to match text
         l = np.array(range(2, self.n + 1))[:, np.newaxis]
         with np.errstate(divide='ignore'):
             A2_terms = l * (l-1) / (l * (l-1) - l.T * (l.T-1))
@@ -217,28 +215,45 @@ class SFS():
 
         return (np.diag(np.insert(h * np.ones(η.m() - 1), 0, h - 1)) + (1 - h)
                 * np.diagflat(A2[np.newaxis, :]
-                          @ np.cumprod(u[np.newaxis, :-1],
-                                       axis=1) ** self._binom_vec[:, np.newaxis])) \
-               @ (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
+                              @ np.cumprod(u[np.newaxis, :-1],
+                                           axis=1)
+                              ** self._binom_vec[:, np.newaxis])) \
+            @ (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
 
-    def ξ(self, history: JointHistory) -> np.ndarray:
+    def ξ(self, history: JointHistory, grad_μ: bool = False) -> np.ndarray:
         '''expected sfs vector
+
+        history: η and μ joint history
+        grad_μ: flag to return jacobian wrt history.μ
         '''
         z = history.μ.vals
-        return self.C @ self.M(history.η) @ z
+        CM = self.C @ self.M(history.η)
+        if grad_μ:
+            return CM @ z, CM
+        return CM @ z
 
     def simulate(self, history: JointHistory) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
+
+        history: η and μ joint history
         '''
         self.x = poisson.rvs(self.ξ(history))
 
-    def ℓ(self, history: JointHistory) -> np.float:
+    def ℓ(self, history: JointHistory, grad_μ: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
+
+        history: η and μ joint history
+        grad_μ: flag to return gradient wrt history.μ
         '''
         if self.x is None:
             raise ValueError('use simulate() to generate data first')
-        ξ = self.ξ(history)
-        return (self.x * np.log(ξ) - ξ - gammaln(self.x + 1)).sum()
+        if grad_μ:
+            ξ, J_μξ = self.ξ(history, grad_μ=True)
+            ℓ = poisson.logpmf(self.x, ξ).sum()
+            dℓdμ = (((self.x / ξ)[:, np.newaxis] - 1) * J_μξ).sum(axis=0)
+            return ℓ, dℓdμ
+        else:
+            return poisson.logpmf(self.x, self.ξ(history)).sum()
 
     def constant_μ_MLE(self, η: PiecewiseConstantHistory
                        ) -> PiecewiseConstantHistory:
@@ -251,9 +266,40 @@ class SFS():
         z0 = (self.x.sum() / (SFS.C(self.n) @ self.M(η)).sum())
         return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
 
+    def ρ_η(self, history: JointHistory, h: np.float = 1,
+            grad_η: bool = False):
+        '''η regulizer described in the text
+
+        history: η and μ joint history
+        h: relative increase in penalty as we approach coalescent horizon
+        grad_η: flag to return gradient wrt history.η
+        '''
+        Γ = self.Γ(history.η, h)
+        y = history.η.vals
+        ρ_η = ((Γ @ y)**2).sum()
+        if grad_η:
+            raise NotImplementedError('gradient of ρ_η not implemented')
+        return ρ_η
+
+    def ρ_μ(self, history: JointHistory, h: np.float = 1,
+            grad_μ: bool = False):
+        '''μ regulizer described in the text
+
+        history: η and μ joint history
+        h: relative increase in penalty as we approach coalescent horizon
+        grad_μ: flag to return gradient wrt history.μ
+        '''
+        Γ = self.Γ(history.η, h)
+        z = history.μ.vals
+        ρ_μ = ((Γ @ z)**2).sum()
+        if grad_μ:
+            dρ_μdμ = 2 * Γ.T @ Γ @ z
+            return ρ_μ, dρ_μdμ
+        return ρ_μ
+
     def L(self, history: JointHistory,
           λ_η: np.float = 0, λ_μ: np.float = 0,
-          h: np.float = 1) -> np.float:
+          h: np.float = 1, grad_μ: bool = False) -> np.float:
         '''loss: negative log likelihood (Poisson random field) and
         regularization as described in the text
 
@@ -261,15 +307,16 @@ class SFS():
         λ_η: regularization strength on η
         λ_μ: regularization strength on μ
         h: relative increase in penalty as we approach coalescent horizon
+        grad_μ: flag to return gradient wrt history.μ
         '''
-        Γ = self.Γ(history.η, h)
-        y = history.η.vals
-        z = history.μ.vals
-        ρ_η = ((Γ @ y)**2).sum()
-        # ρ_μ = ((np.diff(history.z))**2).sum()
-        # ρ_μ = (history.z**2).sum()
-        # ρ_μ = (np.abs(np.diff(history.z))).sum()
-        ρ_μ = ((Γ @ z)**2).sum()
+        ρ_η = self.ρ_η(history, h)
+        if grad_μ:
+            ρ_μ, dρ_μdμ = self.ρ_μ(history, h, grad_μ=True)
+            ℓ, dℓdμ = self.ℓ(history, grad_μ=True)
+            L = -ℓ + λ_η * ρ_η + λ_μ * ρ_μ
+            dLdμ = -dℓdμ + λ_μ * dρ_μdμ
+            return L, dLdμ
+        ρ_μ = self.ρ_μ(history, h)
         return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
 
     def infer_μ(self,
@@ -282,18 +329,26 @@ class SFS():
         λ_μ: regularization strength
         h: relative increase in penalty as we approach coalescent horizon
         '''
-        result = minimize(lambda z: self.L(JointHistory(η, PiecewiseConstantHistory(η.change_points, z)), λ_η=0, λ_μ=λ_μ, h=h),
+        # function to minimize
+        def f(z):
+            history = JointHistory(η,
+                                   PiecewiseConstantHistory(η.change_points,
+                                                            z))
+            return self.L(history, λ_η=0, λ_μ=λ_μ, h=h, grad_μ=True)
+        result = minimize(f,
                           self.constant_μ_MLE(η).vals,
-                          # jac=gradF,
+                          jac=True,
                           method='L-BFGS-B',
                           options=dict(
-                                       ftol=1e-10,
-                                       maxfun=np.inf
+                                       # ftol=1e-10,
+                                       maxfun=np.inf,
+                                       maxiter=np.inf
                                        ),
                           bounds=[(1e-10, None)] * η.m()
                           )
         if not result.success:
             print(result.message)
+
         return JointHistory(η, PiecewiseConstantHistory(η.change_points,
                                                         result.x))
 
@@ -312,18 +367,9 @@ class SFS():
                              facecolor='r', alpha=0.25,
                              label='inner 95%\nquantile')
         plt.plot(range(1, len(self.x) + 1), self.x,
-                     'k.', alpha=.25, label=r'data')
+                 'k.', alpha=.25, label=r'data')
         plt.xlabel('$b$')
         plt.ylabel(r'$ξ_b$')
         plt.xscale('log')
         plt.yscale('symlog')
         plt.legend()
-        plt.legend(loc=0)
-
-
-
-    #         ax_right = axes[0].twinx()
-    #         ax_right.set_ylabel('$\\λ_{\\eta\'}$', color='tab:blue')
-    #         ax_right.plot(self.t, λ_diff, 'tab:blue')
-    #         ax_right.tick_params(axis='y', labelcolor='tab:blue')
-    #         ax_right.set_yscale('log')
