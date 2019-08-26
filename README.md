@@ -13,6 +13,7 @@ Dependencies
   - matplotlib
   - jupyter
   - scons
+  - [prox-tv](https://github.com/albarji/proxTV)
 
 Writing
 ---
