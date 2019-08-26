@@ -7,7 +7,7 @@ from scipy.special import binom
 from functools import lru_cache
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
-from scipy.optimize import minimize
+import prox_tv as ptv
 
 
 @dataclass(frozen=True)
@@ -266,91 +266,39 @@ class SFS():
         z0 = (self.x.sum() / (SFS.C(self.n) @ self.M(η)).sum())
         return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
 
-    def ρ_η(self, history: JointHistory, h: np.float = 1,
-            grad_η: bool = False):
-        '''η regulizer described in the text
-
-        history: η and μ joint history
-        h: relative increase in penalty as we approach coalescent horizon
-        grad_η: flag to return gradient wrt history.η
-        '''
-        Γ = self.Γ(history.η, h)
-        y = history.η.vals
-        ρ_η = ((Γ @ y)**2).sum()
-        if grad_η:
-            raise NotImplementedError('gradient of ρ_η not implemented')
-        return ρ_η
-
-    def ρ_μ(self, history: JointHistory, h: np.float = 1,
-            grad_μ: bool = False):
-        '''μ regulizer described in the text
-
-        history: η and μ joint history
-        h: relative increase in penalty as we approach coalescent horizon
-        grad_μ: flag to return gradient wrt history.μ
-        '''
-        Γ = self.Γ(history.η, h)
-        z = history.μ.vals
-        ρ_μ = ((Γ @ z)**2).sum()
-        if grad_μ:
-            dρ_μdμ = 2 * Γ.T @ Γ @ z
-            return ρ_μ, dρ_μdμ
-        return ρ_μ
-
-    def L(self, history: JointHistory,
-          λ_η: np.float = 0, λ_μ: np.float = 0,
-          h: np.float = 1, grad_μ: bool = False) -> np.float:
-        '''loss: negative log likelihood (Poisson random field) and
-        regularization as described in the text
-
-        history: η and μ joint history
-        λ_η: regularization strength on η
-        λ_μ: regularization strength on μ
-        h: relative increase in penalty as we approach coalescent horizon
-        grad_μ: flag to return gradient wrt history.μ
-        '''
-        ρ_η = self.ρ_η(history, h)
-        if grad_μ:
-            ρ_μ, dρ_μdμ = self.ρ_μ(history, h, grad_μ=True)
-            ℓ, dℓdμ = self.ℓ(history, grad_μ=True)
-            L = -ℓ + λ_η * ρ_η + λ_μ * ρ_μ
-            dLdμ = -dℓdμ + λ_μ * dρ_μdμ
-            return L, dLdμ
-        ρ_μ = self.ρ_μ(history, h)
-        return -self.ℓ(history) + λ_η * ρ_η + λ_μ * ρ_μ
-
     def infer_μ(self,
                 η: PiecewiseConstantHistory = None,
-                λ_μ: np.float = 0,
-                h: np.float = 1) -> PiecewiseConstantHistory:
+                λ: np.float = 0, α: np.float = .99,
+                h: np.float = 1, s: np.float = .01, steps: int = 100) -> PiecewiseConstantHistory:
         '''infer the μ history given the simulated sfs and η history
 
         η: η history
-        λ_μ: regularization strength
+        λ: regularization strength
+        α: relative penalty on L1 vs L2
         h: relative increase in penalty as we approach coalescent horizon
+        s: step size parameter for proximal gradient descent
+        steps: number of proximal gradient descent steps
         '''
-        # function to minimize
-        def f(z):
-            history = JointHistory(η,
-                                   PiecewiseConstantHistory(η.change_points,
-                                                            z))
-            return self.L(history, λ_η=0, λ_μ=λ_μ, h=h, grad_μ=True)
-        result = minimize(f,
-                          self.constant_μ_MLE(η).vals,
-                          jac=True,
-                          method='L-BFGS-B',
-                          options=dict(
-                                       # ftol=1e-10,
-                                       maxfun=np.inf,
-                                       maxiter=np.inf
-                                       ),
-                          bounds=[(1e-10, None)] * η.m()
-                          )
-        if not result.success:
-            print(result.message)
+        assert λ >= 0, 'λ must be nonnegative'
+        assert 0 <= α <= 1, 'α must be in the unit interval'
 
-        return JointHistory(η, PiecewiseConstantHistory(η.change_points,
-                                                        result.x))
+        # Tinkhonov matrix defined in the text
+        Γ = self.Γ(η, h)
+
+        # gradient of differentiable piece of loss function
+        def grad_f(z):
+            history = JointHistory(η,
+                                   PiecewiseConstantHistory(η.change_points, z)
+                                   )
+            return -self.ℓ(history, grad_μ=True)[1] + λ * (1 - α) * Γ.T @ Γ @ z
+
+        # initialize using constant μ history MLE
+        z = self.constant_μ_MLE(η).vals
+        for _ in range(steps):
+            w = λ * α * np.diag(Γ @ np.tri(η.m()))[1:]
+            z = ptv.tv1w_1d(z - s * grad_f(z), w)
+
+        return JointHistory(η, PiecewiseConstantHistory(η.change_points, z))
 
     def plot(self, history: JointHistory = None):
         '''plot the SFS data and optionally the expected SFS under history
