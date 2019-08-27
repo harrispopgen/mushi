@@ -322,7 +322,7 @@ u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
 
 Our fused LASSO \citep{tibs} loss function is then
 \begin{align}
-L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\rho_\eta(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\eta(\boldsymbol y, h, 2)\right) + \lambda_\mu \left(\alpha\rho_\mu(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\mu(\boldsymbol y, h, 2)\right),
+L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\rho_\eta(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\eta(\boldsymbol y, h, 2)\right) + \lambda_\mu \left(\alpha\rho_\mu(\boldsymbol y, \boldsymbol z, h, 1) + \frac{(1-\alpha)}{2}\rho_\mu(\boldsymbol y, \boldsymbol z, h, 2)\right),
 \end{align}
 where $\lambda_\eta$ and $\lambda_\mu$ tune the regularization strength on $\eta$ and $\mu$, respectively, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
 
@@ -346,7 +346,6 @@ Todo:
 \section{Discussion}\label{sec:discussion}
 
 \section{Acknowledgements}\label{sec:ack}
-Jean Feng suggested ADMM (if we end up using that).
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
