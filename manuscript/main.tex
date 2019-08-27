@@ -42,22 +42,23 @@ We formulate inference of mutation spectrum histories from the 3-SFS as a linear
 \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
 We develop coalescent theory for the dependence of the expected 3-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation rates as a function of time into the past).
 This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{Tennessen2012-dq}), but is much faster, more flexibly parameterized, and extendable to joint inference of demographic and mutation spectrum histories.
+%WD do we actually do joint inference? If not, maybe save for discussion
+
+\section{Model}\label{sec:model}
 
 The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
 We will retrace the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
 We will make use of important results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} which facilitate numerical computation under this model, and formulate the expected 3-SFS under piecewise constant demographic and mutation spectrum histories building on the notation of \cite{Rosen2018-bb} for the expected SFS with a piecewise constant demographic history and constant mutation process.
 
-
-\section{Model}\label{sec:model}
-
 \subsection{The expected SFS given demographic and mutation rate histories}\label{sec:model:xi}
 
-Suppose $n$ haplotypes are sampled in the present, and let rvs $T = T_2,\dots,T_n$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
+Suppose $n$ haplotypes are sampled in the present, and let rvs $(T = T_2,\dots,T_n)$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
 As in \cite{Griffiths1998-qf} \S3, we consider a marked Poisson process in which every mutation is assigned a random label drawn iid from the uniform distribution on $(0,1)$.
-This is tantamount to an (uncountably) infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
-Further suppose that mutation rate is not constant, but a specified function of time $\mu(t) \ge 0$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
+This is tantamount to the infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
+%WD Kam suggests replacing below with $\mu^* \ge \mu(t) \ge 0$, but I don't get why
+Further suppose that mutation rate is not constant, but a specified function of time $0\le \mu(t)<\infty$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
 A given line in the coalescent tree then acquires mutations on a genomic subinterval $(x,x+\delta x)$ at rate $\mu(t)\delta x$.
-The following argument can be generalized to a nonuniform distribution of mutation intensity over the genome without changing the results.
+The following argument can be generalized to allow the labelling distribution to be nonuniform over the unit interval, but the same results follow.
 
 \begin{figure}
 \centering
@@ -70,31 +71,32 @@ The probability that a differential element $dxdt$ on a given sheet contains a m
 \label{fig:model}
 \end{figure}
 
-Let rv $\mathcal{E}_{\delta x, b}$ denote the event that a mutation subtending $b$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (identical for all $x$, given the uniform labeling distribution).
+Let rv $\mathcal{E}_{\delta x, b}$ denote the event that a mutation present in $b\in\{1, 2, \dots, n-1\}$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (the probability of this event is independent of $x$, given the uniform labeling distribution).
 Let $I_k$ denote the $k$th intercoalescent time interval, i.e.\ $I_n = (0, T_n),\ I_{n-1} = (T_n, T_{n-1}),\ \dots,\ I_2 = (T_3, T_2)$.
 Let rv $\mathcal{E}_{\delta x, b, k}$ denote the event that the mutation $\mathcal{E}_{\delta x, b}$ occurred during $I_k$.
 For small $\delta x$ and finite $\mu(t)$ we have
 \begin{align*}
 \mathbbm{P}(\mathcal{E}_{\delta x, b}\mid T) &= \sum_{k=2}^n \mathbbm{P}(\mathcal{E}_{\delta x, b, k}\mid T)\\
-&= \sum_{k=2}^n p_{n,k}(b)\left(k\delta x\int_{t\in I_k}\mu(t)dt + O(\delta x)\right),
+&= \sum_{k=2}^n p_{n,k}(b)\left(k\delta x\int_{t\in I_k}\mu(t)dt + O((\delta x)^2)\right),
 \end{align*}
 where
 \begin{equation}
 \label{eqn:p}
 p_{n,k}(b) = \frac{\binom{n-b-1}{k-2}}{\binom{n-1}{k-1}}
 \end{equation}
-is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9), and the quantity in parenthesis is the probability that a mutation arose during the $k$th intercoalescent interval in a small genomic interval of size $\delta x$.
+is the probability that a mutant that arose when there were $k$ ancestral lines of $n$ sampled haplotypes will be present in $b$ of them (see \cite{Griffiths1998-qf} eqn 1.9), and the quantity in parentheses is the probability that a mutation arose during the $k$th intercoalescent interval in a small genomic interval of size $\delta x$.
 Marginalizing $T$ gives
 \begin{align*}
-\mathbbm{P}(\mathcal{E}_{\delta x, b}) &\simeq \delta x\sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right].
+\mathbbm{P}(\mathcal{E}_{\delta x, b}) &= \delta x\sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right] + O((\delta x)^2).
 \end{align*}
 For small $\delta x$, each such interval contains zero or one mutations, so the expected number of mutations subtending $b$ haplotypes (i.e.\ the $b$th component of the SFS) is
 \[
-\xi_b = \int d\mathbbm{P}(\mathcal{E}_{dx, b}) = \sum_{k=2}^n k p_{n,k}(b)\mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right]\nonumber
+\xi_b = \int_0^1 \mathbbm{P}(\mathcal{E}_{dx, b})dx = \sum_{k=2}^n k p_{n,k}(b)\mathbbm{E}_T\left[\int_{t\in I_k}\mu(t)dt\right]\nonumber
 \]
-Using the explicit bounds of the intercoalescent intervals gives
+Using the explicit bounds of the intercoalescent intervals, $I_{k} = (T_{k+1}, T_k)$, gives
 \begin{align}
 \label{eqn:xi}
+%WD Kam noted an "off by -1 error" below, but I think it's correct as is
 \xi_b &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=2}^{n-1} k p_{n,k}(b) \mathbbm{E}_{T_{k+1}}\left[\int_0^{T_{k+1}}\mu(t)dt\right]\nonumber\\
 &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=3}^{n} (k-1) p_{n,k-1}(b) \mathbbm{E}_{T_{k}}\left[\int_0^{T_k}\mu(t)dt\right]\nonumber\\
 &= \sum_{k=2}^n B_{b,k} \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right],
@@ -136,16 +138,18 @@ where in the last line we've exchanged integration order and defined the inhomog
 \label{eqn:r}
 r_j(t) \equiv \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]
 \end{equation}
-corresponding to density $q_j(t)$.
+corresponding to density $q_j(t)$ (that this is the appropriate survival function can be seen by considering the limit of a sequence of Bernoulli failures).
 
 Using \eqref{eqn:exp} in \eqref{eqn:xi} gives
 \begin{align}
 \label{eqn:xi2}
 \xi_b &= \sum_{k=2}^n B_{b,k} \sum_{j=k}^n A_{k,j}\int_0^\infty r_j(t)\mu(t)dt\nonumber\\
-&= \sum_{j=2}^n \left(\sum_{k=2}^j B_{b,k} A_{k,j}\right) \int_0^\infty r_j(t)\mu(t)dt.
+&= \sum_{j=2}^n \left(\sum_{k=2}^j B_{b,k} A_{k,j}\right) \int_0^\infty r_j(t)\mu(t)dt,
 \end{align}
+where we've exchanged summation order in the last line.
 
-We then have a manifestly linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
+We then have a linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
+%WD Kam suggests a linear operator notation that combines the integral on t with the summation on j. Note this operator would be (nonlinearly) dependent on \eta
 \begin{equation}
 \label{eqn:xivec}
 \boldsymbol\xi = C \boldsymbol d,
@@ -157,14 +161,15 @@ C_{b,j} \equiv \sum_{k=2}^j B_{b,k} A_{k,j}
 is constant wrt $\mu$ \emph{and} $\eta$, and
 \begin{equation}
 \label{eqn:d}
-d_j \equiv \int_0^\infty r_j(t)\mu(t)dt
+d_j \equiv \int_0^\infty r_j(t)\mu(t)dt = \int_0^\infty \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]\mu(t)dt
 \end{equation}
-has linear (nonlinear) dependence on $\mu$ ($\eta$).
+is a linear functional of $\mu$ and a nonlinear functional of $\eta$.
 
 \subsection{Computing the elements of $C$}\label{sec:model:C}
 
-We next develop an efficient recursive procedure for computing $C$.
-Using \ref{eqn:B}
+%WD Kam suggests just doing C = B A, but computing the elements of B and A would seem computationally infeasible
+We next develop an efficient recursive procedure for computing the $(n-1)\times(n-1)$ matrix $C$.
+Using \eqref{eqn:B}
 \begin{align*}
 C_{b,j} &= \sum_{k=2}^j k p_{n,k}(b) A_{k,j} - \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}\\
 &= W_{b,j}^{(1)} - W_{b,j}^{(2)},
@@ -180,8 +185,9 @@ W_{b,j}^{(2)} &\equiv \sum_{k=3}^j (k-1) p_{n,k-1}(b) A_{k,j}.
 \[
 A_{k,j} = \frac{n! (n-1)!}{(j+n-1)! (n-j)!} \frac{(2 j-1)}{j (j-1)} \frac{(j+k-2)!}{ (k-1)! (k-2)! (j-k)! }(-1)^{j-k},
 \]
-so, given the form of $p_{n,k}(b)$ in \ref{eqn:p} it's clear that \ref{eqn:W1} and \ref{eqn:W2} are definite sums over geometric terms.
-Zeilberger's algorithm \citep{petkovvsek1996b, paule1995mathematica} can thus be used to yield the following procedurally generated second-order recursions in $j$:
+so, given the form of $p_{n,k}(b)$ in \ref{eqn:p} it's clear that \eqref{eqn:W1} and \eqref{eqn:W2} are definite sums over geometric terms.
+Zeilberger's algorithm, which finds polynomial recurrences for definite sums of hypergeometric terms \citep{petkovvsek1996b, paule1995mathematica}, can thus be used to yield the following procedurally generated second-order recursions in $j$:
+%WD need to wrap this eqn, as it runs will beyond the margin. Also make an appendix at some point for these
 \begin{align*}
 &W_{b,2}^{(1)} = \frac{6}{(n+1)}\\
 &W_{b,3}^{(1)} = \frac{10(5n-6b-4)}{(n+2)(n+1)}\\
@@ -197,16 +203,19 @@ This completes the framing of mutation rate inference as a linear inverse proble
 
 \subsection{Finite dimensional parameterization of $\eta(t)$ and $\mu(t)$}\label{sec:model:pcsws}
 
-Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)) let $R_\eta(t) \equiv \int_0^t\frac{dx}{\eta(x)}$, and substitute $\tau \equiv R_\eta(t)$ in \ref{eqn:d} to give
+%WD Kam describes this discretization as ad hoc, but I'm pretty sure this is your textbook Riemann sum with rectangular partitions. We could do fancier quadrature, but then we'll be less able to lean on previous work (i.e. Rosen et al.)
+
+Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)) let $R_\eta(t) \equiv \int_0^t\frac{dx}{\eta(x)}$, and substitute $\tau \equiv R_\eta(t)$ in \eqref{eqn:d} to give
 \begin{equation}
 \label{eqn:d2}
-d_j = \int_0^\infty \exp\left[-\binom{j}{2}\tau\right] \tilde\eta(\tau)\tilde\mu(\tau)dt,
+d_j = \int_0^\infty \exp\left[-\binom{j}{2}\tau\right] \tilde\eta(\tau)\tilde\mu(\tau)d\tau,
 \end{equation}
 where $\tilde\eta(\tau) \equiv \eta(R^{-1}(\tau))$ and $\tilde\mu(\tau) \equiv \mu(R^{-1}(\tau))$.
 We consider piecewise constant $\eta$ and $\mu$ on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:model:xi}).
 We take the epochs as fixed parameters, and in practice make them dense so as to approximate infinite dimensional histories.
 Let $(y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $(z_1,\dots,z_m)$ denote the constant mutation rate $\mu(t)$ during each epoch.
 Let $u_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=1,\dots,m$. %, and $u_0\equiv 1$.
+%WD Kam hates the latin loooooooool. It really does follow by dropping in the y vector and proceeding as in their proof
 With this we can follow the proof of Prop.\ (1) in \cite{Rosen2018-bb} mutatis mutandis to arrive at
 \begin{equation}
 \label{eqn:d3}
@@ -254,6 +263,8 @@ Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse proble
 
 \subsection{Poisson random field log likelihood}\label{sec:model:ell}
 
+%WD Kam suggests calling the data vector \xi instead of x, but I disagree because we're already using \xi for the expected SFS. one could quibble that we already used x in the marked Poisson process at the beginning, but I think our readers have forgotten that by now and this won't confuse
+
 In linkage equilibrium the log likelihood function of the history $(\boldsymbol y, \boldsymbol z)$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ is the Poisson random field \citep{}
 \begin{align}
 \ell(\boldsymbol y, \boldsymbol z) &= \sum_{b=1}^{n-1}\left(x_b\log(\xi_b) - \xi_b - \log(x_b!)\right)\\
@@ -262,78 +273,58 @@ In linkage equilibrium the log likelihood function of the history $(\boldsymbol 
 \end{align}
 where $\log(\cdot)$ and the log-gamma function $\lngamma(\cdot)$ operate on vectors elementwise.
 
-
+%WD does Kam not hate this latin? lulz
 \subsection{Tempora incognita: regularization toward the coalescent horizon}\label{sec:model:loss}
 
+%WD more inverse problem intro
 The inverse problem \eqref{eqn:xivec2} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
-To penalize oscillatory solutions we introduce regularizers on the history derivatives.
+To penalize oscillatory histories we regularize on their derivatives.
 Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
 Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
+%WD This is ad hoc, can we motivate it with a Bayesian argument?
 To do this we should like to use the CDF of the TMRCA to define a ramp of weights.
 At times for which the CDF is near unity, the TMRCA has probably occurred, so we should penalize heavily because the data are not informative about the history at this time.
 At times for which the CDF is small, the TMRCA has probably not yet occurred, and we should penalize less heavily.
-From \eqref{eqn:pi} and \eqref{eqn:r} the CDF is
+From \eqref{eqn:pi} and \eqref{eqn:r} the CDF of $T_2$ is
 \begin{align}
 F_2(t) &\equiv 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
 &= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
 \end{align}
 
-We define $L_p$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ to have unit weight when the CDF is zero, and approach weight $h$ as the CDF approaches unity:
+We define weighted $L_p^p$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ to have unit weight when the CDF is zero, and approach weight $h$ as the CDF approaches unity:
 \begin{align}
-\rho_\eta[\eta(t); h, p] &\equiv \int_0^\infty\left|\left(1+(h-1)F_2(t)\right)\frac{d\eta(t)}{dt}\right|^p dt,\\
-\rho_\mu[\eta(t), \mu(t); h, p] &\equiv \int_0^\infty\left|\left(1+(h-1)F_2(t)\right)\frac{d\mu(t)}{dt}\right|^p dt.
+\rho_\eta[\eta(t); h, p] &\equiv \int_0^\infty\left(1+(h-1)F_2(t)\right)\left|\frac{d\eta(t)}{dt}\right|^p dt,\\
+\rho_\mu[\eta(t), \mu(t); h, p] &\equiv \int_0^\infty\left(1+(h-1)F_2(t)\right)\left|\frac{d\mu(t)}{dt}\right|^p dt.
 \end{align}
 With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and it is straightforward to show (using notation as in section \ref{sec:model:pcsws}) that these become
 \begin{align}
-\rho_\eta(\boldsymbol y, h, p) &= \|\Gamma(\boldsymbol y, h) \boldsymbol y\|_p^p,\\
-\rho_\mu(\boldsymbol y, \boldsymbol z, h, p) &= \|\Gamma(\boldsymbol y, h) \boldsymbol z\|_p^p.
+\rho_\eta(\boldsymbol y, h, p) &= \sum_2^m w_i|y_i-y_{i-1}|^p,\\
+\rho_\mu(\boldsymbol y, \boldsymbol z, h, p) &= \sum_2^m w_i|z_i-z_{i-1}|^p.
 \end{align}
-where
+with weights
 \begin{align}
-\label{eqn:Gamma}
-\Gamma(\boldsymbol y, h) \equiv &\left(
-\begin{bmatrix}
-h-1 &   &   &        & \\
-    & h &   &        & \\
-    &   & h &        & \\
-    &   &   & \ddots & \\
-    &   &   &        & h
-\end{bmatrix}
-+ (1-h)\times
-\text{diag}\left(
+\label{eqn:w}
+\boldsymbol w(\boldsymbol y, h) \equiv
+h \boldsymbol 1 + (1-h)\times
+\left(
 \begin{bmatrix}
 A_{2,2} & A_{2,3} & \hdots & A_{2,n}
 \end{bmatrix}
 \times
 \begin{bmatrix}
-1       & u_1                & \hdots & \prod_{i=1}^{m-1}u_i               \\
-1       & u_1^3              & \hdots & \prod_{i=1}^{m-1}u_i^3             \\
-\vdots  & \vdots             & \ddots & \vdots                                \\
-1       & u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
-\end{bmatrix}\right)\right)\\
-&\times
-\begin{bmatrix}
-1  &      &        &             &       \\
--1 & 1  &        &             &       \\
-     & -1 & 1    &             &       \\
-     &      & \ddots & \ddots      &       \\
-     &      &        & -1 & 1
-\end{bmatrix}.
+u_1                & \hdots & \prod_{i=1}^{m-1}u_i               \\
+u_1^3              & \hdots & \prod_{i=1}^{m-1}u_i^3             \\
+\vdots             & \ddots & \vdots                                \\
+u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
+\end{bmatrix}\right)^\intercal.
 \end{align}
 % Note that if $\boldsymbol y$ is fixed $\Gamma(\boldsymbol y)$ is a constant and thus a proper Tinkhonov matrix.
 
-Our regularized loss function is then
+Our fused LASSO \citep{tibs} loss function is then
 \begin{align}
-L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \rho_\eta(\boldsymbol y, h, p) + \lambda_\mu \rho_\mu(\boldsymbol y, \boldsymbol z, h, p)\\
-&= -\boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) + \boldsymbol 1^\intercal C M(\boldsymbol y) \boldsymbol z + \lambda_\eta \|\Gamma(\boldsymbol y, h) \boldsymbol y\|_p^p + \lambda_\mu \|\Gamma(\boldsymbol y, h) \boldsymbol z\|_p^p
+L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\rho_\eta(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\eta(\boldsymbol y, h, 2)\right) + \lambda_\mu \left(\alpha\rho_\mu(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\mu(\boldsymbol y, h, 2)\right),
 \end{align}
-where $\lambda_\eta$ and $\lambda_\mu$ are parameters tuning the regularization strength, and we've dropped the constant term from $\ell$.
-
-
-\subsection{$p=1$}
-
-To optimize with $p=1$ we use the alternating direction method of multipliers (ADMM) of \cite{Boyd2011-dm}, which allows us to handle the non-differentiable penalty term.
-
+where $\lambda_\eta$ and $\lambda_\mu$ tune the regularization strength on $\eta$ and $\mu$, respectively, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
 
 
 \section{Results}\label{sec:results}
