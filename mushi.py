@@ -2,10 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
-import jax.numpy as np
-import numpy as onp  # original numpy
-from jax import jit, grad
-from jax.experimental.optimizers import adagrad
+import numpy as np
 from scipy.special import binom
 from functools import lru_cache
 from scipy.stats import poisson
@@ -14,8 +11,6 @@ from matplotlib import figure
 from scipy.optimize import minimize_scalar
 import prox_tv as ptv
 
-from jax.config import config
-config.update("jax_enable_x64", True)
 
 @dataclass(frozen=True)
 class PiecewiseConstantHistory():
@@ -163,8 +158,8 @@ class SFS():
 
         n: number of sampled haplotypes
         '''
-        W1 = onp.zeros((n - 1, n - 1))
-        b = onp.arange(1, n - 1 + 1)
+        W1 = np.zeros((n - 1, n - 1))
+        b = np.arange(1, n - 1 + 1)
         # j = 2
         W1[:, 0] = 6 / (n + 1)
         # j = 3
@@ -181,8 +176,8 @@ class SFS():
 
         n: number of sampled haplotypes
         '''
-        W2 = onp.zeros((n - 1, n - 1))
-        b = onp.arange(1, n - 1 + 1)
+        W2 = np.zeros((n - 1, n - 1))
+        b = np.arange(1, n - 1 + 1)
         # j = 2
         W2[:, 0] = 0
         # j = 3
@@ -201,14 +196,6 @@ class SFS():
         '''
         return SFS.W1(n) - SFS.W2(n)
 
-    @staticmethod
-    def cumprod(X: np.ndarray) -> np.ndarray:
-        '''Alas, jax doesn't differentiate np.cumprod
-
-        X: 2D array
-        '''
-        return np.exp(np.cumsum(np.log(X)))
-
     @lru_cache(maxsize=1)
     def M(self, η) -> np.ndarray:
         '''The M matrix defined in the text
@@ -222,8 +209,8 @@ class SFS():
         u = np.concatenate((np.array([1]), u))
 
         return self.binom_array_recip \
-               @ SFS.cumprod(u[np.newaxis, :-1],
-                         ) ** self.binom_vec[:, np.newaxis] \
+               @ np.cumprod(u[np.newaxis, :-1],
+                            axis=1) ** self.binom_vec[:, np.newaxis] \
                @ (np.eye(len(y), k=0) - np.eye(len(y), k=-1)) \
                @ np.diag(y)
 
@@ -240,61 +227,52 @@ class SFS():
 
         # the A_2j are the product of this matrix
         # NOTE: using letter  "l" as a variable name to match text
-        l = onp.arange(2, self.n + 1)[:, np.newaxis]
-        with onp.errstate(divide='ignore'):
+        l = np.arange(2, self.n + 1)[:, np.newaxis]
+        with np.errstate(divide='ignore'):
             A2_terms = l * (l-1) / (l * (l-1) - l.T * (l.T-1))
-        onp.fill_diagonal(A2_terms, 1)
+        np.fill_diagonal(A2_terms, 1)
         A2 = np.prod(A2_terms, axis=0)
 
-        return 1 - (A2[np.newaxis, :] @ SFS.cumprod(u[np.newaxis, 1:-1]) ** self.binom_vec[:, np.newaxis]).T
+        return 1 - (A2[np.newaxis, :]
+                    @ np.cumprod(u[np.newaxis, 1:-1],
+                                 axis=1) ** self.binom_vec[:, np.newaxis]).T
 
-    def ξ(self, history, use_cache=True) -> np.ndarray:
+    def ξ(self, history: JointHistory, jac: bool = False) -> np.ndarray:
         '''expected sfs vector
 
         history: η and μ joint history
+        jac: flag to return jacobian wrt μ
         '''
         z = history.μ.vals
-        if use_cache:
-            M = self.M(history.η)
-        else:
-            M = SFS.M.__wrapped__(self, history.η)
-        return self.C @ M @ z
+        CM = self.C @ self.M(history.η)
+        if jac:
+            return CM @ z, CM
+        return CM @ z
 
     def simulate(self, history: JointHistory, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
 
         history: η and μ joint history
         '''
-        onp.random.seed(seed)
+        np.random.seed(seed)
         self.x = poisson.rvs(self.ξ(history))
 
-    def ℓ(self, history, use_cache=True) -> np.float64:
-        '''Poisson random field log-likelihood of history, ignoring constant
-        term
+    def ℓ(self, history: JointHistory, grad: bool = False) -> np.float:
+        '''Poisson random field log-likelihood of history
+        ignores constant term
 
         history: η and μ joint history
+        grad: flag to return gradient wrt μ
         '''
         if self.x is None:
             raise ValueError('use simulate() to generate data first')
-        ξ = self.ξ(history, use_cache=use_cache)
-        ℓ = np.sum(self.x * np.log(ξ) - ξ)
-        return ℓ
-
-    def constant_η_MLE(self, μ: PiecewiseConstantHistory
-                       ) -> PiecewiseConstantHistory:
-        '''gives the MLE for a constant η history
-
-        μ: μ history
-        '''
-        @jit
-        def f(y0):
-            y = y0 * np.ones_like(μ.vals)
-            η = PiecewiseConstantHistory(μ.change_points, y)
-            history = JointHistory(η, μ)
-            ξ = self.ξ(history, use_cache=False)
-            return -np.sum(self.x * np.log(ξ) - ξ)
-        y0 = minimize_scalar(f, bounds=(0, None)).x
-        return PiecewiseConstantHistory(μ.change_points, y0 * np.ones(μ.m()))
+        if grad:
+            ξ, J_μξ = self.ξ(history, jac=True)
+            ℓ = poisson.logpmf(self.x, ξ).sum()
+            dℓdμ = (((self.x / ξ)[:, np.newaxis] - 1) * J_μξ).sum(axis=0)
+            return ℓ, dℓdμ
+        else:
+            return poisson.logpmf(self.x, self.ξ(history)).sum()
 
     def constant_μ_MLE(self, η: PiecewiseConstantHistory
                        ) -> PiecewiseConstantHistory:
@@ -306,46 +284,6 @@ class SFS():
             raise ValueError('use simulate() to generate data first')
         z0 = (self.x.sum() / np.sum(SFS.C(self.n) @ self.M(η)))
         return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
-
-    def infer_η(self, μ: PiecewiseConstantHistory, λ: np.float64 = 0,
-                α: np.float64 = .99, s: np.float64 = .01,
-                steps: int = 100) -> PiecewiseConstantHistory:
-        '''infer the η history given the sfs and μ history
-
-        μ: μ history
-        λ: regularization strength
-        α: relative penalty on L1 vs L2
-        s: step size parameter for proximal gradient descent
-        steps: number of proximal gradient descent steps
-        '''
-        assert λ >= 0, 'λ must be nonnegative'
-        assert 0 <= α <= 1, 'α must be in the unit interval'
-
-        D = (np.eye(μ.m(), k=0) - np.eye(μ.m(), k=-1))
-
-        # initialize using constant η history MLE
-        η0 = self.constant_η_MLE(μ)
-        y = η0.vals
-
-        # differentiable piece of loss function
-        @jit
-        def f(y):
-            η = PiecewiseConstantHistory(μ.change_points, y)
-            history = JointHistory(η, μ)
-            return -self.ℓ(history, use_cache=False) \
-                   + (1 / 2) * λ * (1 - α) * np.sum((D @ y) ** 2)
-        grad_f = jit(grad(f))
-        for _ in range(steps):
-            g = grad_f(y)
-            if not all(np.isfinite(g)):
-                raise RuntimeError(f'invalid gradient: {g}')
-            y = y - s * g
-            if α > 0:
-                y = ptv.tv1_1d(y, λ * α)
-            y = np.clip(y, 0., np.inf)
-            if not all(np.isfinite(y)):
-                raise RuntimeError(f'invalid y value: {y}')
-        return PiecewiseConstantHistory(μ.change_points, y)
 
     def infer_μ(self, η: PiecewiseConstantHistory, λ: np.float64 = 0,
                 α: np.float64 = .99, s: np.float64 = .01,
@@ -362,16 +300,17 @@ class SFS():
         assert 0 <= α <= 1, 'α must be in the unit interval'
 
         D = (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
+        W = np.eye(η.m())
+        W[0, 0] = 0
+        D2 = D.T @ W @ D
 
-        # differentiable piece of loss function
-        @jit
-        def f(z):
+        # gradient of differentiable piece of loss function
+        def grad_f(z):
             history = JointHistory(η,
                                    PiecewiseConstantHistory(η.change_points, z)
                                    )
-            return -self.ℓ(history) \
-                + (1 / 2) * λ * (1 - α) * np.sum((D @ z) ** 2)
-        grad_f = jit(grad(f))
+            return -self.ℓ(history, grad=True)[1] \
+                   + λ * (1 - α) * D2 @ z
         # initialize using constant μ history MLE
         z = self.constant_μ_MLE(η).vals
         for _ in range(steps):
@@ -381,11 +320,9 @@ class SFS():
             z = z - s * g
             if α > 0:
                 z = ptv.tv1_1d(z, λ * α)
-            z = np.clip(z, 0., np.inf)
+            z = np.clip(z, 1e-6, np.inf)
             if not all(np.isfinite(z)):
                 raise RuntimeError(f'invalid z value: {z}')
-
-
         return PiecewiseConstantHistory(η.change_points, z)
 
     def plot(self, history: JointHistory = None):
