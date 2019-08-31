@@ -1,22 +1,21 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from jax.config import config
-config.update("jax_enable_x64", True)
-
 from dataclasses import dataclass
 import jax.numpy as np
-import numpy as onp # original numpy
-from jax import jit, grad, value_and_grad, jacfwd
-from jax.lax import clamp
+import numpy as onp  # original numpy
+from jax import jit, grad
+from jax.experimental.optimizers import adagrad
 from scipy.special import binom
 from functools import lru_cache
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
 from matplotlib import figure
-from scipy.optimize import minimize
+from scipy.optimize import minimize_scalar
 import prox_tv as ptv
 
+from jax.config import config
+config.update("jax_enable_x64", True)
 
 @dataclass(frozen=True)
 class PiecewiseConstantHistory():
@@ -119,7 +118,6 @@ class JointHistory():
         plt.sca(axes[1])
         self.μ.plot(**kwargs)
         plt.xlabel('$t$')
-        plt.xscale('symlog')
         plt.ylabel('$μ(t)$')
 
         return fig
@@ -229,12 +227,10 @@ class SFS():
                @ (np.eye(len(y), k=0) - np.eye(len(y), k=-1)) \
                @ np.diag(y)
 
-    @lru_cache(maxsize=1)
-    def w(self, η, h: np.float64 = 1) -> np.ndarray:
-        '''The weight vector defined in the text
+    def tmrca_cdf(self, η: PiecewiseConstantHistory) -> np.ndarray:
+        '''The cdf of the TMRCA of the sample at each change point
 
         η: η history
-        h: relative increase in penalty as we approach coalescent horizon
         '''
         t, y = η.arrays()
         # epoch durations
@@ -250,7 +246,7 @@ class SFS():
         onp.fill_diagonal(A2_terms, 1)
         A2 = np.prod(A2_terms, axis=0)
 
-        return h + (1 - h) * (A2[np.newaxis, :] @ SFS.cumprod(u[np.newaxis, 1:-1]) ** self.binom_vec[:, np.newaxis]).T
+        return 1 - (A2[np.newaxis, :] @ SFS.cumprod(u[np.newaxis, 1:-1]) ** self.binom_vec[:, np.newaxis]).T
 
     def ξ(self, history, use_cache=True) -> np.ndarray:
         '''expected sfs vector
@@ -264,23 +260,25 @@ class SFS():
             M = SFS.M.__wrapped__(self, history.η)
         return self.C @ M @ z
 
-    def simulate(self, history: JointHistory) -> None:
+    def simulate(self, history: JointHistory, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
 
         history: η and μ joint history
         '''
+        onp.random.seed(seed)
         self.x = poisson.rvs(self.ξ(history))
 
     def ℓ(self, history, use_cache=True) -> np.float64:
-        '''Poisson random field log-likelihood of history
-        ignores constant term
+        '''Poisson random field log-likelihood of history, ignoring constant
+        term
 
         history: η and μ joint history
         '''
         if self.x is None:
             raise ValueError('use simulate() to generate data first')
         ξ = self.ξ(history, use_cache=use_cache)
-        return np.sum(self.x * np.log(ξ) - ξ)
+        ℓ = np.sum(self.x * np.log(ξ) - ξ)
+        return ℓ
 
     def constant_η_MLE(self, μ: PiecewiseConstantHistory
                        ) -> PiecewiseConstantHistory:
@@ -295,9 +293,7 @@ class SFS():
             history = JointHistory(η, μ)
             ξ = self.ξ(history, use_cache=False)
             return -np.sum(self.x * np.log(ξ) - ξ)
-        f_gradf = jit(value_and_grad(f))
-        print(f_gradf(10000.))
-        y0 = minimize(f_gradf, 1., jac=True, bounds=[(0, None)]).x
+        y0 = minimize_scalar(f, bounds=(0, None)).x
         return PiecewiseConstantHistory(μ.change_points, y0 * np.ones(μ.m()))
 
     def constant_μ_MLE(self, η: PiecewiseConstantHistory
@@ -311,74 +307,61 @@ class SFS():
         z0 = (self.x.sum() / np.sum(SFS.C(self.n) @ self.M(η)))
         return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
 
-    def infer_η(self,
-                μ: PiecewiseConstantHistory,
-                λ: np.float64 = 0, α: np.float64 = .99,
-                h: np.float64 = 1, s: np.float64 = .01,
+    def infer_η(self, μ: PiecewiseConstantHistory, λ: np.float64 = 0,
+                α: np.float64 = .99, s: np.float64 = .01,
                 steps: int = 100) -> PiecewiseConstantHistory:
-        '''infer the η history given the simulated sfs and μ history
+        '''infer the η history given the sfs and μ history
 
         μ: μ history
         λ: regularization strength
         α: relative penalty on L1 vs L2
-        h: relative increase in penalty as we approach coalescent horizon
         s: step size parameter for proximal gradient descent
         steps: number of proximal gradient descent steps
         '''
         assert λ >= 0, 'λ must be nonnegative'
         assert 0 <= α <= 1, 'α must be in the unit interval'
+
+        D = (np.eye(μ.m(), k=0) - np.eye(μ.m(), k=-1))
 
         # initialize using constant η history MLE
         η0 = self.constant_η_MLE(μ)
         y = η0.vals
 
-        # differentiable piece of loss function (but not the bit we get via
-        # the chain rule on L1)
+        # differentiable piece of loss function
         @jit
         def f(y):
             η = PiecewiseConstantHistory(μ.change_points, y)
             history = JointHistory(η, μ)
-            w = SFS.w.__wrapped__(self, η, h)
             return -self.ℓ(history, use_cache=False) \
-                   + (1 / 2) * λ * (1 - α) * np.sum(w * np.diff(y) ** 2)
+                   + (1 / 2) * λ * (1 - α) * np.sum((D @ y) ** 2)
         grad_f = jit(grad(f))
-        @jit
-        def w_fun(y):
-            η = PiecewiseConstantHistory(μ.change_points, y)
-            return SFS.w.__wrapped__(self, η, h)
-        jac_w_fun = jit(jacfwd(w_fun))
-        @jit
-        def grad_f_full(y):
-            # we get this extra derivative term via the chain rule on the L1
-            # term
-            return grad_f(y) + λ * α * np.sum(jac_w_fun(y) @ np.abs(np.diff(y)))
         for _ in range(steps):
-            η = PiecewiseConstantHistory(μ.change_points, y)
-            # we get these weights via the chain rule on the L1 term
-            w = self.w(η, h)
-            y = clamp(0., ptv.tv1w_1d(y - s * grad_f(y), λ * α * w), np.inf)
-            assert all(np.isfinite(y)), y
-        return JointHistory(PiecewiseConstantHistory(μ.change_points, y), μ)
+            g = grad_f(y)
+            if not all(np.isfinite(g)):
+                raise RuntimeError(f'invalid gradient: {g}')
+            y = y - s * g
+            if α > 0:
+                y = ptv.tv1_1d(y, λ * α)
+            y = np.clip(y, 0., np.inf)
+            if not all(np.isfinite(y)):
+                raise RuntimeError(f'invalid y value: {y}')
+        return PiecewiseConstantHistory(μ.change_points, y)
 
-    def infer_μ(self,
-                η: PiecewiseConstantHistory,
-                λ: np.float64 = 0, α: np.float64 = .99,
-                h: np.float64 = 1, s: np.float64 = .01,
+    def infer_μ(self, η: PiecewiseConstantHistory, λ: np.float64 = 0,
+                α: np.float64 = .99, s: np.float64 = .01,
                 steps: int = 100) -> PiecewiseConstantHistory:
-        '''infer the μ history given the simulated sfs and η history
+        '''infer the μ history given the sfs and η history
 
         η: η history
         λ: regularization strength
         α: relative penalty on L1 vs L2
-        h: relative increase in penalty as we approach coalescent horizon
         s: step size parameter for proximal gradient descent
         steps: number of proximal gradient descent steps
         '''
         assert λ >= 0, 'λ must be nonnegative'
         assert 0 <= α <= 1, 'α must be in the unit interval'
 
-        # weight vector defined in the text
-        w = self.w(η, h)
+        D = (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
 
         # differentiable piece of loss function
         @jit
@@ -387,15 +370,23 @@ class SFS():
                                    PiecewiseConstantHistory(η.change_points, z)
                                    )
             return -self.ℓ(history) \
-                   + (1 / 2) * λ * (1 - α) * np.sum(w * np.diff(z) ** 2)
+                + (1 / 2) * λ * (1 - α) * np.sum((D @ z) ** 2)
         grad_f = jit(grad(f))
         # initialize using constant μ history MLE
         z = self.constant_μ_MLE(η).vals
         for _ in range(steps):
-            z = clamp(0., ptv.tv1w_1d(z - s * grad_f(z), λ * α * w), np.inf)
-            assert all(np.isfinite(z)), z
+            g = grad_f(z)
+            if not all(np.isfinite(g)):
+                raise RuntimeError(f'invalid gradient: {g}')
+            z = z - s * g
+            if α > 0:
+                z = ptv.tv1_1d(z, λ * α)
+            z = np.clip(z, 0., np.inf)
+            if not all(np.isfinite(z)):
+                raise RuntimeError(f'invalid z value: {z}')
 
-        return JointHistory(η, PiecewiseConstantHistory(η.change_points, z))
+
+        return PiecewiseConstantHistory(η.change_points, z)
 
     def plot(self, history: JointHistory = None):
         '''plot the SFS data and optionally the expected SFS under history
