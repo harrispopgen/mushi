@@ -270,64 +270,46 @@ Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse proble
 
 In linkage equilibrium the log likelihood function of the history $(\boldsymbol y, \boldsymbol z)$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ is the Poisson random field \citep{}
 \begin{align}
-\ell(\boldsymbol y, \boldsymbol z) &= \sum_{b=1}^{n-1}\left(x_b\log(\xi_b) - \xi_b - \log(x_b!)\right)\\
+\ell(\boldsymbol y, \boldsymbol z; \boldsymbol x) &= \sum_{b=1}^{n-1}\left(x_b\log(\xi_b) - \xi_b - \log(x_b!)\right)\\
 &= \boldsymbol x^\intercal\log(\boldsymbol\xi) - \boldsymbol 1^\intercal\left(\boldsymbol\xi + \lngamma(\boldsymbol x + \boldsymbol 1)\right)\\
 &= \boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) - \boldsymbol 1^\intercal\left(C M(\boldsymbol y) \boldsymbol z + \lngamma(\boldsymbol x + \boldsymbol 1)\right),
 \end{align}
 where $\log(\cdot)$ and the log-gamma function $\lngamma(\cdot)$ operate on vectors elementwise.
 
-%WD does Kam not hate this latin? lulz
-\subsection{Tempora incognita: regularization toward the coalescent horizon}\label{sec:model:loss}
+
+\subsection{Regularization}\label{sec:model:reg}
 
 %WD more inverse problem intro
 The inverse problem \eqref{eqn:xivec2} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
 To penalize oscillatory histories we regularize on their derivatives.
+We define weighted $L_p^p$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$:
+\[
+\int_0^\infty\left|\frac{d\eta(t)}{dt}\right|^p dt, \int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt.
+\]
+With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and these become
+\[
+\left|\Delta\boldsymbol y\right|_p^p, \left|\Delta\boldsymbol z\right|_p^p.
+\]
+where $\Delta$ denotes the first difference operator.
+
+Our fused LASSO \citep{tibs} loss function is then
+\begin{align}
+L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\left|\Delta\boldsymbol y\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol y\right|_2^2\right) + \lambda_\mu \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
+\end{align}
+where $\lambda_\eta$ and $\lambda_\mu$ tune the regularization strength on $\eta$ and $\mu$, respectively, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
+
+\subsection{Tempora incognita: observability toward the coalescent horizon}\label{sec:model:loss}
+
+Todo: SVD on $CM(\boldsymbol y)$
+
 Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
 Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
-%WD This is ad hoc, can we motivate it with a Bayesian argument?
-To do this we should like to use the CDF of the TMRCA to define a ramp of weights.
-At times for which the CDF is near unity, the TMRCA has probably occurred, so we should penalize heavily because the data are not informative about the history at this time.
-At times for which the CDF is small, the TMRCA has probably not yet occurred, and we should penalize less heavily.
+
 From \eqref{eqn:pi} and \eqref{eqn:r} the CDF of $T_2$ is
 \begin{align}
 F_2(t) &\equiv 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
 &= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
 \end{align}
-
-We define weighted $L_p^p$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$ to have unit weight when the CDF is zero, and approach weight $h$ as the CDF approaches unity:
-\begin{align}
-\rho_\eta[\eta(t); h, p] &\equiv \int_0^\infty\left(1+(h-1)F_2(t)\right)\left|\frac{d\eta(t)}{dt}\right|^p dt,\\
-\rho_\mu[\eta(t), \mu(t); h, p] &\equiv \int_0^\infty\left(1+(h-1)F_2(t)\right)\left|\frac{d\mu(t)}{dt}\right|^p dt.
-\end{align}
-With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and it is straightforward to show (using notation as in section \ref{sec:model:pcsws}) that these become
-\begin{align}
-\rho_\eta(\boldsymbol y, h, p) &= \sum_2^m w_i|y_i-y_{i-1}|^p,\\
-\rho_\mu(\boldsymbol y, \boldsymbol z, h, p) &= \sum_2^m w_i|z_i-z_{i-1}|^p.
-\end{align}
-with weights
-\begin{align}
-\label{eqn:w}
-\boldsymbol w(\boldsymbol y, h) \equiv
-h \boldsymbol 1 + (1-h)\times
-\left(
-\begin{bmatrix}
-A_{2,2} & A_{2,3} & \hdots & A_{2,n}
-\end{bmatrix}
-\times
-\begin{bmatrix}
-u_1                & \hdots & \prod_{i=1}^{m-1}u_i               \\
-u_1^3              & \hdots & \prod_{i=1}^{m-1}u_i^3             \\
-\vdots             & \ddots & \vdots                                \\
-u_1^{\binom{n}{2}} & \hdots & \prod_{i=1}^{m-1}u_i^{\binom{n}{2}}
-\end{bmatrix}\right)^\intercal.
-\end{align}
-% Note that if $\boldsymbol y$ is fixed $\Gamma(\boldsymbol y)$ is a constant and thus a proper Tinkhonov matrix.
-
-Our fused LASSO \citep{tibs} loss function is then
-\begin{align}
-L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\rho_\eta(\boldsymbol y, h, 1) + \frac{(1-\alpha)}{2}\rho_\eta(\boldsymbol y, h, 2)\right) + \lambda_\mu \left(\alpha\rho_\mu(\boldsymbol y, \boldsymbol z, h, 1) + \frac{(1-\alpha)}{2}\rho_\mu(\boldsymbol y, \boldsymbol z, h, 2)\right),
-\end{align}
-where $\lambda_\eta$ and $\lambda_\mu$ tune the regularization strength on $\eta$ and $\mu$, respectively, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
 
 
 \section{Results}\label{sec:results}
