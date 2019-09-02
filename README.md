@@ -14,7 +14,6 @@ Dependencies
   - jupyter
   - scons
   - [prox-tv](https://github.com/albarji/proxTV)
-  - [JAX](https://github.com/google/jax)
 
 Manuscript
 ---
