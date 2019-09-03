@@ -223,10 +223,10 @@ class SFS():
         jac: flag to return jacobian wrt μ
         '''
         z = history.μ.vals
-        CM = self.C @ self.M(history.η)
+        L = self.C @ self.M(history.η)
         if jac:
-            return CM @ z, CM
-        return CM @ z
+            return L @ z, L
+        return L @ z
 
     def simulate(self, history: JointHistory, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
