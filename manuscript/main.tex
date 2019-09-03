@@ -90,7 +90,7 @@ where the $(n-1)\times m$ matrix $L_{n, \boldsymbol y}$ is fixed given a fixed d
 
 In linkage equilibrium the log likelihood function of the mutation intensity history $\boldsymbol z$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
 \[
-\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y) = \boldsymbol x^\intercal\log(L_{n, \boldsymbol y} \boldsymbol z) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} \boldsymbol z,
+\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) = \boldsymbol x^\intercal\log(L_{n, \boldsymbol y} \boldsymbol z) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} \boldsymbol z,
 \]
 where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $\boldsymbol z$.
 
@@ -109,7 +109,7 @@ where $\Delta$ denotes the first difference operator.
 Our penalized log-likelihood is then
 \begin{equation}
 \label{eqn:penalized}
-\tilde\ell(\boldsymbol z) = \ell(\boldsymbol z) - \lambda \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
+\tilde\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) = \ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) - \lambda \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
 \end{equation}
 where $\lambda$ tunes the regularization strength, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
 
@@ -153,7 +153,7 @@ Joint inference of $\eta$ and $\mu$.
 \subsection*{Implementation and pipeline}\label{sec:methods:tool}
 
 The \texttt{mushi} software package is available at \url{https://github.com/harrispopgen/mushi}.
-%WD cite whatever packages we use, e.g. proxtv
+%WD cite whatever packages we use, e.g. proxtv, msprime, stdpopsim, etc.
 
 \section*{Acknowledgements}\label{sec:ack}
 
