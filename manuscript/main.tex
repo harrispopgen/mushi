@@ -40,28 +40,32 @@ We formulate inference of mutation spectrum histories from the 3-SFS as a linear
 \section{Introduction}\label{sec:intro}
 
 \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
-We develop coalescent theory for the dependence of the expected 3-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation rates as a function of time into the past).
-This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{Tennessen2012-dq}), but is much faster, more flexibly parameterized, and extendable to joint inference of demographic and mutation spectrum histories.
-%WD do we actually do joint inference? If not, maybe save for discussion
+We develop coalescent theory for the dependence of the expected 3-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation intensities as a function of time into the past).
+This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{Tennessen2012-dq}), but is much faster, more flexibly parameterized.
 
 Some references for nonidentifiability of demographic history from the SFS: \cite{Baharian2018-np, Bhaskar2014-fu, Terhorst2015-xt, Myers2008-jp}.
-It might be good to consider identifiability of mutation rate history from the SFS conditioned on demographic history.
+It might be good to consider identifiability of mutation intensity history from the SFS conditioned on demographic history.
+
+%WD todo: inverse problem intro, forward Vs inverse problems, and ill-posedness. Point out \eta is nonlinear, but \mu is linear
+
+%WD todo: the scope of this paper is \mu inference conditioned on \eta. There are plenty of fancy methods one can use to infer \eta
 
 \section{Model}\label{sec:model}
 
 The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
-We will retrace the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
-We will make use of important results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} which facilitate numerical computation under this model, and formulate the expected 3-SFS under piecewise constant demographic and mutation spectrum histories building on the notation of \cite{Rosen2018-bb} for the expected SFS with a piecewise constant demographic history and constant mutation process.
+In the Methods we detail our retracing of the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
+We make use of the results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} to facilitate computation, and build on the notation of \cite{Rosen2018-bb} for a finite-dimensional approximation of our demographic and mutation intensity histories.
+Complete derivation of formulae are found in the Methods.
 
-\subsection{The expected SFS given demographic and mutation rate histories}\label{sec:model:xi}
+Given $n$ sampled haplotypes and a demographic history $\eta(t)$ (with time measured retrospectively from the present), we show in Methods section \ref{sec:methods:xi} that the expected SFS $\boldsymbol \xi = (\xi_1, \xi_2,\dots, \xi_{n-1})$ is a linear transform of the mutation intensity history $\mu(t)$:
+\begin{equation}
+  \label{eqn:transform}
+\boldsymbol \xi = \mathcal{L}_{n,\eta}\mu,
+\end{equation}
+where $\mathcal{L}_{n,\eta}$ is a finite-rank linear operator that maps infinite-dimensional mutation intensity histories to $(n-1)$-dimensional SFS vectors.
+It is dependent on $n$ and $\eta$, which we take to be fixed.
 
-Suppose $n$ haplotypes are sampled in the present, and let rvs $(T = T_2,\dots,T_n)$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
-As in \cite{Griffiths1998-qf} \S3, we consider a marked Poisson process in which every mutation is assigned a random label drawn iid from the uniform distribution on $(0,1)$.
-This is tantamount to the infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
-%WD Kam suggests replacing below with $\mu^* \ge \mu(t) \ge 0$, but I don't get why
-Further suppose that mutation rate is not constant, but a specified function of time $0\le \mu(t)<\infty$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
-A given line in the coalescent tree then acquires mutations on a genomic subinterval $(x,x+\delta x)$ at rate $\mu(t)\delta x$.
-The following argument can be generalized to allow the labelling distribution to be nonuniform over the unit interval, but the same results follow.
+% Need to talk about this fig \ref{fig:model}.
 
 \begin{figure}
 \centering
@@ -73,6 +77,87 @@ The probability that a differential element $dxdt$ on a given sheet contains a m
 }
 \label{fig:model}
 \end{figure}
+
+For numerical implementation we consider finite-dimensional approximations of $\eta(t)$ and $\mu(t)$ as piecewise constant on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$.
+We take the epoch boundaries as fixed parameters, and in practice make them dense so as to approximate infinite-dimensional histories.
+Let $\boldsymbol y = (y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $\boldsymbol z = (z_1,\dots,z_m)$ denote the constant mutation intensity $\mu(t)$ during each epoch.
+In Methods section \ref{sec:methods:pcsws} we show the linear transform \eqref{eqn:transform} reduces to the matrix equation
+\begin{equation}
+\label{eqn:transform_discrete}
+\boldsymbol \xi = L_{n, \boldsymbol y} \boldsymbol z,
+\end{equation}
+where the $(n-1)\times m$ matrix $L_{n, \boldsymbol y}$ is fixed given a fixed demographic history $\boldsymbol y$.
+
+In linkage equilibrium the log likelihood function of the mutation intensity history $\boldsymbol z$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
+\[
+\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y) = \boldsymbol x^\intercal\log(L_{n, \boldsymbol y} \boldsymbol z) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} \boldsymbol z,
+\]
+where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $\boldsymbol z$.
+
+%WD more inverse problem intro
+The inverse problem \eqref{eqn:transform} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
+To penalize oscillatory histories we regularize on the derivative of $\mu$.
+We define $L_p^p$ derivative regularizers for history $\mu(t)$:
+\[
+\int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt.
+\]
+In the finite-dimensional approximation \eqref{eqn:transform_discrete} the derivatives become Dirac delta functions at the change points, and this become
+\[
+\left|\Delta\boldsymbol z\right|_p^p.
+\]
+where $\Delta$ denotes the first difference operator.
+Our penalized log-likelihood is then
+\begin{equation}
+\label{eqn:penalized}
+\tilde\ell(\boldsymbol z) = \ell(\boldsymbol z) - \lambda \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
+\end{equation}
+where $\lambda$ tunes the regularization strength, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
+
+
+\section{Results}\label{sec:results}
+
+% Todo:
+% \begin{itemize}
+% \item repeat 1KG analysis like in \cite{Harris2017-fw}, see if we recapitulate Kelley's simulation-based pulse results
+% \item cluster triplet time series to see if we pull in minor components.
+% \end{itemize}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/fit_teaser}
+  \caption{Simulating and inverting a pulse.}
+  \label{}
+\end{figure}
+
+\subsection{Tempora incognita: observability toward the coalescent horizon}\label{sec:model:loss}
+
+Todo: SVD on $L_{n, \boldsymbol y}$
+
+Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
+Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
+
+From \eqref{eqn:pi} and \eqref{eqn:r} in the Methods, the CDF of $T_2$ is
+\begin{align}
+F_2(t) &\equiv 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
+&= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
+\end{align}
+
+
+\section{Discussion}\label{sec:discussion}
+
+Joint inference of $\eta$ and $\mu$.
+
+\section{Methods}\label{sec:methods}
+
+\subsection{The expected SFS given demographic and mutation intensity histories}\label{sec:methods:xi}
+
+Suppose $n$ haplotypes are sampled in the present, and let rvs $(T = T_2,\dots,T_n)$ denote the coalescent times measured retrospectively from the present (i.e. $T_n$ is the most recent coalescent time, and $T_2$ is the TMRCA of the sample).
+As in \cite{Griffiths1998-qf} \S3, we consider a marked Poisson process in which every mutation is assigned a random label drawn iid from the uniform distribution on $(0,1)$.
+This is tantamount to the infinite sites assumption, with the unit interval representing the genome, and the random variate labels representing mutant sites.
+%WD Kam suggests replacing below with $\mu^* \ge \mu(t) \ge 0$, but I don't get why
+Further suppose that mutation intensity is not constant, but a specified function of time $0\le \mu(t)<\infty$ (measured in mutations per genome per generation) applying equally to all lines in the coalescent tree at a given time $t$ (measured retrospectively from the present in units of Wright-Fisher generations).
+A given line in the coalescent tree then acquires mutations on a genomic subinterval $(x,x+\delta x)$ at rate $\mu(t)\delta x$.
+The following argument can be generalized to allow the labelling distribution to be nonuniform over the unit interval, but the same results follow.
 
 Let rv $\mathcal{E}_{\delta x, b}$ denote the event that a mutation present in $b\in\{1, 2, \dots, n-1\}$ haplotypes in the sample occurred within a given genomic interval $(x,x+\delta x)$ (the probability of this event is independent of $x$, given the uniform labeling distribution).
 Let $I_k$ denote the $k$th intercoalescent time interval, i.e.\ $I_n = (0, T_n),\ I_{n-1} = (T_n, T_{n-1}),\ \dots,\ I_2 = (T_3, T_2)$.
@@ -99,7 +184,6 @@ For small $\delta x$, each such interval contains zero or one mutations, so the 
 Using the explicit bounds of the intercoalescent intervals, $I_{k} = (T_{k+1}, T_k)$, gives
 \begin{align}
 \label{eqn:xi}
-%WD Kam noted an "off by -1 error" below, but I think it's correct as is
 \xi_b &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=2}^{n-1} k p_{n,k}(b) \mathbbm{E}_{T_{k+1}}\left[\int_0^{T_{k+1}}\mu(t)dt\right]\nonumber\\
 &= \sum_{k=2}^n k p_{n,k}(b) \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right] - \sum_{k=3}^{n} (k-1) p_{n,k-1}(b) \mathbbm{E}_{T_{k}}\left[\int_0^{T_k}\mu(t)dt\right]\nonumber\\
 &= \sum_{k=2}^n B_{b,k} \mathbbm{E}_{T_k}\left[\int_0^{T_k}\mu(t)dt\right],
@@ -151,8 +235,7 @@ Using \eqref{eqn:exp} in \eqref{eqn:xi} gives
 \end{align}
 where we've exchanged summation order in the last line.
 
-We then have a linear expression for the expected SFS as a function of the mutation rate history $\mu(t)$:
-%WD Kam suggests a linear operator notation that combines the integral on t with the summation on j. Note this operator would be (nonlinearly) dependent on \eta
+We then have a linear expression for the expected SFS as a function of the mutation intensity history $\mu(t)$:
 \begin{equation}
 \label{eqn:xivec}
 \boldsymbol\xi = C \boldsymbol d,
@@ -167,8 +250,9 @@ is constant wrt $\mu$ \emph{and} $\eta$, and
 d_j \equiv \int_0^\infty r_j(t)\mu(t)dt = \int_0^\infty \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]\mu(t)dt
 \end{equation}
 is a linear functional of $\mu$ and a nonlinear functional of $\eta$.
+We recover \ref{eqn:transform} by defining the operator $\mathcal{L}_{n,\eta}$ such that $\mathcal{L}_{n,\eta}\mu \equiv C \int_0^\infty \exp\left[-\binom{j}{2}\int_0^t\frac{dx}{\eta(x)}\right]\mu(t)dt$.
 
-\subsection{Computing the elements of $C$}\label{sec:model:C}
+\subsection{Computing the elements of $C$}\label{sec:methods:C}
 
 %WD Kam suggests just doing C = B A, but computing the elements of B and A would seem computationally infeasible
 We next develop an efficient recursive procedure for computing the $(n-1)\times(n-1)$ matrix $C$.
@@ -202,9 +286,9 @@ and
 &W_{b,3}^{(2)} = \frac{20 (n-2)}{(n+1)(n+2)}\\
 &W_{b,j+2}^{(2)} = \frac{(2 j+3) (j-n+1)}{j} \left(\frac{(j+1)}{(2 j-1) (j+n)}W_{b,j}^{(2)}-\frac{(j (j+1) (2 b-n+1)-2 (n+1))}{(j-1) (j+2) (j-n) (j+n+1)}W_{b,j+1}^{(2)}\right)
 \end{align*}
-This completes the framing of mutation rate inference as a linear inverse problem.
+This completes the framing of mutation intensity inference as a linear inverse problem.
 
-\subsection{Finite dimensional parameterization of $\eta(t)$ and $\mu(t)$}\label{sec:model:pcsws}
+\subsection{Finite-dimensional parameterization of $\eta(t)$ and $\mu(t)$}\label{sec:methods:pcsws}
 
 %WD Kam describes this discretization as ad hoc, but I'm pretty sure this is your textbook Riemann sum with rectangular partitions. We could do fancier quadrature, but then we'll be less able to lean on previous work (i.e. Rosen et al.)
 
@@ -214,9 +298,9 @@ Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)) let $R_\eta(t) \equ
 d_j = \int_0^\infty \exp\left[-\binom{j}{2}\tau\right] \tilde\eta(\tau)\tilde\mu(\tau)d\tau,
 \end{equation}
 where $\tilde\eta(\tau) \equiv \eta(R^{-1}(\tau))$ and $\tilde\mu(\tau) \equiv \mu(R^{-1}(\tau))$.
-We consider piecewise constant $\eta$ and $\mu$ on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:model:xi}).
-We take the epochs as fixed parameters, and in practice make them dense so as to approximate infinite dimensional histories.
-Let $(y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $(z_1,\dots,z_m)$ denote the constant mutation rate $\mu(t)$ during each epoch.
+We consider piecewise constant $\eta$ and $\mu$ on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$ (not to be confused with the coalescent time realizations in section \ref{sec:methods:xi}).
+We take the epochs as fixed parameters, and in practice make them dense so as to approximate infinite-dimensional histories.
+Let $(y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $(z_1,\dots,z_m)$ denote the constant mutation intensity $\mu(t)$ during each epoch.
 Let $u_l \equiv \exp(-(t_l-t_{l-1})/y_l)$ for $l=1,\dots,m$. %, and $u_0\equiv 1$.
 %WD Kam hates the latin loooooooool. It really does follow by dropping in the y vector and proceeding as in their proof
 With this we can follow the proof of Prop.\ (1) in \cite{Rosen2018-bb} mutatis mutandis to arrive at
@@ -259,76 +343,15 @@ Note that the $(n-1)\times m$ matrix $M(\boldsymbol y)$ is a nonlinear function 
 
 Combining \ref{eqn:d3} with \ref{eqn:xivec} gives the discretized inverse problem
 \begin{equation}
-\label{eqn:xivec2}
-\boldsymbol\xi = C M(\boldsymbol y) \boldsymbol z.
+\boldsymbol\xi = C M(\boldsymbol y) \boldsymbol z = L_{n, \boldsymbol y} \boldsymbol z,
 \end{equation}
+where $L\equiv C M(\boldsymbol y)$.
 
 
-\subsection{Poisson random field log likelihood}\label{sec:model:ell}
+\subsection{Implementation and pipeline}\label{sec:methods:tool}
 
-%WD Kam suggests calling the data vector \xi instead of x, but I disagree because we're already using \xi for the expected SFS. one could quibble that we already used x in the marked Poisson process at the beginning, but I think our readers have forgotten that by now and this won't confuse
-
-In linkage equilibrium the log likelihood function of the history $(\boldsymbol y, \boldsymbol z)$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ is the Poisson random field \citep{}
-\begin{align}
-\ell(\boldsymbol y, \boldsymbol z; \boldsymbol x) &= \sum_{b=1}^{n-1}\left(x_b\log(\xi_b) - \xi_b - \log(x_b!)\right)\\
-&= \boldsymbol x^\intercal\log(\boldsymbol\xi) - \boldsymbol 1^\intercal\left(\boldsymbol\xi + \lngamma(\boldsymbol x + \boldsymbol 1)\right)\\
-&= \boldsymbol x^\intercal\log(C M(\boldsymbol y) \boldsymbol z) - \boldsymbol 1^\intercal\left(C M(\boldsymbol y) \boldsymbol z + \lngamma(\boldsymbol x + \boldsymbol 1)\right),
-\end{align}
-where $\log(\cdot)$ and the log-gamma function $\lngamma(\cdot)$ operate on vectors elementwise.
-
-
-\subsection{Regularization}\label{sec:model:reg}
-
-%WD more inverse problem intro
-The inverse problem \eqref{eqn:xivec2} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
-To penalize oscillatory histories we regularize on their derivatives.
-We define weighted $L_p^p$ derivative regularizers for arbitrary histories $\eta(t)$ and $\mu(t)$:
-\[
-\int_0^\infty\left|\frac{d\eta(t)}{dt}\right|^p dt, \int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt.
-\]
-With our piecewise constant history $(\boldsymbol y, \boldsymbol z)$ the derivatives become Dirac delta functions at the change points, and these become
-\[
-\left|\Delta\boldsymbol y\right|_p^p, \left|\Delta\boldsymbol z\right|_p^p.
-\]
-where $\Delta$ denotes the first difference operator.
-
-Our fused LASSO \citep{tibs} loss function is then
-\begin{align}
-L(\boldsymbol y, \boldsymbol z) &= - \ell(\boldsymbol y, \boldsymbol z) + \lambda_\eta \left(\alpha\left|\Delta\boldsymbol y\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol y\right|_2^2\right) + \lambda_\mu \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
-\end{align}
-where $\lambda_\eta$ and $\lambda_\mu$ tune the regularization strength on $\eta$ and $\mu$, respectively, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
-
-\subsection{Tempora incognita: observability toward the coalescent horizon}\label{sec:model:loss}
-
-Todo: SVD on $CM(\boldsymbol y)$
-
-Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
-Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
-
-From \eqref{eqn:pi} and \eqref{eqn:r} the CDF of $T_2$ is
-\begin{align}
-F_2(t) &\equiv 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
-&= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
-\end{align}
-
-
-\section{Results}\label{sec:results}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=.7\textwidth]{figures/fit_teaser}
-  \caption{Simulating and inverting a pulse.}
-  \label{}
-\end{figure}
-
-Todo:
-\begin{itemize}
-\item repeat 1KG analysis like in \cite{Harris2017-fw}, see if we recapitulate Kelley's simulation-based pulse results
-\item cluster triplet time series to see if we pull in minor components.
-\end{itemize}
-
-
-\section{Discussion}\label{sec:discussion}
+The \texttt{mushi} software package is available at \url{https://github.com/harrispopgen/mushi}.
+%WD cite whatever packages we use, e.g. proxtv
 
 \section{Acknowledgements}\label{sec:ack}
 
