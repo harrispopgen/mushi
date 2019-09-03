@@ -4,8 +4,10 @@
 \usepackage[round,semicolon]{natbib}
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{bm}
 \usepackage{bbm}
 \usepackage{graphicx}
+\usepackage{color}
 \usepackage{hyperref}
 
 \DeclareMathOperator{\erf}{erf}
@@ -18,8 +20,12 @@
 \title{Coalescent inference of mutation spectrum histories from sample frequency spectra}
 
 \author{
-W. DeWitt$^{1}$, K. Harris$^{2}$, and K. Harris$^{1}$\\
-\small{Departments of $^1$Genome Sciences and $^2$Biology, University of Washington, Seattle, USA}
+W.S. DeWitt$^{1,4}$, K. Decker Harris$^{2,3}$, and K. Harris$^{1}$\\
+{\small
+$^1$Department of Genome Sciences,
+$^2$Paul G.\ Allen School of Computer Science \& Engineering,}\\
+{\small and $^3$Department of Biology, University of Washington, Seattle, WA}\\
+{\small $^4$Computational Biology Program, Fred Hutchinson Cancer Research Center, Seattle, WA}
 % \small{$^\ast$ Equal contribution}
 }
 
@@ -96,22 +102,33 @@ where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt 
 
 %WD more inverse problem intro
 The inverse problem \eqref{eqn:transform} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
-To penalize oscillatory histories we regularize on the derivative of $\mu$.
-We define $L_p^p$ derivative regularizers for history $\mu(t)$:
+In order to recover smooth histories,
+we penalize the $L^p$ norms
+of the derivative of $\mu$
 \[
-\int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt.
+\left\| \frac{d \mu}{d t} \right\|_p^p
+= \int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt,
 \]
-In the finite-dimensional approximation \eqref{eqn:transform_discrete} the derivatives become Dirac delta functions at the change points, and this become
+for $p=1$ and 2.
+With time discretized \eqref{eqn:transform_discrete},
+this becomes
 \[
-\left|\Delta\boldsymbol z\right|_p^p.
+\left\|\Delta\boldsymbol z \right\|_p^p.
 \]
-where $\Delta$ denotes the first difference operator.
-Our penalized log-likelihood is then
+where $\Delta$ denotes the first difference matrix.
+Our cost function (penalized log-likelihood) is then
 \begin{equation}
 \label{eqn:penalized}
-\tilde\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) = \ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) - \lambda \left(\alpha\left|\Delta\boldsymbol z\right|_1 + \frac{(1-\alpha)}{2}\left|\Delta\boldsymbol z\right|_2^2\right),
+C(\bm z)
+%\tilde\ell(\boldsymbol z)
+= -\ell(\boldsymbol z) + \lambda \left(\alpha\left\|\Delta\boldsymbol z\right\|_1 + \frac{(1-\alpha)}{2}\left\|\Delta\boldsymbol z\right\|_2^2\right),
 \end{equation}
 where $\lambda$ tunes the regularization strength, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
+\textcolor{blue}{Kam note: probably we need a ``Ridge'' (Tikhonov)
+term like the following to deal with small singular values:}
+\[
+\lambda' \| \bm z \|_2^2
+\]
 
 
 \section*{Results}\label{sec:results}
