@@ -70,6 +70,22 @@ class PiecewiseConstantHistory():
                             np.array([np.inf])))
         return t, self.vals
 
+    def epochs(self):
+        '''generator yielding epochs in history as tuples:
+        (start_time, end_time, value)
+        '''
+        for i in range(self.m()):
+            if i == 0:
+                start_time = 0
+            else:
+                start_time = self.change_points[i - 1]
+            if i == self.m() - 1:
+                end_time = np.inf
+            else:
+                end_time = self.change_points[i]
+            value = self.vals[i]
+            yield (start_time, end_time, value)
+
 @dataclass()
 class JointHistory():
     '''Piecewise constant history of population size η and mutation rate μ.
