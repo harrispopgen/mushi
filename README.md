@@ -14,6 +14,7 @@ Dependencies
   - jupyter
   - scons
   - [prox-tv](https://github.com/albarji/proxTV)
+  - [msprime](https://msprime.readthedocs.io)
 
 Manuscript
 ---

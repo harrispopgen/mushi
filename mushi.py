@@ -96,16 +96,13 @@ class JointHistory():
         '''
         return self.η == other.η and self.μ == other.μ
 
-    def plot(self, fig: figure.Figure = None, **kwargs) -> figure.Figure:
+    def plot(self, **kwargs) -> figure.Figure:
         '''plot the history
 
         fig: add to another figure
         kwargs: keyword arguments passed to plotting calls
         '''
-        if fig:
-            axes = fig.axes
-        else:
-            fig, axes = plt.subplots(2, 1, sharex=True, figsize=(6, 6))
+        fig, axes = plt.subplots(2, 1, sharex=True, figsize=(6, 6))
         plt.sca(axes[0])
         self.η.plot(**kwargs)
         plt.ylabel('$η(t)$')
