@@ -59,7 +59,7 @@ It might be good to consider identifiability of mutation intensity history from 
 \section*{Model}\label{sec:model}
 
 The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
-In the Methods we detail our retracing of the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
+In Appendix \ref{sec:appendix} we detail our retracing of the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
 We make use of the results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} to facilitate computation, and build on the notation of \cite{Rosen2018-bb} for a finite-dimensional approximation of our demographic and mutation intensity histories.
 Complete derivation of formulae are found in the Appendix.
 
@@ -153,7 +153,7 @@ Todo: SVD on $L_{n, \boldsymbol y}$
 Intuitively, we know the SFS can't contain any information about the history beyond the TMRCA $T_2$, since mutations that occurred before then will not be segregating in the sample.
 Thus, we will find it useful to penalize complexity in the history more heavily at times that are more probably ancestral to the TMRCA.
 
-From \eqref{eqn:pi} and \eqref{eqn:r} in the Methods, the CDF of $T_2$ is
+From \eqref{eqn:pi} and \eqref{eqn:r} in the Appendix \ref{sec:appendix}, the CDF of $T_2$ is
 \begin{align}
 F_2(t) &= 1 - \sum_{j=2}^n A_{2,j}r_2(t)\\
 &= 1 - \sum_{j=2}^n A_{2,j}r_2(t)
