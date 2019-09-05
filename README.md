@@ -15,6 +15,7 @@ Dependencies
   - scons
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
+  - appdirs
 
 Manuscript
 ---
