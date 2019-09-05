@@ -112,24 +112,6 @@ class JointHistory():
         '''
         return self.η == other.η and self.μ == other.μ
 
-    def plot(self, **kwargs) -> figure.Figure:
-        '''plot the history
-
-        fig: add to another figure
-        kwargs: keyword arguments passed to plotting calls
-        '''
-        fig, axes = plt.subplots(2, 1, sharex=True, figsize=(6, 6))
-        plt.sca(axes[0])
-        self.η.plot(**kwargs)
-        plt.ylabel('$η(t)$')
-
-        plt.sca(axes[1])
-        self.μ.plot(**kwargs)
-        plt.xlabel('$t$')
-        plt.ylabel('$μ(t)$')
-
-        return fig
-
     def arrays(self):
         t = np.concatenate((np.array([0]),
                             self.μ.change_points,
@@ -251,7 +233,6 @@ class SFS():
 
     def ℓ(self, history: JointHistory, grad: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
-        ignores constant term
 
         history: η and μ joint history
         grad: flag to return gradient wrt μ
@@ -260,11 +241,45 @@ class SFS():
             raise ValueError('use simulate() to generate data first')
         if grad:
             ξ, J_μξ = self.ξ(history, jac=True)
-            ℓ = poisson.logpmf(self.x, ξ).sum()
-            dℓdμ = (((self.x / ξ)[:, np.newaxis] - 1) * J_μξ).sum(axis=0)
-            return ℓ, dℓdμ
+            dℓdμ = J_μξ.T @ (self.x / ξ - 1)
+            return dℓdμ
         else:
             return poisson.logpmf(self.x, self.ξ(history)).sum()
+
+    def d_kl(self, history: JointHistory, grad: bool = False) -> float:
+        '''Kullback-Liebler divergence between normalized SFS and its
+        expectation under history
+        ignores constant term
+
+        history: η and μ joint history
+        grad: flag to return gradient wrt μ
+        '''
+        if self.x is None:
+            raise ValueError('use simulate() to generate data first')
+        x_normalized = self.x / self.x.sum()
+        if grad:
+            ξ, J_μξ = self.ξ(history, jac=True)
+            ξ_normalized = ξ / ξ.sum()
+            return -J_μξ.T @ ((x_normalized / ξ) * (1 - ξ_normalized))
+        else:
+            ξ = self.ξ(history)
+            ξ_normalized = ξ / ξ.sum()
+            return -x_normalized.dot(np.log(ξ_normalized))
+
+    def lsq(self, history: JointHistory, grad: bool = False) -> float:
+        '''least-squares loss between SFS and its expectation under history
+
+        history: η and μ joint history
+        grad: flag to return gradient wrt μ
+        '''
+        if self.x is None:
+            raise ValueError('use simulate() to generate data first')
+        if grad:
+            ξ, J_μξ = self.ξ(history, jac=True)
+            return J_μξ.T @ (ξ - self.x)
+        else:
+            return (1 / 2) * ((self.ξ(history) - self.x) ** 2).sum()
+
 
     def constant_μ_MLE(self, η: PiecewiseConstantHistory
                        ) -> PiecewiseConstantHistory:
@@ -279,7 +294,8 @@ class SFS():
 
     def infer_μ(self, η: PiecewiseConstantHistory, λ: np.float64 = 0,
                 α: np.float64 = .99, s: np.float64 = .01,
-                steps: int = 100) -> PiecewiseConstantHistory:
+                steps: int = 100,
+                fit='prf') -> PiecewiseConstantHistory:
         '''infer the μ history given the sfs and η history
 
         η: η history
@@ -287,6 +303,8 @@ class SFS():
         α: relative penalty on L1 vs L2
         s: step size parameter for proximal gradient descent
         steps: number of proximal gradient descent steps
+        fit: fit function, 'prf' for Poisson random field, 'kl' for
+             Kullback-Leibler divergence, 'lsq' for least-squares
         '''
         assert λ >= 0, 'λ must be nonnegative'
         assert 0 <= α <= 1, 'α must be in the unit interval'
@@ -297,11 +315,20 @@ class SFS():
         D2 = D.T @ W @ D
 
         # gradient of differentiable piece of loss function
+        if fit == 'prf':
+            def misfit_func(*args, **kwargs):
+                return -self.ℓ(*args, **kwargs)
+        elif fit == 'kl':
+            misfit_func = self.d_kl
+        elif fit == 'lsq':
+            misfit_func = self.lsq
+        else:
+            raise ValueError(f'unrecognized fit argument {fit}')
         def grad_f(z):
             history = JointHistory(η,
                                    PiecewiseConstantHistory(η.change_points, z)
                                    )
-            return -self.ℓ(history, grad=True)[1] \
+            return misfit_func(history, grad=True) \
                    + λ * (1 - α) * D2 @ z
         # initialize using constant μ history MLE
         z = self.constant_μ_MLE(η).vals
@@ -317,20 +344,23 @@ class SFS():
                 raise RuntimeError(f'invalid z value: {z}')
         return PiecewiseConstantHistory(η.change_points, z)
 
-    def plot(self, history: JointHistory = None):
+    def plot(self, history: JointHistory = None, prf_quantiles=False):
         '''plot the SFS data and optionally the expected SFS under history
 
         history: joint η and μ history
+        prf_quantiles: if True show 95% marginal intervals using the Poisson
+                       random field
         '''
         if history is not None:
             ξ = self.ξ(history)
-            ξ_lower = poisson.ppf(.025, ξ)
-            ξ_upper = poisson.ppf(.975, ξ)
             plt.plot(range(1, self.n), ξ, 'r--', label=r'$\xi$')
-            plt.fill_between(range(1, self.n),
-                             ξ_lower, ξ_upper,
-                             facecolor='r', alpha=0.25,
-                             label='inner 95%\nquantile')
+            if prf_quantiles:
+                ξ_lower = poisson.ppf(.025, ξ)
+                ξ_upper = poisson.ppf(.975, ξ)
+                plt.fill_between(range(1, self.n),
+                                 ξ_lower, ξ_upper,
+                                 facecolor='r', alpha=0.25,
+                                 label='inner 95%\nquantile')
         plt.plot(range(1, len(self.x) + 1), self.x,
                  'k.', alpha=.25, label=r'data')
         plt.xlabel('$b$')
