@@ -29,5 +29,6 @@ $ scons
 Code
 ---
 - [`mushi.py`](mushi.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in the text.
-- [`regularization.ipynb`](regularization.ipynb): Jupyter notebook exploring penalized likelihood optimization.
-- [`C_matrix.ipynb`](C_matrix.ipynb): Investigating properties of the C matrix defined in the text.
+- [`test.ipynb`](test.ipynb): Jupyter notebook exploring reconstruction on SFS simulated under the mushi forward model.
+- [`test-msprime.ipynb`](test-msprime.ipynb): Jupyter notebook exploring reconstruction on SFS simulated with msprime.
+- [`L_spectrum.ipynb`](L_matrix.ipynb): Investigating properties of the L matrix defined in the text.
