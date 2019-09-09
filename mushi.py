@@ -4,21 +4,18 @@
 from dataclasses import dataclass
 import numpy as np
 from scipy.special import binom
-from functools import lru_cache
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
-from matplotlib import figure
-from scipy.optimize import minimize_scalar
 import prox_tv as ptv
 
 
-@dataclass(frozen=True)
-class PiecewiseConstantHistory():
-    '''The first epoch starts at zero, and the last epoch extends to infinity.
-    Can be used for η or μ
+@dataclass
+class History():
+    '''Piecewise constant history. The first epoch starts at zero, and the last
+    epoch extends to infinity. Can be used for η or μ.
 
     change_points: epoch change points (times)
-    vals: vector of constant values for each epoch
+    vals: constant values for each epoch (rows)
     '''
     change_points: np.array
     vals: np.ndarray
@@ -32,120 +29,75 @@ class PiecewiseConstantHistory():
             raise ValueError(f'len(change_points) = {len(self.change_points)}'
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
-        # if any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
-        #     raise ValueError('elements of vals must be finite and positive')
+        if np.any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
+            raise ValueError('elements of vals must be finite and positive')
+        self.m = len(self.vals)
 
-    def m(self):
-        '''number of epochs
-        '''
-        return len(self.vals)
-
-    def __hash__(self):
-        '''needed for hashability
-        '''
-        return hash((tuple(self.change_points), tuple(self.vals)))
-
-    def __eq__(self, other) -> bool:
-        '''needed for hashability
-        '''
-        if any(self.change_points != other.change_points):
-            return False
-        if any(self.vals != other.vals):
-            return False
-        return True
-
-    def plot(self, **kwargs) -> None:
+    def plot(self, i=None, **kwargs) -> None:
         '''plot the history
 
+        i: value column to plot (optional)
         kwargs: key word arguments passed to plt.step
         '''
         t = np.concatenate((np.array([0]), self.change_points))
-        plt.step(t, self.vals, where='post', **kwargs)
+        if i is not None:
+            vals = self.vals[:, i]
+        else:
+            vals = self.vals
+        plt.step(t, vals, where='post', **kwargs)
         if 'label' in kwargs:
             plt.legend()
 
     def arrays(self):
+        '''return time grid and values in each cell
+        '''
         t = np.concatenate((np.array([0]),
                             self.change_points,
                             np.array([np.inf])))
         return t, self.vals
 
     def epochs(self):
-        '''generator yielding epochs in history as tuples:
-        (start_time, end_time, value)
+        '''generator yielding epochs as tuples: (start_time, end_time, value)
         '''
-        for i in range(self.m()):
+        for i in range(self.m):
             if i == 0:
                 start_time = 0
             else:
                 start_time = self.change_points[i - 1]
-            if i == self.m() - 1:
+            if i == self.m - 1:
                 end_time = np.inf
             else:
                 end_time = self.change_points[i]
             value = self.vals[i]
             yield (start_time, end_time, value)
 
-@dataclass()
-class JointHistory():
-    '''Piecewise constant history of population size η and mutation rate μ.
-    both histories must use the same time grid
-
-    η: effective population size history
-    μ: mutation rate history
-    '''
-    η: PiecewiseConstantHistory
-    μ: PiecewiseConstantHistory
-
-    def __post_init__(self):
-        if any(self.η.change_points != self.μ.change_points):
-            raise ValueError('η and μ histories must use the same time grid')
-
-    def __hash__(self):
-        '''needed for hashability
-        '''
-        return hash((tuple(self.η.change_points), tuple(self.η.vals),
-                     tuple(self.μ.change_points), tuple(self.μ.vals)))
-
-    def __eq__(self, other) -> bool:
-        '''needed for hashability
-        '''
-        return self.η == other.η and self.μ == other.μ
-
-    def arrays(self):
-        t = np.concatenate((np.array([0]),
-                            self.μ.change_points,
-                            np.array([np.inf])))
-        y = self.η.vals
-        z = self.μ.vals
-        return t, y, z
-
-
-class SFS():
-    '''The SFS model described in the text
-    '''
-
-    def __init__(self, n: int = None, x: np.ndarray = None):
-        '''pass one of these arguments
-
-        n: number of sampled haplotypes
-        sfs: observed sfs vector
-        '''
-        if x is not None:
-            self.x = x
-            self.n = len(x) + 1
-            assert n is None, 'pass only one of n or x'
-        elif n is not None:
-            self.x = None
-            self.n = n
-            assert x is None, 'pass only one of n or x'
+    def check_grid(self, other: int):
+        if any(self.change_points != other.change_points):
+            return False
         else:
-            raise ValueError('must pass either n or x')
-        if self.n < 2:
-            raise ValueError('n must be larger than 1')
-        self.C = SFS.C(self.n)
-        self._binom_vec = binom(np.arange(2, self.n + 1), 2)
-        self._binom_array_recip = np.diag(1 / self._binom_vec)
+            return True
+
+
+class kSFS():
+    '''The kSFS model described in the text
+    '''
+
+    def __init__(self, η: History, X: np.ndarray = None, n: int = None):
+        '''Sample frequency spectrum
+
+        η: demographic history
+        X: observed k-SFS matrix (optional)
+        n: number of haplotypes (optional)
+        '''
+        self.η = η
+        if X is not None:
+            self.X = X
+            self.n = len(X) + 1
+        elif not n:
+            raise ValueError('either x or n must be specified')
+        else:
+            self.n = n
+        self.L = kSFS.C(self.n) @ kSFS.M(self.n, self.η)
 
     @staticmethod
     def C(n: int) -> np.ndarray:
@@ -170,11 +122,12 @@ class SFS():
 
         return W1 - W2
 
-    @lru_cache(maxsize=1)
-    def M(self, η) -> np.ndarray:
+    @staticmethod
+    def M(n: int, η: History) -> np.ndarray:
         '''The M matrix defined in the text
 
-        η: η history
+        n: number of sampled haplotypes
+        η: demographic history
         '''
         t, y = η.arrays()
         # epoch durations
@@ -182,23 +135,22 @@ class SFS():
         u = np.exp(-s / y)
         u = np.concatenate((np.array([1]), u))
 
-        return self._binom_array_recip \
-               @ np.cumprod(u[np.newaxis, :-1],
-                            axis=1) ** self._binom_vec[:, np.newaxis] \
-               @ (np.eye(len(y), k=0) - np.eye(len(y), k=-1)) \
-               @ np.diag(y)
+        binom_vec = binom(np.arange(2, n + 1), 2)
 
-    def tmrca_cdf(self, η: PiecewiseConstantHistory) -> np.ndarray:
-        '''The cdf of the TMRCA of the sample at each change point
+        return np.diag(1 / binom_vec) \
+            @ np.cumprod(u[np.newaxis, :-1],
+                         axis=1) ** binom_vec[:, np.newaxis] \
+            @ (np.eye(len(y), k=0) - np.eye(len(y), k=-1)) \
+            @ np.diag(y)
 
-        η: η history
+    def tmrca_cdf(self) -> np.ndarray:
+        '''The cdf of the TMRCA of at each change point
         '''
-        t, y = η.arrays()
+        t, y = self.η.arrays()
         # epoch durations
         s = np.diff(t)
         u = np.exp(-s / y)
         u = np.concatenate((np.array([1]), u))
-
         # the A_2j are the product of this matrix
         # NOTE: using letter  "l" as a variable name to match text
         l = np.arange(2, self.n + 1)[:, np.newaxis]
@@ -209,96 +161,82 @@ class SFS():
 
         return 1 - (A2[np.newaxis, :]
                     @ np.cumprod(u[np.newaxis, 1:-1],
-                                 axis=1) ** self._binom_vec[:, np.newaxis]).T
+                                 axis=1) ** binom(np.arange(2, self.n + 1), 2
+                                                  )[:, np.newaxis]).T
 
-    def ξ(self, history: JointHistory, jac: bool = False) -> np.ndarray:
-        '''expected sfs vector
-
-        history: η and μ joint history
-        jac: flag to return jacobian wrt μ
-        '''
-        z = history.μ.vals
-        L = self.C @ self.M(history.η)
-        if jac:
-            return L @ z, L
-        return L @ z
-
-    def simulate(self, history: JointHistory, seed: int = None) -> None:
+    def simulate(self, μ: History, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
+        assigns simulated SFS to self.X
 
-        history: η and μ joint history
+        μ: mutation spectrum history
+        seed: random seed (optional)
         '''
+        if not self.η.check_grid(μ):
+            raise ValueError('η and μ histories must use the same time grid')
         np.random.seed(seed)
-        self.x = poisson.rvs(self.ξ(history))
+        self.X = poisson.rvs(self.L @ μ.vals)
 
-    def ℓ(self, history: JointHistory, grad: bool = False) -> np.float:
+    def ℓ(self, μ: History, grad: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
 
-        history: η and μ joint history
+        μ: mutation spectrum history
         grad: flag to return gradient wrt μ
         '''
-        if self.x is None:
+        if self.X is None:
             raise ValueError('use simulate() to generate data first')
+        Ξ = self.L @ μ.vals
         if grad:
-            ξ, J_μξ = self.ξ(history, jac=True)
-            dℓdμ = J_μξ.T @ (self.x / ξ - 1)
+            dℓdμ = self.L.T @ (self.X / Ξ - 1)
             return dℓdμ
         else:
-            return poisson.logpmf(self.x, self.ξ(history)).sum()
+            return poisson.logpmf(self.X, Ξ).sum(axis=0)
 
-    def d_kl(self, history: JointHistory, grad: bool = False) -> float:
+    def d_kl(self, μ: History, grad: bool = False) -> float:
         '''Kullback-Liebler divergence between normalized SFS and its
         expectation under history
         ignores constant term
 
-        history: η and μ joint history
+        μ: mutation spectrum history
         grad: flag to return gradient wrt μ
         '''
-        if self.x is None:
+        if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        x_normalized = self.x / self.x.sum()
+        X_normalized = self.X / self.X.sum(axis=0)
+        Ξ = self.L @ μ.vals
+        Ξ_normalized = Ξ / Ξ.sum(axis=1)
         if grad:
-            ξ, J_μξ = self.ξ(history, jac=True)
-            ξ_normalized = ξ / ξ.sum()
-            return -J_μξ.T @ ((x_normalized / ξ) * (1 - ξ_normalized))
+            return -self.L.T @ ((X_normalized / Ξ) * (1 - Ξ_normalized))
         else:
-            ξ = self.ξ(history)
-            ξ_normalized = ξ / ξ.sum()
-            return -x_normalized.dot(np.log(ξ_normalized))
+            return (-X_normalized @ np.log(Ξ_normalized)).sum(axis=0)
 
-    def lsq(self, history: JointHistory, grad: bool = False) -> float:
+    def lsq(self, μ: History, grad: bool = False) -> float:
         '''least-squares loss between SFS and its expectation under history
 
-        history: η and μ joint history
+        μ: mutation spectrum history
         grad: flag to return gradient wrt μ
         '''
-        if self.x is None:
+        if self.X is None:
             raise ValueError('use simulate() to generate data first')
+        Ξ = self.L @ μ.vals
         if grad:
-            ξ, J_μξ = self.ξ(history, jac=True)
-            return J_μξ.T @ (ξ - self.x)
+            return self.L.T @ (Ξ - self.X)
         else:
-            return (1 / 2) * ((self.ξ(history) - self.x) ** 2).sum()
+            return (1 / 2) * ((Ξ - self.X) ** 2).sum(axis=0)
 
-
-    def constant_μ_MLE(self, η: PiecewiseConstantHistory
-                       ) -> PiecewiseConstantHistory:
+    def constant_μ_MLE(self) -> History:
         '''gives the MLE for a constant μ history
-
-        η: η history
         '''
-        if self.x is None:
+        if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        z0 = (self.x.sum() / np.sum(self.C @ self.M(η)))
-        return PiecewiseConstantHistory(η.change_points, z0 * np.ones(η.m()))
+        z0 = self.X.sum(axis=0) / np.sum(self.L)
+        return History(self.η.change_points,
+                       z0[np.newaxis, :] * np.ones((self.η.m, 1)))
 
-    def infer_μ(self, η: PiecewiseConstantHistory, λ: np.float64 = 0,
-                α: np.float64 = .99, s: np.float64 = .01,
-                steps: int = 100,
-                fit='prf') -> PiecewiseConstantHistory:
-        '''infer the μ history given the sfs and η history
+    def infer_μ(self, λ: np.float64 = 0, α: np.float64 = .99,
+                s: np.float64 = .01, steps: int = 100, fit='prf',
+                bins: np.ndarray = None) -> History:
+        '''return inferred μ history given the sfs and η history
 
-        η: η history
         λ: regularization strength
         α: relative penalty on L1 vs L2
         s: step size parameter for proximal gradient descent
@@ -308,12 +246,27 @@ class SFS():
         '''
         assert λ >= 0, 'λ must be nonnegative'
         assert 0 <= α <= 1, 'α must be in the unit interval'
-
-        D = (np.eye(η.m(), k=0) - np.eye(η.m(), k=-1))
-        W = np.eye(η.m())
+        self.bins = bins
+        if bins is not None:
+            bin_idxs = np.digitize(np.arange(self.n - 1), bins=bins)
+            X_binned = np.zeros((len(bins), self.X.shape[1]))
+            L_binned = np.zeros((len(bins), self.η.m))
+            for col in range(self.X.shape[1]):
+                X_binned[:, col] = np.bincount(bin_idxs,
+                                               weights=self.X[:, col])
+            for col in range(self.η.m):
+                L_binned[:, col] = np.bincount(bin_idxs,
+                                               weights=self.L[:, col])
+            # stash the unbinned variables
+            X_true = self.X
+            L_true = self.L
+            # temporarily update instance variables to the binned ones
+            self.X = X_binned
+            self.L = L_binned
+        D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
+        W = np.eye(self.η.m)
         W[0, 0] = 0
         D2 = D.T @ W @ D
-
         # gradient of differentiable piece of loss function
         if fit == 'prf':
             def misfit_func(*args, **kwargs):
@@ -324,35 +277,43 @@ class SFS():
             misfit_func = self.lsq
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
-        def grad_f(z):
-            history = JointHistory(η,
-                                   PiecewiseConstantHistory(η.change_points, z)
-                                   )
-            return misfit_func(history, grad=True) \
-                   + λ * (1 - α) * D2 @ z
         # initialize using constant μ history MLE
-        z = self.constant_μ_MLE(η).vals
+        μ = self.constant_μ_MLE()
         for _ in range(steps):
-            g = grad_f(z)
-            if not all(np.isfinite(g)):
-                raise RuntimeError(f'invalid gradient: {g}')
-            z = z - s * g
-            if α > 0:
-                z = ptv.tv1_1d(z, λ * α)
-            z = np.clip(z, 1e-6, np.inf)
-            if not all(np.isfinite(z)):
-                raise RuntimeError(f'invalid z value: {z}')
-        return PiecewiseConstantHistory(η.change_points, z)
+            Z = μ.vals
+            G = misfit_func(μ, grad=True) + λ * (1 - α) * D2 @ Z
+            if not np.all(np.isfinite(G)):
+                raise RuntimeError(f'invalid gradient: {G}')
+            Z = Z - s * G
+            # L1 prox operator on row dimension (oddly 1-based indexed in
+            # proxtv) with weight λα
+            Z = ptv.tvgen(Z, [λ * α], [1], [1])
+            Z = np.clip(Z, 1e-6, np.inf)
+            if not np.all(np.isfinite(Z)):
+                raise RuntimeError(f'invalid z value: {Z}')
+            μ.vals = Z
+        if bins is not None:
+            # restore stashed unbinned variables
+            self.X = X_true
+            self.L = L_true
+        return μ
 
-    def plot(self, history: JointHistory = None, prf_quantiles=False):
-        '''plot the SFS data and optionally the expected SFS under history
+    def plot(self, i: int = None, μ: History = None, prf_quantiles=False):
+        '''plot the SFS data and optionally the expected SFS given μ
 
-        history: joint η and μ history
+        i: component i of kSFS (default first)
+        μ: mutation intensity history (optional)
         prf_quantiles: if True show 95% marginal intervals using the Poisson
                        random field
         '''
-        if history is not None:
-            ξ = self.ξ(history)
+        if i is None:
+            i = 0
+        if μ is not None:
+            z = μ.vals[:, i]
+            ξ = self.L @ z
+            if self.bins is not None:
+                for bin in self.bins:
+                    plt.axvline(bin, c='k', ls=':', alpha=0.2)
             plt.plot(range(1, self.n), ξ, 'r--', label=r'$\xi$')
             if prf_quantiles:
                 ξ_lower = poisson.ppf(.025, ξ)
@@ -361,10 +322,9 @@ class SFS():
                                  ξ_lower, ξ_upper,
                                  facecolor='r', alpha=0.25,
                                  label='inner 95%\nquantile')
-        plt.plot(range(1, len(self.x) + 1), self.x,
+        plt.plot(range(1, len(self.X) + 1), self.X[:, i],
                  'k.', alpha=.25, label=r'data')
         plt.xlabel('$b$')
         plt.ylabel(r'$ξ_b$')
         plt.xscale('log')
         plt.yscale('symlog')
-        plt.legend()
