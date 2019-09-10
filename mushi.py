@@ -45,6 +45,7 @@ class History():
         else:
             vals = self.vals
         plt.step(t, vals, where='post', **kwargs)
+        plt.xlabel('$t$')
         if 'label' in kwargs:
             plt.legend()
 
@@ -233,12 +234,14 @@ class kSFS():
                        z0[np.newaxis, :] * np.ones((self.η.m, 1)))
 
     def infer_μ(self, λ: np.float64 = 0, α: np.float64 = .99,
+                λ_F: np.float64 = 0,
                 s: np.float64 = .01, steps: int = 100, fit='prf',
                 bins: np.ndarray = None) -> History:
         '''return inferred μ history given the sfs and η history
 
-        λ: regularization strength
-        α: relative penalty on L1 vs L2
+        λ: LASSO regularization strength
+        α: relative penalty on L1 vs L2 in LASSO
+        λ_F: Frobenius norm regularization strength
         s: step size parameter for proximal gradient descent
         steps: number of proximal gradient descent steps
         fit: fit function, 'prf' for Poisson random field, 'kl' for
@@ -281,7 +284,7 @@ class kSFS():
         μ = self.constant_μ_MLE()
         for _ in range(steps):
             Z = μ.vals
-            G = misfit_func(μ, grad=True) + λ * (1 - α) * D2 @ Z
+            G = misfit_func(μ, grad=True) + λ * (1 - α) * D2 @ Z + λ_F * Z
             if not np.all(np.isfinite(G)):
                 raise RuntimeError(f'invalid gradient: {G}')
             Z = Z - s * G
