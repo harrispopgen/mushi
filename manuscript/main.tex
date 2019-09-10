@@ -12,6 +12,7 @@
 
 \DeclareMathOperator{\erf}{erf}
 \DeclareMathOperator{\lngamma}{\ln\!\Gamma}
+\DeclareMathOperator{\Tr}{Tr}
 
 % NOTE
 % one sentence per line for nice git diffs
@@ -66,7 +67,7 @@ Complete derivation of formulae are found in the Appendix.
 Given $n$ sampled haplotypes and a demographic history $\eta(t)$ (with time measured retrospectively from the present), we show in Appendix \ref{sec:appendix:xi} that the expected SFS $\boldsymbol \xi = (\xi_1, \xi_2,\dots, \xi_{n-1})$ is a linear transform of the mutation intensity history $\mu(t)$:
 \begin{equation}
   \label{eqn:transform}
-\boldsymbol \xi = \mathcal{L}_{n,\eta}\mu,
+\boldsymbol \xi = \mathcal{L}_{n,\eta}\mu(t),
 \end{equation}
 where $\mathcal{L}_{n,\eta}$ is a finite-rank linear operator that maps infinite-dimensional mutation intensity histories to $(n-1)$-dimensional SFS vectors.
 It is dependent on $n$ and $\eta$, which we take to be fixed.
@@ -84,50 +85,60 @@ The probability that a differential element $dxdt$ on a given sheet contains a m
 \label{fig:model}
 \end{figure}
 
-For numerical implementation we consider finite-dimensional approximations of $\eta(t)$ and $\mu(t)$ as piecewise constant on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$.
+In previous work \citep{Kelley, cancer, etc}, mutation spectra have been parameterized by grouping variants into mutation types according to local $k$-mer nucleotide context, and the number of variants called in each mutation type is taken as a proxy integrating an individual's ancestral mutational input in each type.
+With $k$ odd and the variant registered in the central position there are $\kappa_k=2\times3\times4^{k-1}$ mutation types after collapsing by strand symmetry.
+For example, there are $96$ triplet mutation types ($k=3$).
+Here, we use the same $k$-mer mutation type parameterization to promote the $(n-1)$-element expected SFS vector $\xi$ to the $(n-1)\times\kappa_k$ expected $k$-SFS matrix $\Xi$.
+Similarly, the mutation intensity history function $\mu(t)$ is promoted to the $\kappa_k$-element mutation spectrum history $\boldsymbol\mu(t)$, with each element giving the mutation intensity history function for one mutation type.
+Equation \eqref{eqn:transform} becomes
+\begin{equation}
+  \label{eqn:transform_matrix}
+\Xi = \mathcal{L}_{n,\eta}\boldsymbol\mu^\intercal(t),
+\end{equation}
+
+For numerical implementation we consider finite-dimensional approximations of $\eta(t)$ and $\boldsymbol\mu(t)$ as piecewise constant functions of time on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$.
 We take the epoch boundaries as fixed parameters, and in practice make them dense so as to approximate infinite-dimensional histories.
-Let $\boldsymbol y = (y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let $\boldsymbol z = (z_1,\dots,z_m)$ denote the constant mutation intensity $\mu(t)$ during each epoch.
-In Appendix \ref{sec:appendix:pcsws} we show the linear transform \eqref{eqn:transform} reduces to the matrix equation
+Let $\boldsymbol y = (y_1,\dots,y_m)$ denote the constant population size $\eta(t)$ during each epoch, and let the $m\times\kappa_k$ matrix $Z$ denote the constant mutation intensity during each epoch (rows) for each mutation type (columns).
+In Appendix \ref{sec:appendix:pcsws} we show the linear transform \eqref{eqn:transform_matrix} reduces to the matrix equation
 \begin{equation}
 \label{eqn:transform_discrete}
-\boldsymbol \xi = L_{n, \boldsymbol y} \boldsymbol z,
+\Xi = L_{n, \boldsymbol y} Z,
 \end{equation}
 where the $(n-1)\times m$ matrix $L_{n, \boldsymbol y}$ is fixed given a fixed demographic history $\boldsymbol y$.
 
-In linkage equilibrium the log likelihood function of the mutation intensity history $\boldsymbol z$ given an observed SFS vector $\boldsymbol x = (x_1,\dots,x_{n-1})$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
+In linkage equilibrium the log likelihood function of the mutation spectrum history $Z$ given an observed $k$-SFS matrix $X$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
 \[
-\ell(\boldsymbol z; \boldsymbol x, \boldsymbol y, n) = \boldsymbol x^\intercal\log(L_{n, \boldsymbol y} \boldsymbol z) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} \boldsymbol z,
+\ell(Z; X, \boldsymbol y, n) = \Tr(X^\intercal\log(L_{n, \boldsymbol y} Z)) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} Z\boldsymbol 1,
 \]
-where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $\boldsymbol z$.
+where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $Z$.
 
 %WD more inverse problem intro
-The inverse problem \eqref{eqn:transform} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
+The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
 In order to recover smooth histories,
 we penalize the $L^p$ norms
-of the derivative of $\mu$
+of the time derivative of $\boldsymbol\mu(t)$
 \[
-\left\| \frac{d \mu}{d t} \right\|_p^p
-= \int_0^\infty\left|\frac{d\mu(t)}{dt}\right|^p dt,
+\sum_{i=1}^{\kappa_k}\left\| \frac{d \mu_i(t)}{d t} \right\|_p^p
+= \sum_{i=1}^{\kappa_k}\int_0^\infty\left|\frac{d\mu_i(t)}{dt}\right|^p dt,
 \]
-for $p=1$ and 2.
-With time discretized \eqref{eqn:transform_discrete},
-this becomes
+for $p=1,2$.
+With piecewise constant histories as in \eqref{eqn:transform_discrete} this becomes
 \[
-\left\|\Delta\boldsymbol z \right\|_p^p.
+\left\|\Delta Z \right\|_p^p.
 \]
 where $\Delta$ denotes the first difference matrix.
 Our cost function (penalized log-likelihood) is then
 \begin{equation}
 \label{eqn:penalized}
-C(\bm z)
+C(Z)
 %\tilde\ell(\boldsymbol z)
-= -\ell(\boldsymbol z) + \lambda \left(\alpha\left\|\Delta\boldsymbol z\right\|_1 + \frac{(1-\alpha)}{2}\left\|\Delta\boldsymbol z\right\|_2^2\right),
+= -\ell(Z) + \lambda \left(\alpha\left\|\Delta Z\right\|_1 + \frac{(1-\alpha)}{2}\left\|\Delta Z\right\|_2^2\right),
 \end{equation}
 where $\lambda$ tunes the regularization strength, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
 \textcolor{blue}{Kam note: probably we need a ``Ridge'' (Tikhonov)
 term like the following to deal with small singular values:}
 \[
-\lambda' \| \bm z \|_2^2
+\lambda' \| Z \|_2^2
 \]
 
 
