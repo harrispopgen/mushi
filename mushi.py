@@ -8,7 +8,6 @@ from scipy.stats import poisson
 from matplotlib import pyplot as plt
 import prox_tv as ptv
 
-
 @dataclass
 class History():
     '''Piecewise constant history. The first epoch starts at zero, and the last
@@ -177,52 +176,57 @@ class kSFS():
         np.random.seed(seed)
         self.X = poisson.rvs(self.L @ μ.vals)
 
-    def ℓ(self, μ: History, grad: bool = False) -> np.float:
+    def ℓ(self, Z: np.ndarray, grad: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
 
-        μ: mutation spectrum history
-        grad: flag to return gradient wrt μ
+        Z: mutation spectrum history matrix (μ.vals)
+        grad: flag to also return gradient wrt Z
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        Ξ = self.L @ μ.vals
+        Ξ = self.L @ Z
+        ℓ = poisson.logpmf(self.X, Ξ).sum()
         if grad:
-            dℓdμ = self.L.T @ (self.X / Ξ - 1)
-            return dℓdμ
+            dℓdZ = self.L.T @ (self.X / Ξ - 1)
+            return np.array([ℓ, dℓdZ])
         else:
-            return poisson.logpmf(self.X, Ξ).sum(axis=0)
+            return ℓ
 
-    def d_kl(self, μ: History, grad: bool = False) -> float:
+    def d_kl(self, Z: np.ndarray, grad: bool = False) -> float:
         '''Kullback-Liebler divergence between normalized SFS and its
         expectation under history
         ignores constant term
 
-        μ: mutation spectrum history
-        grad: flag to return gradient wrt μ
+        Z: mutation spectrum history matrix (μ.vals)
+        grad: flag to also return gradient wrt Z
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
         X_normalized = self.X / self.X.sum(axis=0)
-        Ξ = self.L @ μ.vals
+        Ξ = self.L @ Z
         Ξ_normalized = Ξ / Ξ.sum(axis=1)
+        d_kl = (-X_normalized * np.log(Ξ_normalized)).sum()
         if grad:
-            return -self.L.T @ ((X_normalized / Ξ) * (1 - Ξ_normalized))
+            grad_d_kl = -self.L.T @ ((X_normalized / Ξ) * (1 - Ξ_normalized))
+            return np.array([d_kl, grad_d_kl])
         else:
-            return (-X_normalized @ np.log(Ξ_normalized)).sum(axis=0)
+            return d_kl
 
-    def lsq(self, μ: History, grad: bool = False) -> float:
+    def lsq(self, Z: np.ndarray, grad: bool = False) -> float:
         '''least-squares loss between SFS and its expectation under history
 
-        μ: mutation spectrum history
-        grad: flag to return gradient wrt μ
+        Z: mutation spectrum history matrix (μ.vals)
+        grad: flag to also return gradient wrt μ
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        Ξ = self.L @ μ.vals
+        Ξ = self.L @ Z
+        lsq = (1 / 2) * ((Ξ - self.X) ** 2).sum()
         if grad:
-            return self.L.T @ (Ξ - self.X)
+            grad_lsq = self.L.T @ (Ξ - self.X)
+            return np.array([lsq, grad_lsq])
         else:
-            return (1 / 2) * ((Ξ - self.X) ** 2).sum(axis=0)
+            return lsq
 
     def constant_μ_MLE(self) -> History:
         '''gives the MLE for a constant μ history
@@ -234,16 +238,17 @@ class kSFS():
                        z0[np.newaxis, :] * np.ones((self.η.m, 1)))
 
     def infer_μ(self, λ: np.float64 = 0, α: np.float64 = .99,
-                λ_F: np.float64 = 0,
-                s: np.float64 = .01, steps: int = 100, fit='prf',
+                β: np.float64 = 0, γ: np.float64 = 0.8,
+                steps: int = 1000, tol: np.float64 = 1e-4, fit='prf',
                 bins: np.ndarray = None) -> History:
         '''return inferred μ history given the sfs and η history
 
-        λ: LASSO regularization strength
-        α: relative penalty on L1 vs L2 in LASSO
-        λ_F: Frobenius norm regularization strength
-        s: step size parameter for proximal gradient descent
+        λ: fused LASSO regularization strength
+        α: relative penalty on L1 vs L2 in fused LASSO
+        β: spectral regularization strength
+        γ: step size shrinkage rate for line search
         steps: number of proximal gradient descent steps
+        tol: relative tolerance in objective function
         fit: fit function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
         '''
@@ -266,11 +271,7 @@ class kSFS():
             # temporarily update instance variables to the binned ones
             self.X = X_binned
             self.L = L_binned
-        D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
-        W = np.eye(self.η.m)
-        W[0, 0] = 0
-        D2 = D.T @ W @ D
-        # gradient of differentiable piece of loss function
+        # badness of fit
         if fit == 'prf':
             def misfit_func(*args, **kwargs):
                 return -self.ℓ(*args, **kwargs)
@@ -280,21 +281,91 @@ class kSFS():
             misfit_func = self.lsq
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
+        if λ * α > 0 and β > 0:
+            raise NotImplementedError('fused LASSO with spectral '
+                                      'regularization not available, either '
+                                      'λα = 0 (no LASSO) or β = 0 (no spectral'
+                                      'regularization) required')
+        elif λ * α > 0:
+            def prox_update(Z, s):
+                '''L1 prox operator on row dimension (oddly 1-based indexed in
+                proxtv) with weight λα
+                '''
+                return ptv.tvgen(Z, [s * λ * α], [1], [1])
+        elif β > 0:
+            def prox_update(Z, s):
+                '''spectral regularization (nuclear norm penalty)
+                '''
+                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                Σ = np.diag(np.maximum(0, σ - s * β))
+                return U @ Σ @ Vt
+        else:
+            def prox_update(Z, s):
+                return Z
+
+        # Accelerated proximal gradient ascent: our loss function decomposes as
+        # f = g + h, where g is differentiable and h is not.
+        # g has a negative log-likelihood and l2 derivative penalty.
+        # h is an l1 derivative penalty or a spectral regularization term
+        # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        for _ in range(steps):
-            Z = μ.vals
-            G = misfit_func(μ, grad=True) + λ * (1 - α) * D2 @ Z + λ_F * Z
-            if not np.all(np.isfinite(G)):
-                raise RuntimeError(f'invalid gradient: {G}')
-            Z = Z - s * G
-            # L1 prox operator on row dimension (oddly 1-based indexed in
-            # proxtv) with weight λα
-            Z = ptv.tvgen(Z, [λ * α], [1], [1])
-            Z = np.clip(Z, 1e-6, np.inf)
-            if not np.all(np.isfinite(Z)):
-                raise RuntimeError(f'invalid z value: {Z}')
-            μ.vals = Z
+        Z = μ.vals
+        # our auxiliary iterates for acceleration
+        Q = μ.vals
+        # some matrices we'll need for the first difference penalties
+        D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
+        W = np.eye(self.η.m)
+        W[0, 0] = 0
+        D1 = W @ D
+        D2 = D.T @ D1
+        def loss(Z):
+            return misfit_func(Z) + λ * α * np.abs(D1 @ Z).sum() \
+                                  + (λ / 2) * (1 - α) * ((D1 @ Z) ** 2).sum() \
+                                  + β * np.linalg.norm(Z, ord='fro')
+        # initial step size
+        s = 1
+        loss_old = None
+        for k in range(steps):
+            # Armijo line search
+            while True:
+                misfit, grad_misfit = misfit_func(Q, grad=True)
+                # g(Q) and ∇g(Q)
+                g = misfit + (λ / 2) * (1 - α) * ((D1 @ Q) ** 2).sum()
+                grad_g = grad_misfit + λ * (1 - α) * D2 @ Q
+                if not np.all(np.isfinite(grad_g)):
+                    raise RuntimeError(f'invalid gradient: {grad_g}')
+                # G_s(Q) as in the notes linked above
+                G = (1 / s) * (Q - prox_update(Q - s * grad_g, s))
+                # test g(Q - sG_s(Q))
+                g2 = misfit_func(Q - s * G) + \
+                    (λ / 2) * (1 - α) * ((D1 @ (Q - s * G)) ** 2).sum()
+                if g2 <= g - s * (grad_g * G).sum() + (s / 2) * (G ** 2).sum():
+                    break
+                else:
+                    s *= γ
+            # accelerated gradient step
+            Q = Q - s * G
+            Z_old = Z
+            Z = prox_update(Q, s)
+            Q = Z + (k / (k + 3)) * (Z - Z_old)
+            # Z = np.clip(Z, 1e-6, np.inf)
+            if not np.all(np.isfinite(Z)) and np.all(Z > 0):
+                raise RuntimeError(f'invalid Z value: {Z}')
+            # terminate if loss function is constant within tolerance
+            loss_new = loss(Z)
+            if k > 0:
+                rel_change = np.abs((loss_new - loss_old) / loss_old)
+                if rel_change < tol:
+                    break
+                else:
+                    loss_old = loss_new
+                if k == steps - 1:
+                    print(f'step size limit {steps} reached with relative '
+                          f'change in loss function {rel_change:.2g}')
+            else:
+                loss_old = loss_new
+        μ.vals = Z
         if bins is not None:
             # restore stashed unbinned variables
             self.X = X_true
