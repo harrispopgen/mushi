@@ -8,6 +8,7 @@ from scipy.stats import poisson
 from matplotlib import pyplot as plt
 import prox_tv as ptv
 
+
 @dataclass
 class History():
     '''Piecewise constant history. The first epoch starts at zero, and the last
@@ -237,23 +238,26 @@ class kSFS():
         return History(self.η.change_points,
                        z0[np.newaxis, :] * np.ones((self.η.m, 1)))
 
-    def infer_μ(self, λ: np.float64 = 0, α: np.float64 = .99,
-                β: np.float64 = 0, γ: np.float64 = 0.8,
-                steps: int = 1000, tol: np.float64 = 1e-4, fit='prf',
-                bins: np.ndarray = None) -> History:
+    def infer_μ(self, λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
+                λ_r: np.float64 = 0, α_r: np.float64 = 0,
+                γ: np.float64 = 0.8, steps: int = 1000, tol: np.float64 = 1e-4,
+                fit='prf', bins: np.ndarray = None) -> History:
         '''return inferred μ history given the sfs and η history
 
-        λ: fused LASSO regularization strength
-        α: relative penalty on L1 vs L2 in fused LASSO
-        β: spectral regularization strength
+        λ_tv: fused LASSO regularization strength
+        α_tv: relative penalty on L1 vs L2 in fused LASSO
+        λ_r: spectral (rank) regularization strength
+        α_r: relative penalty on L1 vs L2 in spectral regularization
         γ: step size shrinkage rate for line search
         steps: number of proximal gradient descent steps
         tol: relative tolerance in objective function
         fit: fit function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
         '''
-        assert λ >= 0, 'λ must be nonnegative'
-        assert 0 <= α <= 1, 'α must be in the unit interval'
+        assert λ_tv >= 0, 'λ_tv must be nonnegative'
+        assert λ_r >= 0, 'λ_r must be nonnegative'
+        assert 0 <= α_tv <= 1, 'α_tv must be in the unit interval'
+        assert 0 <= α_r <= 1, 'α_r must be in the unit interval'
         self.bins = bins
         if bins is not None:
             bin_idxs = np.digitize(np.arange(self.n - 1), bins=bins)
@@ -281,23 +285,21 @@ class kSFS():
             misfit_func = self.lsq
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
-        if λ * α > 0 and β > 0:
-            raise NotImplementedError('fused LASSO with spectral '
-                                      'regularization not available, either '
-                                      'λα = 0 (no LASSO) or β = 0 (no spectral'
-                                      'regularization) required')
-        elif λ * α > 0:
+        if λ_tv * α_tv > 0 and λ_r * α_r > 0:
+            raise NotImplementedError('fused LASSO with l1 spectral '
+                                      'regularization not available')
+        elif λ_tv * α_tv > 0:
             def prox_update(Z, s):
                 '''L1 prox operator on row dimension (oddly 1-based indexed in
                 proxtv) with weight λα
                 '''
-                return ptv.tvgen(Z, [s * λ * α], [1], [1])
-        elif β > 0:
+                return ptv.tvgen(Z, [s * λ_tv * α_tv], [1], [1])
+        elif λ_r * α_r > 0:
             def prox_update(Z, s):
                 '''spectral regularization (nuclear norm penalty)
                 '''
                 U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                Σ = np.diag(np.maximum(0, σ - s * β))
+                Σ = np.diag(np.maximum(0, σ - s * λ_r * α_r))
                 return U @ Σ @ Vt
         else:
             def prox_update(Z, s):
@@ -305,66 +307,82 @@ class kSFS():
 
         # Accelerated proximal gradient ascent: our loss function decomposes as
         # f = g + h, where g is differentiable and h is not.
-        # g has a negative log-likelihood and l2 derivative penalty.
-        # h is an l1 derivative penalty or a spectral regularization term
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
-        # initialize using constant μ history MLE
-        μ = self.constant_μ_MLE()
-        Z = μ.vals
-        # our auxiliary iterates for acceleration
-        Q = μ.vals
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
         W = np.eye(self.η.m)
         W[0, 0] = 0
         D1 = W @ D
         D2 = D.T @ D1
-        def loss(Z):
-            return misfit_func(Z) + λ * α * np.abs(D1 @ Z).sum() \
-                                  + (λ / 2) * (1 - α) * ((D1 @ Z) ** 2).sum() \
-                                  + β * np.linalg.norm(Z, ord='fro')
+
+        def g(Z, grad=False):
+            'differentiable piece of loss'
+            if grad:
+                misfit, grad_misfit = misfit_func(Z, grad=True)
+            else:
+                misfit = misfit_func(Z)
+            g = misfit \
+                + (λ_tv / 2) * (1 - α_tv) * ((D1 @ Z) ** 2).sum() \
+                + (λ_r / 2) * (1 - α_r) * (Z ** 2).sum()
+            if grad:
+                grad_g = grad_misfit + λ_tv * (1 - α_tv) * D2 @ Z \
+                                     + λ_r * (1 - α_r) * Z
+                return g, grad_g
+            return g
+
+        def h(Z):
+            'nondifferentiable piece of loss'
+            return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
+                + λ_r * α_r * np.linalg.norm(Z, ord='nuc')
+
+        def f(Z):
+            'loss'
+            return g(Z) + h(Z)
+
+        # initialize using constant μ history MLE
+        μ = self.constant_μ_MLE()
+        Z = μ.vals
+        # our auxiliary iterates for acceleration
+        Q = μ.vals
+        # initial loss
+        f_old = f(Z)
         # initial step size
         s = 1
-        loss_old = None
-        for k in range(steps):
+        for k in range(1, steps + 1):
+            # g(Q) and ∇g(Q)
+            g1, grad_g1 = g(Q, grad=True)
             # Armijo line search
             while True:
-                misfit, grad_misfit = misfit_func(Q, grad=True)
-                # g(Q) and ∇g(Q)
-                g = misfit + (λ / 2) * (1 - α) * ((D1 @ Q) ** 2).sum()
-                grad_g = grad_misfit + λ * (1 - α) * D2 @ Q
-                if not np.all(np.isfinite(grad_g)):
-                    raise RuntimeError(f'invalid gradient: {grad_g}')
+                if not np.all(np.isfinite(grad_g1)):
+                    raise RuntimeError(f'invalid gradient: {grad_g1}')
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (Q - prox_update(Q - s * grad_g, s))
+                G = (1 / s) * (Q - prox_update(Q - s * grad_g1, s))
                 # test g(Q - sG_s(Q))
-                g2 = misfit_func(Q - s * G) + \
-                    (λ / 2) * (1 - α) * ((D1 @ (Q - s * G)) ** 2).sum()
-                if g2 <= g - s * (grad_g * G).sum() + (s / 2) * (G ** 2).sum():
+                g2 = g(Q - s * G)
+                if g2 <= g1 - s * (grad_g1 * G).sum() + (s / 2) * (G ** 2).sum():
                     break
                 else:
                     s *= γ
             # accelerated gradient step
-            Q = Q - s * G
             Z_old = Z
-            Z = prox_update(Q, s)
+            Z = prox_update(Q - s * grad_g1, s)
             Q = Z + (k / (k + 3)) * (Z - Z_old)
             # Z = np.clip(Z, 1e-6, np.inf)
             if not np.all(np.isfinite(Z)) and np.all(Z > 0):
                 raise RuntimeError(f'invalid Z value: {Z}')
             # terminate if loss function is constant within tolerance
-            loss_new = loss(Z)
-            if k > 0:
-                rel_change = np.abs((loss_new - loss_old) / loss_old)
-                if rel_change < tol:
-                    break
-                else:
-                    loss_old = loss_new
-                if k == steps - 1:
-                    print(f'step size limit {steps} reached with relative '
-                          f'change in loss function {rel_change:.2g}')
+            f_new = f(Z)
+            rel_change = np.abs((f_new - f_old) / f_old)
+            if rel_change < tol:
+                print(f'relative change in loss function {rel_change:.2g} '
+                      f'is within tolerance {tol} after {k} steps')
+                break
             else:
-                loss_old = loss_new
+                f_old = f_new
+            if k == steps:
+                print(f'step size limit {steps} reached with relative '
+                      f'change in loss function {rel_change:.2g}')
+            f_old = f_new
         μ.vals = Z
         if bins is not None:
             # restore stashed unbinned variables
