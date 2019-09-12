@@ -6,13 +6,14 @@ import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson
 from matplotlib import pyplot as plt
+from matplotlib.colors import SymLogNorm
 import prox_tv as ptv
 
 
 @dataclass
 class History():
-    '''Piecewise constant history. The first epoch starts at zero, and the last
-    epoch extends to infinity. Can be used for η or μ.
+    '''base class piecewise constant history. The first epoch starts at zero,
+    and the last epoch extends to infinity
 
     change_points: epoch change points (times)
     vals: constant values for each epoch (rows)
@@ -30,28 +31,12 @@ class History():
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
         if np.any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError('elements of vals must be finite and positive')
+            raise ValueError(f'elements of vals must be finite and '
+                             'positive')
         self.m = len(self.vals)
 
-    def plot(self, i=None, **kwargs) -> None:
-        '''plot the history
-
-        i: value column to plot (optional)
-        kwargs: key word arguments passed to plt.step
-        '''
-        t = np.concatenate((np.array([0]), self.change_points))
-        if i is not None:
-            vals = self.vals[:, i]
-        else:
-            vals = self.vals
-        plt.step(t, vals, where='post', **kwargs)
-        plt.xlabel('$t$')
-        if 'label' in kwargs:
-            plt.legend()
-
     def arrays(self):
-        '''return time grid and values in each cell
-        '''
+        '''return time grid and values in each cell'''
         t = np.concatenate((np.array([0]),
                             self.change_points,
                             np.array([np.inf])))
@@ -73,17 +58,103 @@ class History():
             yield (start_time, end_time, value)
 
     def check_grid(self, other: int):
+        '''test if time grid is the same as another instance'''
         if any(self.change_points != other.change_points):
             return False
         else:
             return True
 
+    def plot(self, idxs=None, **kwargs) -> None:
+        '''plot the history
+
+        idxs: indices of value column(s) to plot (optional)
+        kwargs: key word arguments passed to plt.step
+        '''
+        t = np.concatenate((np.array([0]), self.change_points))
+        if idxs is not None:
+            vals = self.vals[:, idxs]
+        else:
+            vals = self.vals
+        plt.step(t, vals, where='post', **kwargs)
+        plt.xlabel('$t$')
+        if 'label' in kwargs:
+            plt.legend()
+
+
+class η(History):
+    '''demographic history
+
+    change_points: epoch change points (times)
+    y: vector of constant population sizes in each epoch
+    '''
+    @property
+    def y(self):
+        '''read-only alias to vals attribute in base class'''
+        return self.vals
+
+    @y.setter
+    def y(self, value):
+        self.vals = value
+
+    def __post_init__(self):
+        super().__post_init__()
+        assert len(self.y.shape) == 1, self.y.shape
+
+    def plot(self, **kwargs) -> None:
+        super().plot(**kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$η(t)$')
+        plt.xscale('symlog')
+        plt.yscale('log')
+        plt.tight_layout()
+
+
+class μ(History):
+    '''mutation spectrum history
+
+    change_points: epoch change points (times)
+    Z: matrix of constant values for each epoch (rows) in each mutation type
+       (columns)
+    '''
+    @property
+    def Z(self):
+        '''read-only alias to vals attribute in base class'''
+        return self.vals
+
+    @Z.setter
+    def Z(self, value):
+        self.vals = value
+
+    def __post_init__(self):
+        super().__post_init__()
+        assert len(self.Z.shape) == 2, self.Z.shape
+
+    def plot(self, idxs=None, **kwargs) -> None:
+        super().plot(idxs=idxs, **kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$\\mu(t)$')
+        plt.xscale('symlog')
+        plt.tight_layout()
+
+    def heatmap(self):
+        t = np.concatenate((np.array([0]), self.change_points))
+        y, x = np.meshgrid(t, range(1, self.Z.shape[1] + 2))
+        c = plt.pcolormesh(x, y, self.Z.T)
+        for line in range(1, self.Z.shape[1] + 2):
+            plt.axvline(line, c='k', lw=0.5)
+        plt.gca().invert_yaxis()
+        plt.xlabel('mutation type')
+        plt.yscale('symlog')
+        plt.ylabel('$t$', rotation=0)
+        cbar = plt.colorbar(c)
+        cbar.set_label('$\\mu(t)$', rotation=0)
+        plt.tight_layout()
+
 
 class kSFS():
-    '''The kSFS model described in the text
-    '''
+    '''The kSFS model described in the text'''
 
-    def __init__(self, η: History, X: np.ndarray = None, n: int = None):
+    def __init__(self, η: η, X: np.ndarray = None, n: int = None):
         '''Sample frequency spectrum
 
         η: demographic history
@@ -124,7 +195,7 @@ class kSFS():
         return W1 - W2
 
     @staticmethod
-    def M(n: int, η: History) -> np.ndarray:
+    def M(n: int, η: η) -> np.ndarray:
         '''The M matrix defined in the text
 
         n: number of sampled haplotypes
@@ -145,8 +216,7 @@ class kSFS():
             @ np.diag(y)
 
     def tmrca_cdf(self) -> np.ndarray:
-        '''The cdf of the TMRCA of at each change point
-        '''
+        '''The cdf of the TMRCA of at each change point'''
         t, y = self.η.arrays()
         # epoch durations
         s = np.diff(t)
@@ -165,7 +235,7 @@ class kSFS():
                                  axis=1) ** binom(np.arange(2, self.n + 1), 2
                                                   )[:, np.newaxis]).T
 
-    def simulate(self, μ: History, seed: int = None) -> None:
+    def simulate(self, μ: μ, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
 
@@ -175,12 +245,12 @@ class kSFS():
         if not self.η.check_grid(μ):
             raise ValueError('η and μ histories must use the same time grid')
         np.random.seed(seed)
-        self.X = poisson.rvs(self.L @ μ.vals)
+        self.X = poisson.rvs(self.L @ μ.Z)
 
     def ℓ(self, Z: np.ndarray, grad: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
 
-        Z: mutation spectrum history matrix (μ.vals)
+        Z: mutation spectrum history matrix (μ.Z)
         grad: flag to also return gradient wrt Z
         '''
         if self.X is None:
@@ -198,7 +268,7 @@ class kSFS():
         expectation under history
         ignores constant term
 
-        Z: mutation spectrum history matrix (μ.vals)
+        Z: mutation spectrum history matrix (μ.Z)
         grad: flag to also return gradient wrt Z
         '''
         if self.X is None:
@@ -216,7 +286,7 @@ class kSFS():
     def lsq(self, Z: np.ndarray, grad: bool = False) -> float:
         '''least-squares loss between SFS and its expectation under history
 
-        Z: mutation spectrum history matrix (μ.vals)
+        Z: mutation spectrum history matrix (μ.Z)
         grad: flag to also return gradient wrt μ
         '''
         if self.X is None:
@@ -229,19 +299,18 @@ class kSFS():
         else:
             return lsq
 
-    def constant_μ_MLE(self) -> History:
-        '''gives the MLE for a constant μ history
-        '''
+    def constant_μ_MLE(self) -> μ:
+        '''gives the MLE for a constant μ history'''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
         z0 = self.X.sum(axis=0) / np.sum(self.L)
-        return History(self.η.change_points,
-                       z0[np.newaxis, :] * np.ones((self.η.m, 1)))
+        return μ(self.η.change_points,
+                 z0[np.newaxis, :] * np.ones((self.η.m, 1)))
 
     def infer_μ(self, λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
                 λ_r: np.float64 = 0, α_r: np.float64 = 0,
                 γ: np.float64 = 0.8, steps: int = 1000, tol: np.float64 = 1e-4,
-                fit='prf', bins: np.ndarray = None) -> History:
+                fit='prf', bins: np.ndarray = None) -> μ:
         '''return inferred μ history given the sfs and η history
 
         λ_tv: fused LASSO regularization strength
@@ -316,7 +385,7 @@ class kSFS():
         D2 = D.T @ D1
 
         def g(Z, grad=False):
-            'differentiable piece of loss'
+            '''differentiable piece of loss'''
             if grad:
                 misfit, grad_misfit = misfit_func(Z, grad=True)
             else:
@@ -331,19 +400,19 @@ class kSFS():
             return g
 
         def h(Z):
-            'nondifferentiable piece of loss'
+            '''nondifferentiable piece of loss'''
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * np.linalg.norm(Z, ord='nuc')
 
         def f(Z):
-            'loss'
+            '''loss'''
             return g(Z) + h(Z)
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        Z = μ.vals
+        Z = μ.Z
         # our auxiliary iterates for acceleration
-        Q = μ.vals
+        Q = μ.Z
         # initial loss
         f_old = f(Z)
         # initial step size
@@ -359,7 +428,8 @@ class kSFS():
                 G = (1 / s) * (Q - prox_update(Q - s * grad_g1, s))
                 # test g(Q - sG_s(Q))
                 g2 = g(Q - s * G)
-                if g2 <= g1 - s * (grad_g1 * G).sum() + (s / 2) * (G ** 2).sum():
+                if g2 <= g1 - s * (grad_g1 * G).sum() \
+                        + (s / 2) * (G ** 2).sum():
                     break
                 else:
                     s *= γ
@@ -383,14 +453,14 @@ class kSFS():
                 print(f'step size limit {steps} reached with relative '
                       f'change in loss function {rel_change:.2g}')
             f_old = f_new
-        μ.vals = Z
         if bins is not None:
             # restore stashed unbinned variables
             self.X = X_true
             self.L = L_true
+        μ.Z = Z
         return μ
 
-    def plot(self, i: int = None, μ: History = None, prf_quantiles=False):
+    def plot(self, i: int = None, μ: μ = None, prf_quantiles=False):
         '''plot the SFS data and optionally the expected SFS given μ
 
         i: component i of kSFS (default first)
@@ -401,7 +471,7 @@ class kSFS():
         if i is None:
             i = 0
         if μ is not None:
-            z = μ.vals[:, i]
+            z = μ.Z[:, i]
             ξ = self.L @ z
             if self.bins is not None:
                 for bin in self.bins:
@@ -420,3 +490,31 @@ class kSFS():
         plt.ylabel(r'$ξ_b$')
         plt.xscale('log')
         plt.yscale('symlog')
+
+    def heatmap(self, μ: μ = None, linthresh=1):
+        '''heatmap with mixed linear-log scale color bar
+
+        μ: inferred mutation spectrum history, z-scores are shown if not None
+        linthresh: the range within which the plot is linear (when μ = None)
+        '''
+        Y, X = np.meshgrid(range(1, self.n + 1), range(1, self.X.shape[1] + 2))
+        if μ is None:
+            Z = self.X.T
+            cbar_label = 'number of variants'
+            c = plt.pcolormesh(X, Y, Z, norm=SymLogNorm(linthresh))
+            plt.yscale('symlog')
+        else:
+            Ξ = self.L @ μ.Z
+            Z = (self.X.T - Ξ.T) / np.sqrt(Ξ.T)
+            cbar_label = 'z-score'
+            cmap_range = np.abs(Z).max()
+            c = plt.pcolormesh(X, Y, Z, vmin=-cmap_range, vmax=cmap_range,
+                               cmap='seismic')
+        for line in range(1, self.X.shape[1] + 2):
+            plt.axvline(line, c='k', lw=0.5)
+        plt.gca().invert_yaxis()
+        plt.xlabel('mutation type')
+        plt.ylabel('sample frequency')
+        cbar = plt.colorbar(c)
+        cbar.set_label(cbar_label)
+        plt.tight_layout()
