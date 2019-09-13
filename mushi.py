@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 import numpy as np
 from scipy.special import binom
-from scipy.stats import poisson
+from scipy.stats import poisson, chi2
 from matplotlib import pyplot as plt
 from matplotlib.colors import SymLogNorm
 import prox_tv as ptv
@@ -309,7 +309,7 @@ class kSFS():
 
     def infer_μ(self, λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
                 λ_r: np.float64 = 0, α_r: np.float64 = 0,
-                γ: np.float64 = 0.8, steps: int = 1000, tol: np.float64 = 1e-4,
+                γ: np.float64 = 0.8, max_iter: int = 1000, tol: np.float64 = 1e-4,
                 fit='prf', bins: np.ndarray = None) -> μ:
         '''return inferred μ history given the sfs and η history
 
@@ -318,7 +318,7 @@ class kSFS():
         λ_r: spectral (rank) regularization strength
         α_r: relative penalty on L1 vs L2 in spectral regularization
         γ: step size shrinkage rate for line search
-        steps: number of proximal gradient descent steps
+        max_iter: maximum number of proximal gradient descent iterations
         tol: relative tolerance in objective function
         fit: fit function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
@@ -417,7 +417,7 @@ class kSFS():
         f_old = f(Z)
         # initial step size
         s = 1
-        for k in range(1, steps + 1):
+        for k in range(1, max_iter + 1):
             # g(Q) and ∇g(Q)
             g1, grad_g1 = g(Q, grad=True)
             # Armijo line search
@@ -445,12 +445,12 @@ class kSFS():
             rel_change = np.abs((f_new - f_old) / f_old)
             if rel_change < tol:
                 print(f'relative change in loss function {rel_change:.2g} '
-                      f'is within tolerance {tol} after {k} steps')
+                      f'is within tolerance {tol} after {k} iterations')
                 break
             else:
                 f_old = f_new
-            if k == steps:
-                print(f'step size limit {steps} reached with relative '
+            if k == max_iter:
+                print(f'maximum iteration {max_iter} reached with relative '
                       f'change in loss function {rel_change:.2g}')
             f_old = f_new
         if bins is not None:
@@ -494,7 +494,7 @@ class kSFS():
     def heatmap(self, μ: μ = None, linthresh=1):
         '''heatmap with mixed linear-log scale color bar
 
-        μ: inferred mutation spectrum history, z-scores are shown if not None
+        μ: inferred mutation spectrum history, χ^2 values are shown if not None
         linthresh: the range within which the plot is linear (when μ = None)
         '''
         Y, X = np.meshgrid(range(1, self.n + 1), range(1, self.X.shape[1] + 2))
@@ -502,19 +502,24 @@ class kSFS():
             Z = self.X.T
             cbar_label = 'number of variants'
             c = plt.pcolormesh(X, Y, Z, norm=SymLogNorm(linthresh))
-            plt.yscale('symlog')
+            cbar = plt.colorbar(c)
+            cbar.set_label(cbar_label, rotation=90)
         else:
             Ξ = self.L @ μ.Z
-            Z = (self.X.T - Ξ.T) / np.sqrt(Ξ.T)
-            cbar_label = 'z-score'
-            cmap_range = np.abs(Z).max()
-            c = plt.pcolormesh(X, Y, Z, vmin=-cmap_range, vmax=cmap_range,
-                               cmap='seismic')
+            Z = (self.X.T - Ξ.T) ** 2 / Ξ.T
+            cbar_label = '$\\chi^2$'
+            c = plt.pcolormesh(X, Y, Z, vmin=0, cmap='Reds',
+                               norm=SymLogNorm(linthresh))
+            cbar = plt.colorbar(c)
+            cbar.set_label(cbar_label, rotation=0)
+            χ2_total = Z.sum()
+            p = chi2(np.prod(Z.shape)).sf(χ2_total)
+            print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
+                  f'p = {p}')
         for line in range(1, self.X.shape[1] + 2):
             plt.axvline(line, c='k', lw=0.5)
+        plt.yscale('symlog')
         plt.gca().invert_yaxis()
         plt.xlabel('mutation type')
         plt.ylabel('sample frequency')
-        cbar = plt.colorbar(c)
-        cbar.set_label(cbar_label)
         plt.tight_layout()
