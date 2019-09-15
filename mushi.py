@@ -6,7 +6,6 @@ import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson, chi2
 from matplotlib import pyplot as plt
-from matplotlib.colors import SymLogNorm
 import prox_tv as ptv
 
 
@@ -309,8 +308,9 @@ class kSFS():
 
     def infer_μ(self, λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
                 λ_r: np.float64 = 0, α_r: np.float64 = 0,
-                γ: np.float64 = 0.8, max_iter: int = 1000, tol: np.float64 = 1e-4,
-                fit='prf', bins: np.ndarray = None) -> μ:
+                γ: np.float64 = 0.8, max_iter: int = 1000,
+                tol: np.float64 = 1e-4, fit='prf',
+                bins: np.ndarray = None) -> μ:
         '''return inferred μ history given the sfs and η history
 
         λ_tv: fused LASSO regularization strength
@@ -499,17 +499,16 @@ class kSFS():
         '''
         Y, X = np.meshgrid(range(1, self.n + 1), range(1, self.X.shape[1] + 2))
         if μ is None:
-            Z = self.X.T
-            cbar_label = 'number of variants'
-            c = plt.pcolormesh(X, Y, Z, norm=SymLogNorm(linthresh))
+            Z = self.X.T / self.X.sum(axis=1, keepdims=True).T
+            cbar_label = 'mutation type enrichment'
+            c = plt.pcolormesh(X, Y, Z)
             cbar = plt.colorbar(c)
             cbar.set_label(cbar_label, rotation=90)
         else:
             Ξ = self.L @ μ.Z
             Z = (self.X.T - Ξ.T) ** 2 / Ξ.T
             cbar_label = '$\\chi^2$'
-            c = plt.pcolormesh(X, Y, Z, vmin=0, cmap='Reds',
-                               norm=SymLogNorm(linthresh))
+            c = plt.pcolormesh(X, Y, Z, vmin=0, cmap='Reds')
             cbar = plt.colorbar(c)
             cbar.set_label(cbar_label, rotation=0)
             χ2_total = Z.sum()
@@ -517,7 +516,7 @@ class kSFS():
             print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
                   f'p = {p}')
         for line in range(1, self.X.shape[1] + 2):
-            plt.axvline(line, c='k', lw=0.5)
+            plt.axvline(line, c='k', lw=0.1)
         plt.yscale('symlog')
         plt.gca().invert_yaxis()
         plt.xlabel('mutation type')
