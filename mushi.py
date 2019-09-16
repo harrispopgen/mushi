@@ -310,7 +310,8 @@ class kSFS():
                 λ_r: np.float64 = 0, α_r: np.float64 = 0,
                 γ: np.float64 = 0.8, max_iter: int = 1000,
                 tol: np.float64 = 1e-4, fit='prf',
-                bins: np.ndarray = None) -> μ:
+                bins: np.ndarray = None,
+                hard=False) -> μ:
         '''return inferred μ history given the sfs and η history
 
         λ_tv: fused LASSO regularization strength
@@ -322,6 +323,8 @@ class kSFS():
         tol: relative tolerance in objective function
         fit: fit function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
+        bins: SFS frequency bins
+        hard: hard Vs soft singular value thresholding
         '''
         assert λ_tv >= 0, 'λ_tv must be nonnegative'
         assert λ_r >= 0, 'λ_r must be nonnegative'
@@ -364,12 +367,21 @@ class kSFS():
                 '''
                 return ptv.tvgen(Z, [s * λ_tv * α_tv], [1], [1])
         elif λ_r * α_r > 0:
-            def prox_update(Z, s):
-                '''spectral regularization (nuclear norm penalty)
-                '''
-                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                Σ = np.diag(np.maximum(0, σ - s * λ_r * α_r))
-                return U @ Σ @ Vt
+            if hard:
+                def prox_update(Z, s):
+                    '''l0 norm on singular values (hard-thresholding)
+                    '''
+                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                    σ[σ <= s * λ_r * α_r] = 0.0
+                    Σ = np.diag(σ)
+                    return U @ Σ @ Vt
+            else:
+                def prox_update(Z, s):
+                    '''l1 norm on singular values (soft-thresholding)
+                    '''
+                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                    Σ = np.diag(np.maximum(0, σ - s * λ_r * α_r))
+                    return U @ Σ @ Vt
         else:
             def prox_update(Z, s):
                 return Z
@@ -380,9 +392,9 @@ class kSFS():
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
         W = np.eye(self.η.m)
-        W[0, 0] = 0
+        W[0, 0] = 0  # W matrix deals with boundary condition
         D1 = W @ D
-        D2 = D.T @ D1
+        D2 = D1.T @ D1
 
         def g(Z, grad=False):
             '''differentiable piece of loss'''
@@ -401,8 +413,13 @@ class kSFS():
 
         def h(Z):
             '''nondifferentiable piece of loss'''
+            σ = np.linalg.svd(Z, compute_uv=False)
+            if hard:
+                rank_penalty = np.linalg.norm(σ, 0)
+            else:
+                rank_penalty = np.linalg.norm(σ, 1)
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
-                + λ_r * α_r * np.linalg.norm(Z, ord='nuc')
+                + λ_r * α_r * rank_penalty
 
         def f(Z):
             '''loss'''
