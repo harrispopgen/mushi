@@ -13,9 +13,11 @@ Dependencies
   - matplotlib
   - jupyter
   - scons
+  - gcc
+  - pip
+  - appdirs  
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
-  - appdirs
 
 Manuscript
 ---
