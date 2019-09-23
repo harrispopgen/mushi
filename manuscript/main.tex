@@ -120,7 +120,18 @@ In linkage equilibrium the log likelihood function of the mutation spectrum hist
 where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $Z$.
 
 %WD more inverse problem intro
-The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general, so many very different histories can be equally consistent with the data \citep{oscillation paper? Yun's other papers?}.
+The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general, 
+so many very different histories can be equally consistent with the data 
+\citep{oscillation paper? Yun's other papers?}.
+We deal with this problem using regularization, to enforce well-behaved histories.
+Our cost function to minimize, a penalized log-likelihood, is
+\begin{equation}
+\label{eqn:penalized}
+C(Z)
+%\tilde\ell(\boldsymbol z)
+= -\ell(Z) + R(Z) .
+\end{equation}
+The function $R(Z)$ incorporates our regularization.
 In order to recover smooth histories,
 we penalize the $L^p$ norms
 of the time derivative of $\boldsymbol\mu(t)$
@@ -134,19 +145,60 @@ With piecewise constant histories as in \eqref{eqn:transform_discrete} this beco
 \left\|\Delta Z \right\|_p^p.
 \]
 where $\Delta$ denotes the first difference matrix.
-Our cost function (penalized log-likelihood) is then
+We have implemented three different types of regularization.
+
+The first option we call ``soft'' rank regularization, with 
 \begin{equation}
-\label{eqn:penalized}
-C(Z)
-%\tilde\ell(\boldsymbol z)
-= -\ell(Z) + \lambda \left(\alpha\left\|\Delta Z\right\|_1 + \frac{(1-\alpha)}{2}\left\|\Delta Z\right\|_2^2\right),
+  \label{eq:regularization_soft}
+  R_\mathrm{soft}(Z) 
+  = 
+  \lambda_\mathrm{spline} 
+  \frac{1}{2} \left\|\Delta Z\right\|_2^2
+  +
+  \lambda_\mathrm{rank} \| Z \|_*.
 \end{equation}
-where $\lambda$ tunes the regularization strength, and $\alpha$ tunes the relative $p=1$ vs $p=2$ regularization.
-\textcolor{blue}{Kam note: probably we need a ``Ridge'' (Tikhonov)
-term like the following to deal with small singular values:}
-\[
-\lambda' \| Z \|_2^2
-\]
+The spline term controls the smoothness of solutions, 
+and the rank term allows us to recover low-rank solutions.
+The rank penalty is the nuclear norm $\| Z \|_*$, 
+which is equivalent to the $\ell^1$-norm on the singular values.
+If $Z = U S V^\intercal$ is the SVD of $Z$, with $S = \mathrm{diag}(\sigma)$ then $\| Z \|_* = \| \sigma \|_1$.
+The parameters $\lambda_\mathrm{spline}$ and $\lambda_\mathrm{rank}$ control the overall strength
+of smoothing and rank regularization.
+The function $R_\mathrm{soft}$ is convex; therefore we have a convex optimization problem 
+in this scenario.
+
+The second option is ``hard'' rank regularization, where
+\begin{equation}
+  \label{eq:regularization_soft}
+  R_\mathrm{hard}(Z) 
+  = 
+  \lambda_\mathrm{spline} 
+  \frac{1}{2} \left\|\Delta Z\right\|_2^2
+  +
+  \lambda_\mathrm{rank} \, \mathrm{rank}(Z).
+\end{equation}
+Here, the rank penalty is the actual rank of $Z$,
+and note that $\mathrm{rank}(Z) = \| \sigma \|_0$.
+In this case the problem is {\em not} convex.
+However, we may still compute a proximal map for the non-differentiable rank term
+and optimize with prox-gradients.
+
+The third option allows more general smoothing but ignores all rank penalization:
+\begin{equation}
+  \label{eq:regularization_soft}
+  R_\mathrm{indep}(Z) 
+  = 
+  \lambda_\mathrm{TV} 
+  \left(
+    \alpha_\mathrm{TV}\left\|\Delta Z\right\|_1 + \frac{(1-\alpha_\mathrm{TV})}{2}\left\|\Delta Z\right\|_2^2
+  \right) .
+\end{equation}
+The TV terms control the smoothness of solutions, 
+and the rank term allows us to recover low-rank solutions.
+The function $R_\mathrm{indep}$ is convex; 
+therefore we have a convex optimization problem.
+Note also that the columns of $Z$ are uncoupled, 
+so that we may solve this case as $\kappa_k$ different subproblems.
 
 
 \section*{Results}\label{sec:results}
