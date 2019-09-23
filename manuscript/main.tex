@@ -191,9 +191,10 @@ The third option allows more general smoothing but ignores all rank penalization
   R_\mathrm{indep}(Z) 
   = 
   \lambda_\mathrm{TV} 
-  \left(
-    \alpha_\mathrm{TV}\left\|\Delta Z\right\|_1 + \frac{(1-\alpha_\mathrm{TV})}{2}\left\|\Delta Z\right\|_2^2
-  \right) .
+  \left\|\Delta Z\right\|_1 
+  + 
+  \lambda_\mathrm{spline} \frac{1}{2}\left\|\Delta Z\right\|_2^2
+  .
 \end{equation}
 The TV terms control the smoothness of solutions, 
 and the rank term allows us to recover low-rank solutions.
