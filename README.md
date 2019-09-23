@@ -15,7 +15,9 @@ Dependencies
   - scons
   - gcc
   - pip
-  - appdirs  
+  - appdirs
+  - samtools
+  - bcftools
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
 
