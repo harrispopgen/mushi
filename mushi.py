@@ -172,7 +172,7 @@ class kSFS():
             def prox_update(Z, s):
                 return Z
 
-        # Accelerated proximal gradient descent: our loss function decomposes
+        # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
         # We transform logZ to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
@@ -196,7 +196,8 @@ class kSFS():
             if grad:
                 grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                return g, grad_g * Z
+                grad_g_log = grad_g * Z # change of variables
+                return g, grad_g_log 
             return g
 
         def h(logZ):
@@ -207,8 +208,8 @@ class kSFS():
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-
-                return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
+            # now add in TV term... you will never have both
+            return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
         def f(logZ):
@@ -217,18 +218,17 @@ class kSFS():
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        logZ = np.log(μ.Z)
-        # our auxiliary iterates for acceleration
-        logQ = np.log(μ.Z)
+        logZ = np.log(μ.Z) # current iterate
+        logQ = np.log(μ.Z) # momentum iterate
         # initial loss
         f_trajectory = [f(logZ)]
         # initialize step size
-        s0 = 1
-        s = s0
+        s0 = 1 # max step size
+        s = s0 # current step size
         # max number of Armijo step size reductions
         max_line_iter = 100
         for k in range(1, max_iter + 1):
-            # g(logQ) and ∇g(logQ)
+            # evaluate smooth part of loss at momentum point
             g1, grad_g1 = g(logQ, grad=True)
             # Armijo line search
             for line_iter in range(max_line_iter):
@@ -238,9 +238,12 @@ class kSFS():
                 G = (1 / s) * (logQ - prox_update(logQ - s * grad_g1, s))
                 # test g(logQ - sG_s(logQ)) for line search
                 if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
-                                       + (s / 2) * (G ** 2).sum()):
+                                    + (s / 2) * (G ** 2).sum()):
+                    # Armijo satisfied
                     break
-                s *= γ
+                else:
+                    # Armijo not satisfied
+                    s *= γ # shrink step size
             # accelerated gradient step
             logZ_old = logZ
             logZ = logQ - s * G
