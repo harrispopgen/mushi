@@ -321,7 +321,7 @@ class kSFS():
         γ: step size shrinkage rate for line search
         max_iter: maximum number of proximal gradient descent iterations
         tol: relative tolerance in objective function
-        fit: fit function, 'prf' for Poisson random field, 'kl' for
+        fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
         bins: SFS frequency bins
         hard: hard Vs soft singular value thresholding
@@ -349,12 +349,12 @@ class kSFS():
             self.L = L_binned
         # badness of fit
         if fit == 'prf':
-            def misfit_func(*args, **kwargs):
+            def loss_func(*args, **kwargs):
                 return -self.ℓ(*args, **kwargs)
         elif fit == 'kl':
-            misfit_func = self.d_kl
+            loss_func = self.d_kl
         elif fit == 'lsq':
-            misfit_func = self.lsq
+            loss_func = self.lsq
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
         if λ_tv * α_tv > 0 and λ_r * α_r > 0:
@@ -393,20 +393,20 @@ class kSFS():
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
         W = np.eye(self.η.m)
         W[0, 0] = 0  # W matrix deals with boundary condition
-        D1 = W @ D
-        D2 = D1.T @ D1
+        D1 = W @ D  # 1st difference matrix
+        D2 = D1.T @ D1 # square of 1st difference matrix (Laplacian)
 
         def g(Z, grad=False):
             '''differentiable piece of loss'''
             if grad:
-                misfit, grad_misfit = misfit_func(Z, grad=True)
+                loss, grad_loss = loss_func(Z, grad=True)
             else:
-                misfit = misfit_func(Z)
-            g = misfit \
+                loss = loss_func(Z)
+            g = loss \
                 + (λ_tv / 2) * (1 - α_tv) * ((D1 @ Z) ** 2).sum() \
                 + (λ_r / 2) * (1 - α_r) * (Z ** 2).sum()
             if grad:
-                grad_g = grad_misfit + λ_tv * (1 - α_tv) * D2 @ Z \
+                grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
                 return g, grad_g
             return g
