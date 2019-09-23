@@ -184,7 +184,7 @@ class kSFS():
         D2 = D1.T @ D1 # square of 1st difference matrix (Laplacian)
 
         def g(logZ, grad=False):
-            '''differentiable piece of loss'''
+            '''differentiable piece of cost'''
             Z = np.exp(logZ)
             if grad:
                 loss, grad_loss = loss_func(Z, grad=True)
@@ -200,18 +200,19 @@ class kSFS():
             return g
 
         def h(logZ):
-            '''nondifferentiable piece of loss'''
+            '''nondifferentiable piece of cost'''
             Z = np.exp(logZ)
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
+
+                return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
         def f(logZ):
-            '''loss'''
+            '''cost'''
             return g(logZ) + h(logZ)
 
         # initialize using constant μ history MLE
