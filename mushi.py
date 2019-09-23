@@ -2,11 +2,16 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from typing import List
+
 import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson, chi2
-from matplotlib import pyplot as plt
 import prox_tv as ptv
+
+from matplotlib import pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 
 @dataclass
@@ -108,13 +113,17 @@ class η(History):
         plt.tight_layout()
 
 
+@dataclass
 class μ(History):
     '''mutation spectrum history
 
     change_points: epoch change points (times)
     Z: matrix of constant values for each epoch (rows) in each mutation type
        (columns)
+    mutation_types: list of mutation type names (default integer names)
     '''
+    mutation_types: List[str] = None
+
     @property
     def Z(self):
         '''read-only alias to vals attribute in base class'''
@@ -127,6 +136,11 @@ class μ(History):
     def __post_init__(self):
         super().__post_init__()
         assert len(self.Z.shape) == 2, self.Z.shape
+        if self.mutation_types is None:
+            self.mutation_types = range(1, self.Z.shape[1] + 1)
+        assert len(self.mutation_types) == self.Z.shape[1]
+        self.mutation_types = pd.Index(self.mutation_types,
+                                       name='mutation type')
 
     def plot(self, idxs=None, **kwargs) -> None:
         super().plot(idxs=idxs, **kwargs)
@@ -135,35 +149,43 @@ class μ(History):
         plt.xscale('symlog')
         plt.tight_layout()
 
-    def heatmap(self):
+    def clustermap(self, **kwargs):
+        '''clustermap of k-SFS
+
+        mutation_types: list of column names
+        kwargs: additional keyword arguments passed to pd.clustermap
+        '''
         t = np.concatenate((np.array([0]), self.change_points))
-        y, x = np.meshgrid(t, range(1, self.Z.shape[1] + 2))
-        c = plt.pcolormesh(x, y, self.Z.T)
-        for line in range(1, self.Z.shape[1] + 2):
-            plt.axvline(line, c='k', lw=0.5)
-        plt.gca().invert_yaxis()
-        plt.xlabel('mutation type')
-        plt.yscale('symlog')
-        plt.ylabel('$t$', rotation=0)
-        cbar = plt.colorbar(c)
-        cbar.set_label('$\\mu(t)$', rotation=0)
-        plt.tight_layout()
+        Z = self.Z / self.Z.sum(1, keepdims=True)
+        Z = Z / Z.mean(0, keepdims=True)
+        df = pd.DataFrame(data=Z, index=pd.Index(t, name='$t$'),
+                          columns=self.mutation_types)
+        g = sns.clustermap(df, row_cluster=False, center=1,
+                           metric='correlation',
+                           cbar_kws={'label': '$relative mutation intensity$'},
+                           **kwargs)
+        g.ax_heatmap.set_yscale('symlog')
+        return g
 
 
 class kSFS():
     '''The kSFS model described in the text'''
 
-    def __init__(self, η: η, X: np.ndarray = None, n: int = None):
+    def __init__(self, η: η, X: np.ndarray = None, n: int = None,
+                 mutation_types: List[str] = None):
         '''Sample frequency spectrum
 
         η: demographic history
         X: observed k-SFS matrix (optional)
         n: number of haplotypes (optional)
+        mutation_types: names of X columns
         '''
         self.η = η
         if X is not None:
             self.X = X
             self.n = len(X) + 1
+            self.mutation_types = pd.Index(mutation_types,
+                                           name='mutation type')
         elif not n:
             raise ValueError('either x or n must be specified')
         else:
@@ -245,47 +267,56 @@ class kSFS():
             raise ValueError('η and μ histories must use the same time grid')
         np.random.seed(seed)
         self.X = poisson.rvs(self.L @ μ.Z)
+        self.mutation_types = μ.mutation_types
 
-    def ℓ(self, Z: np.ndarray, grad: bool = False) -> np.float:
+    @staticmethod
+    def ℓ(Z: np.ndarray, X: np.ndarray, L: np.ndarray,
+          grad: bool = False) -> np.float:
         '''Poisson random field log-likelihood of history
 
         Z: mutation spectrum history matrix (μ.Z)
+        X: k-SFS data
+        L: model matrix
         grad: flag to also return gradient wrt Z
         '''
-        if self.X is None:
-            raise ValueError('use simulate() to generate data first')
-        Ξ = self.L @ Z
-        ℓ = poisson.logpmf(self.X, Ξ).sum()
+        Ξ = L @ Z
+        ℓ = poisson.logpmf(X, Ξ).sum()
         if grad:
-            dℓdZ = self.L.T @ (self.X / Ξ - 1)
+            dℓdZ = L.T @ (X / Ξ - 1)
             return np.array([ℓ, dℓdZ])
         else:
             return ℓ
 
-    def d_kl(self, Z: np.ndarray, grad: bool = False) -> float:
+    @staticmethod
+    def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray,
+             grad: bool = False) -> float:
         '''Kullback-Liebler divergence between normalized SFS and its
         expectation under history
         ignores constant term
 
         Z: mutation spectrum history matrix (μ.Z)
+        X: k-SFS data
+        L: model matrix
         grad: flag to also return gradient wrt Z
         '''
-        if self.X is None:
-            raise ValueError('use simulate() to generate data first')
-        X_normalized = self.X / self.X.sum(axis=0)
-        Ξ = self.L @ Z
-        Ξ_normalized = Ξ / Ξ.sum(axis=1)
+        X_normalized = X / X.sum(axis=0)
+        Ξ = L @ Z
+        Ξ_normalized = Ξ / Ξ.sum(axis=1, keepdims=True)
         d_kl = (-X_normalized * np.log(Ξ_normalized)).sum()
         if grad:
-            grad_d_kl = -self.L.T @ ((X_normalized / Ξ) * (1 - Ξ_normalized))
+            grad_d_kl = -L.T @ ((X_normalized / Ξ) * (1 - Ξ_normalized))
             return np.array([d_kl, grad_d_kl])
         else:
             return d_kl
 
-    def lsq(self, Z: np.ndarray, grad: bool = False) -> float:
+    @staticmethod
+    def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray,
+            grad: bool = False) -> float:
         '''least-squares loss between SFS and its expectation under history
 
         Z: mutation spectrum history matrix (μ.Z)
+        X: k-SFS data
+        L: model matrix
         grad: flag to also return gradient wrt μ
         '''
         if self.X is None:
@@ -304,14 +335,17 @@ class kSFS():
             raise ValueError('use simulate() to generate data first')
         z0 = self.X.sum(axis=0) / np.sum(self.L)
         return μ(self.η.change_points,
-                 z0[np.newaxis, :] * np.ones((self.η.m, 1)))
+                 z0[np.newaxis, :] * np.ones((self.η.m, 1)),
+                 mutation_types=self.mutation_types.values)
 
-    def infer_μ(self, λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
-                λ_r: np.float64 = 0, α_r: np.float64 = 0,
+    def infer_μ(self,
+                λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
+                λ_r: np.float64 = 0,  α_r: np.float64 = 0,
                 γ: np.float64 = 0.8, max_iter: int = 1000,
                 tol: np.float64 = 1e-4, fit='prf',
                 bins: np.ndarray = None,
-                hard=False) -> μ:
+                hard=False,
+                exclude_singletons: bool = False) -> μ:
         '''return inferred μ history given the sfs and η history
 
         λ_tv: fused LASSO regularization strength
@@ -325,7 +359,10 @@ class kSFS():
              Kullback-Leibler divergence, 'lsq' for least-squares
         bins: SFS frequency bins
         hard: hard Vs soft singular value thresholding
+        exclude_singletons: flag to exclude singleton frequency variants
         '''
+        if self.X is None:
+            raise ValueError('use simulate() to generate data first')
         assert λ_tv >= 0, 'λ_tv must be nonnegative'
         assert λ_r >= 0, 'λ_r must be nonnegative'
         assert 0 <= α_tv <= 1, 'α_tv must be in the unit interval'
@@ -348,13 +385,21 @@ class kSFS():
             self.X = X_binned
             self.L = L_binned
         # badness of fit
+        if exclude_singletons:
+            L = self.L[1:-1, :]
+            X = self.X[1:-1, :]
+        else:
+            L = self.L
+            X = self.X
         if fit == 'prf':
-            def misfit_func(*args, **kwargs):
-                return -self.ℓ(*args, **kwargs)
+            def misfit_func(Z, **kwargs):
+                return -self.ℓ(Z, X, L, **kwargs)
         elif fit == 'kl':
-            misfit_func = self.d_kl
+            def misfit_func(Z, **kwargs):
+                return self.d_kl(Z, X, L, **kwargs)
         elif fit == 'lsq':
-            misfit_func = self.lsq
+            def misfit_func(Z, **kwargs):
+                return self.lsq(Z, X, L, **kwargs)
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
         if λ_tv * α_tv > 0 and λ_r * α_r > 0:
@@ -386,8 +431,9 @@ class kSFS():
             def prox_update(Z, s):
                 return Z
 
-        # Accelerated proximal gradient ascent: our loss function decomposes as
-        # f = g + h, where g is differentiable and h is not.
+        # Accelerated proximal gradient descent: our loss function decomposes
+        # as f = g + h, where g is differentiable and h is not.
+        # We transform logZ to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
@@ -396,8 +442,9 @@ class kSFS():
         D1 = W @ D
         D2 = D1.T @ D1
 
-        def g(Z, grad=False):
+        def g(logZ, grad=False):
             '''differentiable piece of loss'''
+            Z = np.exp(logZ)
             if grad:
                 misfit, grad_misfit = misfit_func(Z, grad=True)
             else:
@@ -408,11 +455,12 @@ class kSFS():
             if grad:
                 grad_g = grad_misfit + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                return g, grad_g
+                return g, grad_g * Z
             return g
 
-        def h(Z):
+        def h(logZ):
             '''nondifferentiable piece of loss'''
+            Z = np.exp(logZ)
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
@@ -421,61 +469,62 @@ class kSFS():
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
-        def f(Z):
+        def f(logZ):
             '''loss'''
-            return g(Z) + h(Z)
+            return g(logZ) + h(logZ)
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        Z = μ.Z
+        logZ = np.log(μ.Z)
         # our auxiliary iterates for acceleration
-        Q = μ.Z
+        logQ = np.log(μ.Z)
         # initial loss
-        f_old = f(Z)
-        # initial step size
-        s = 1
+        f_trajectory = [f(logZ)]
+        # initialize step size
+        s0 = 1
+        s = s0
+        # max number of Armijo step size reductions
+        max_line_iter = 100
         for k in range(1, max_iter + 1):
-            # g(Q) and ∇g(Q)
-            g1, grad_g1 = g(Q, grad=True)
+            # g(logQ) and ∇g(logQ)
+            g1, grad_g1 = g(logQ, grad=True)
             # Armijo line search
-            while True:
+            for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
                     raise RuntimeError(f'invalid gradient: {grad_g1}')
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (Q - prox_update(Q - s * grad_g1, s))
-                # test g(Q - sG_s(Q))
-                g2 = g(Q - s * G)
-                if g2 <= g1 - s * (grad_g1 * G).sum() \
-                        + (s / 2) * (G ** 2).sum():
+                G = (1 / s) * (logQ - prox_update(logQ - s * grad_g1, s))
+                # test g(logQ - sG_s(logQ)) for line search
+                if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
+                                       + (s / 2) * (G ** 2).sum()):
                     break
-                else:
-                    s *= γ
+                s *= γ
             # accelerated gradient step
-            Z_old = Z
-            Z = prox_update(Q - s * grad_g1, s)
-            Q = Z + (k / (k + 3)) * (Z - Z_old)
-            # Z = np.clip(Z, 1e-6, np.inf)
-            if not np.all(np.isfinite(Z)) and np.all(Z > 0):
-                raise RuntimeError(f'invalid Z value: {Z}')
+            logZ_old = logZ
+            logZ = logQ - s * G
+            logQ = logZ + (k / (k + 3)) * (logZ - logZ_old)
+            if line_iter == max_line_iter - 1:
+                print('warning: line search failed')
+                s = s0
+            if not np.all(np.isfinite(logZ)):
+                print(f'warning: Z contains invalid values')
             # terminate if loss function is constant within tolerance
-            f_new = f(Z)
-            rel_change = np.abs((f_new - f_old) / f_old)
+            f_trajectory.append(f(logZ))
+            rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
+                                / f_trajectory[-2])
             if rel_change < tol:
                 print(f'relative change in loss function {rel_change:.2g} '
                       f'is within tolerance {tol} after {k} iterations')
                 break
-            else:
-                f_old = f_new
             if k == max_iter:
                 print(f'maximum iteration {max_iter} reached with relative '
                       f'change in loss function {rel_change:.2g}')
-            f_old = f_new
         if bins is not None:
             # restore stashed unbinned variables
             self.X = X_true
             self.L = L_true
-        μ.Z = Z
-        return μ
+        μ.Z = np.exp(logZ)
+        return μ, f_trajectory
 
     def plot(self, i: int = None, μ: μ = None, prf_quantiles=False):
         '''plot the SFS data and optionally the expected SFS given μ
@@ -507,35 +556,32 @@ class kSFS():
         plt.ylabel(r'$ξ_b$')
         plt.xscale('log')
         plt.yscale('symlog')
+        plt.tight_layout()
 
-    def heatmap(self, μ: μ = None, linthresh=1):
-        '''heatmap with mixed linear-log scale color bar
+    def clustermap(self, μ: μ = None,
+                   linthresh=1, **kwargs):
+        '''clustermap with mixed linear-log scale color bar
 
         μ: inferred mutation spectrum history, χ^2 values are shown if not None
         linthresh: the range within which the plot is linear (when μ = None)
+        kwargs: additional keyword arguments passed to pd.clustermap
         '''
-        Y, X = np.meshgrid(range(1, self.n + 1), range(1, self.X.shape[1] + 2))
         if μ is None:
-            Z = self.X.T / self.X.sum(axis=1, keepdims=True).T
-            cbar_label = 'mutation type enrichment'
-            c = plt.pcolormesh(X, Y, Z)
-            cbar = plt.colorbar(c)
-            cbar.set_label(cbar_label, rotation=90)
+            Z = self.X / self.X.sum(axis=1, keepdims=True)
+            Z = Z / Z.mean(0, keepdims=True)
+            cbar_label = 'mutation type\nenrichment'
         else:
             Ξ = self.L @ μ.Z
-            Z = (self.X.T - Ξ.T) ** 2 / Ξ.T
+            Z = (self.X - Ξ) ** 2 / Ξ
             cbar_label = '$\\chi^2$'
-            c = plt.pcolormesh(X, Y, Z, vmin=0, cmap='Reds')
-            cbar = plt.colorbar(c)
-            cbar.set_label(cbar_label, rotation=0)
             χ2_total = Z.sum()
             p = chi2(np.prod(Z.shape)).sf(χ2_total)
             print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
                   f'p = {p}')
-        for line in range(1, self.X.shape[1] + 2):
-            plt.axvline(line, c='k', lw=0.1)
-        plt.yscale('symlog')
-        plt.gca().invert_yaxis()
-        plt.xlabel('mutation type')
-        plt.ylabel('sample frequency')
-        plt.tight_layout()
+        df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
+                                                 name='sample frequency'),
+                          columns=self.mutation_types)
+        g = sns.clustermap(df, row_cluster=False, metric='correlation',
+                           cbar_kws={'label': cbar_label}, **kwargs)
+        g.ax_heatmap.set_yscale('symlog')
+        return g
