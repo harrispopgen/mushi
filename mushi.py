@@ -162,7 +162,7 @@ class μ(History):
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False, center=1,
                            metric='correlation',
-                           cbar_kws={'label': '$relative mutation intensity$'},
+                           cbar_kws={'label': 'relative mutation intensity'},
                            **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g

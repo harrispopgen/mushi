@@ -118,7 +118,7 @@ class Ancestor():
         # categorical dtype for nucleotides
         nuc_dtype = CategoricalDtype(list('ACGTN'))
         snps = pd.read_csv(snps_file, sep='\t', header=None,
-                           names=('chr', 'pos', 'ref', 'alt', 'aa', 'ac', 'an'),
+                           names=('chr', 'pos', 'ref', 'alt', 'ac', 'an'),
                            dtype={'chr': np.uint8, 'pos': np.uint32,
                                   'ref': nuc_dtype, 'alt': nuc_dtype,
                                   'ac': np.uint16, 'an': np.uint16},

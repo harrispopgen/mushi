@@ -8,13 +8,13 @@
 # mac
 n_jobs=`sysctl -n hw.physicalcpu`
 
-bcfs="data.nosync/bcf_files"
-ancs="data.nosync/human_ancestor_GRCh37_e59"
-sample_pops="data.nosync/integrated_call_samples_v3.20130502.ALL.panel"
+bcfs="../data.nosync/bcf_files"
+ancs="../data.nosync/human_ancestor_GRCh37_e59"
+sample_pops="../data.nosync/integrated_call_samples_v3.20130502.ALL.panel"
 pop_flag="--pop=CEU"
 k="3"
-phastcons="data.nosync/phastConsElements100way.txt.gz"
-repeats="data.nosync/nestedRepeats.txt.gz"
+phastcons="../data.nosync/phastConsElements100way.txt.gz"
+repeats="../data.nosync/nestedRepeats.txt.gz"
 
 outdir="scons_output"
 
