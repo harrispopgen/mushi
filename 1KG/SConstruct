@@ -1,0 +1,136 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Projection analysis for specific triplet mutation spectra"""
+
+from __future__ import print_function
+import os
+import glob
+# import sconsutils
+from SCons.Script import Environment, AddOption, GetOption
+
+# this is where we'd define qsub commands
+# sconsutils
+
+# Set up SCons environment
+environ = os.environ.copy()
+env = Environment(ENV=environ)
+
+# command line arguments
+AddOption('--bcfs',
+          dest='bcfs',
+          type='string',
+          metavar='<path>',
+          help='path to directory containing bcf files')
+bcf_dir = GetOption('bcfs')
+AddOption('--ancs',
+          dest='ancs',
+          type='string',
+          metavar='<path>',
+          help='path to directory containing ancestral fasta files')
+ancs_dir = GetOption('ancs')
+AddOption('--kmer',
+          dest='k',
+          type='int',
+          default=3,
+          metavar='<int>',
+          help='context window size for kSFS (default 3)')
+k = GetOption('k')
+AddOption('--sample_pops',
+          dest='sample_pops',
+          type='string',
+          metavar='<path>',
+          default=None,
+          help='optional path to file populations for each sample (i.e. '
+               'integrated_call_samples_v3.20130502.ALL.panel)')
+sample_pops = GetOption('sample_pops')
+AddOption('--pop',
+          dest='pop',
+          type='string',
+          metavar='<path>',
+          default=None,
+          help='optional population to restrict panel (e.g. CEU or EUR)')
+pop = GetOption('pop')
+AddOption('--phastcons',
+          dest='phastcons',
+          type='string',
+          metavar='<path>',
+          help='path to gzipped phastcons file (i.e. phastCons100way.txt.gz)')
+phastcons = GetOption('phastcons')
+AddOption('--repeats',
+          dest='repeats',
+          type='string',
+          metavar='<path>',
+          help='path to gzipped repeats file (i.e. nestedRepeats.txt.gz)')
+repeats = GetOption('repeats')
+AddOption('--outdir',
+          type='string',
+          metavar="DIR",
+          default='scons_output',
+          help='directory in which to output results will be created if '
+               'nonexistant (default "scons_output")')
+outdir = GetOption('outdir')
+
+# parse the --jobs command line argument
+n_jobs = GetOption('num_jobs')
+
+# need this so scons -h runs without error
+if bcf_dir is not None:
+    # if we specified a population for the reerence snp panel, make a list of
+    # those indvs
+    if pop is not None:
+        pop_list = env.Command([os.path.join(outdir, pop + '.list')],
+                               sample_pops,
+                               f'grep {pop} ${{SOURCE}} | '
+                               f'cut -f1 > ${{TARGET}}')
+    else:
+        pop_list = None
+
+    # mask for conserved sites and repeats
+    mask_file = os.path.join(outdir, 'mask.tsv')
+    tgt = [mask_file, mask_file + '.tbi']
+    src = [phastcons, repeats]
+    cmd = ('python region_mask.py ${SOURCES} | sort -k1V -k2n -k3n'
+           ' | bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 '
+           '${TARGETS[0]}')
+    mask = env.Command(tgt, src, cmd)
+
+    snps_context = []
+    # loop over chromosome bcf files
+    for chro in (str(chro_int) for chro_int in range(1, 23)):
+        # get bcf for this chromosome
+        # NOTE assumes chro is indicated by second '.'-delimited field in bcf
+        # file name
+        bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
+        assert len(bcf) == 1
+        bcf = bcf[0]
+
+        # create snps file with columns CHROM POS REF ALT AC AN
+        tgt = os.path.join(outdir, f'snps.{chro}.tsv')
+        src = [mask[0], bcf]
+        if pop_list is not None:
+            src.append(pop_list)
+        cmd = 'bcftools view -T ^${SOURCES[0]} '
+        if pop_list is not None:
+            cmd += '-S ${SOURCES[2]} '
+        cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
+        cmd += ' ${SOURCES[1]} | '
+        cmd += 'bcftools query -f '
+        cmd += ('\'%CHROM\\t%POS\\t%REF\\t%ALT\\t%AC\\t%AN\\n\' > ${TARGET}')
+        snps = env.Command(tgt, src, cmd)
+
+        # get ancestral alignment for this chromosome
+        anc_fasta = glob.glob(f'{ancs_dir}/human_ancestor_{chro}.fa')
+        assert len(anc_fasta) == 1
+        anc_fasta = anc_fasta[0]
+
+        # compute snps file with ancestral k-mer contexts
+        tgt = os.path.join(outdir, f'snps.{k}mer.{chro}.tsv')
+        src = [anc_fasta, snps]
+        cmd = f'python ancestor.py ${{SOURCES}} {k} > $TARGET'
+        snps_context.append(env.Command(tgt, src, cmd))
+
+    # compute k-SFS
+    tgt = os.path.join(outdir, f'{k}-SFS.tsv')
+    cmd = f'python ksfs.py ${{SOURCES}} > $TARGET'
+    snps_context.append(env.Command(tgt, snps_context, cmd))

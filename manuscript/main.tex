@@ -36,7 +36,7 @@ $^2$Paul G.\ Allen School of Computer Science \& Engineering,}\\
 
 \begin{abstract}
 
-Single nucleotide variant (SNV) frequencies partitioned according to triplet nucleotide context vary among human ancestry groups and among great ape species, indicating variation and divergence of the mutation process.
+Single nucleotide variant (SNV) frequencies partitioned according to local nucleotide context vary among human ancestry groups and among great ape species, indicating variation and divergence of the mutation process.
 The sample frequency spectrum (SFS)---the distribution of derived allele frequencies among sampled haplotypes---is a well-studied population genetic summary statistic that is sensitive to demographic history.
 We extend a coalescent framework for demographic inference from the SFS to accommodate inference of mutation spectrum histories from the sample frequency spectrum resolved by $k$-mer nucleotide context ($k$-SFS).
 We formulate inference of mutation spectrum histories from the $k$-SFS as a linear inverse problem.
@@ -47,7 +47,7 @@ We formulate inference of mutation spectrum histories from the $k$-SFS as a line
 \section*{Introduction}\label{sec:intro}
 
 \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
-We develop coalescent theory for the dependence of the expected 3-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} triplet mutation spectrum history (triplet-specific mutation intensities as a function of time into the past).
+We develop coalescent theory for the dependence of the expected $k$-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} mutation spectrum history (mutation intensities as a function of time into the past for each mutation type).
 This is similar in spirit to Kelley's simulation-based approach (which assumed the European demography of \cite{Tennessen2012-dq}), but is much faster, more flexibly parameterized.
 
 Some references for nonidentifiability of demographic history from the SFS: \cite{Baharian2018-np, Bhaskar2014-fu, Terhorst2015-xt, Myers2008-jp}.
@@ -74,9 +74,9 @@ Complete derivation of formulae are found in the Appendix.
 Given $n$ sampled haplotypes and a demographic history $\eta(t)$ (with time measured retrospectively from the present), we show in Appendix \ref{sec:appendix:xi} that the expected SFS $\boldsymbol \xi = (\xi_1, \xi_2,\dots, \xi_{n-1})$ is a linear transform of the mutation intensity history $\mu(t)$:
 \begin{equation}
   \label{eqn:transform}
-\boldsymbol \xi = \mathcal{L}_{n,\eta}\mu(t),
+\boldsymbol \xi = \mathcal{L}_{n,\eta(t)}\mu(t),
 \end{equation}
-where $\mathcal{L}_{n,\eta}$ is a finite-rank linear operator that maps infinite-dimensional mutation intensity histories to $(n-1)$-dimensional SFS vectors.
+where $\mathcal{L}_{n,\eta(t)}$ is a finite-rank linear operator that maps infinite-dimensional mutation intensity histories to $(n-1)$-dimensional SFS vectors.
 It is dependent on $n$ and $\eta$, which we take to be fixed.
 
 % Need to talk about this fig \ref{fig:model}.
@@ -100,7 +100,7 @@ Similarly, the mutation intensity history function $\mu(t)$ is promoted to the $
 Equation \eqref{eqn:transform} becomes
 \begin{equation}
   \label{eqn:transform_matrix}
-\Xi = \mathcal{L}_{n,\eta}\boldsymbol\mu^\intercal(t),
+\Xi = \mathcal{L}_{n,\eta(t)}\boldsymbol\mu^\intercal(t),
 \end{equation}
 
 For numerical implementation we consider finite-dimensional approximations of $\eta(t)$ and $\boldsymbol\mu(t)$ as piecewise constant functions of time on $m$ common epochs $[t_0, t_1), [t_1, t_2),\dots, [t_{m-1}, t_m)$ where $0=t_0 < t_1 < \dots < t_{m-1} < t_m=\infty$.
@@ -115,7 +115,7 @@ where the $(n-1)\times m$ matrix $L_{n, \boldsymbol y}$ is fixed given a fixed d
 
 In linkage equilibrium the log likelihood function of the mutation spectrum history $Z$ given an observed $k$-SFS matrix $X$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
 \[
-\ell(Z; X, \boldsymbol y, n) = \Tr(X^\intercal\log(L_{n, \boldsymbol y} Z)) - \boldsymbol 1^\intercal L_{n, \boldsymbol y} Z\boldsymbol 1,
+\ell(Z; X, \boldsymbol y, n) = \Tr(X^\intercal\log(L_{n, \boldsymbol y} Z)) - \|L_{n, \boldsymbol y} Z\|_1,
 \]
 where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $Z$.
 
