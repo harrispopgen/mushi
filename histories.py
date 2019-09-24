@@ -132,6 +132,9 @@ class μ(History):
 
     def __post_init__(self):
         super().__post_init__()
+        # if mutation rate vector instead of matrix, promote to matrix
+        if len(self.Z.shape) == 1:
+            self.Z = self.Z[:, np.newaxis]
         assert len(self.Z.shape) == 2, self.Z.shape
         if self.mutation_types is None:
             self.mutation_types = range(1, self.Z.shape[1] + 1)
