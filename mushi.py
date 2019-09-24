@@ -187,7 +187,7 @@ class kSFS():
         W = np.eye(self.η.m)
         W[0, 0] = 0  # W matrix deals with boundary condition
         D1 = W @ D  # 1st difference matrix
-        D2 = D1.T @ D1 # square of 1st difference matrix (Laplacian)
+        D2 = D1.T @ D1  # square of 1st difference matrix (Laplacian)
 
         def g(logZ, grad=False):
             '''differentiable piece of cost'''
@@ -202,8 +202,8 @@ class kSFS():
             if grad:
                 grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                grad_g_log = grad_g * Z # change of variables
-                return g, grad_g_log 
+                grad_g_log = grad_g * Z  # change of variables
+                return g, grad_g_log
             return g
 
         def h(logZ):
@@ -224,13 +224,13 @@ class kSFS():
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        logZ = np.log(μ.Z) # current iterate
-        logQ = np.log(μ.Z) # momentum iterate
+        logZ = np.log(μ.Z)  # current iterate
+        logQ = np.log(μ.Z)  # momentum iterate
         # initial loss
         f_trajectory = [f(logZ)]
         # initialize step size
-        s0 = 1 # max step size
-        s = s0 # current step size
+        s0 = 1  # max step size
+        s = s0  # current step size
         # max number of Armijo step size reductions
         max_line_iter = 100
         for k in range(1, max_iter + 1):
@@ -248,12 +248,12 @@ class kSFS():
                 G = (1 / s) * (logQ - logZ)
                 # test g(logQ - sG_s(logQ)) for sufficient decrease
                 if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
-                                    + (s / 2) * (G ** 2).sum()):
+                                       + (s / 2) * (G ** 2).sum()):
                     # Armijo satisfied
                     break
                 else:
                     # Armijo not satisfied
-                    s *= γ # shrink step size
+                    s *= γ  # shrink step size
             # update momentum term
             logQ = logZ + ((k - 1) / (k + 2)) * (logZ - logZ_old)
             if line_iter == max_line_iter - 1:
