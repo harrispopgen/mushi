@@ -230,13 +230,17 @@ class kSFS():
         for k in range(1, max_iter + 1):
             # evaluate smooth part of loss at momentum point
             g1, grad_g1 = g(logQ, grad=True)
+            # store old iterate
+            logZ_old = logZ
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
                     raise RuntimeError(f'invalid gradient: {grad_g1}')
+                # new point via prox-gradient of momentum point
+                logZ = prox_update(logQ - s * grad_g1, s)
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (logQ - prox_update(logQ - s * grad_g1, s))
-                # test g(logQ - sG_s(logQ)) for line search
+                G = (1 / s) * (logQ - logZ)
+                # test g(logQ - sG_s(logQ)) for sufficient decrease
                 if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
                                     + (s / 2) * (G ** 2).sum()):
                     # Armijo satisfied
@@ -244,10 +248,8 @@ class kSFS():
                 else:
                     # Armijo not satisfied
                     s *= γ # shrink step size
-            # accelerated gradient step
-            logZ_old = logZ
-            logZ = logQ - s * G
-            logQ = logZ + (k / (k + 3)) * (logZ - logZ_old)
+            # update momentum term
+            logQ = logZ + ((k - 1) / (k + 2)) * (logZ - logZ_old)
             if line_iter == max_line_iter - 1:
                 print('warning: line search failed')
                 s = s0
