@@ -31,8 +31,12 @@ class kSFS():
         if X is not None:
             self.X = X
             self.n = len(X) + 1
-            self.mutation_types = pd.Index(mutation_types,
-                                           name='mutation type')
+            if mutation_types is not None:
+                self.mutation_types = pd.Index(mutation_types,
+                                               name='mutation type')
+            else:
+                self.mutation_types = pd.Index(range(self.X.shape[1]),
+                                               name='mutation type')
         elif not n:
             raise ValueError('either x or n must be specified')
         else:
