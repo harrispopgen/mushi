@@ -135,12 +135,14 @@ class kSFS():
             L = self.L
             X = self.X
         if fit == 'prf':
-            def loss_func(*args, **kwargs):
-                return -self.ℓ(*args, **kwargs)
+            def loss_func(Z, **kwargs):
+                return -utils.ℓ(Z, X, L, **kwargs)
         elif fit == 'kl':
-            loss_func = self.d_kl
+            def loss_func(Z, **kwargs):
+                return utils.d_kl(Z, X, L, **kwargs)
         elif fit == 'lsq':
-            loss_func = self.lsq
+            def loss_func(Z, **kwargs):
+                return utils.lsq(Z, X, L, **kwargs)
         else:
             raise ValueError(f'unrecognized fit argument {fit}')
         if λ_tv * α_tv > 0 and λ_r * α_r > 0:
