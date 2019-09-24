@@ -154,10 +154,12 @@ The first option we call ``soft'' rank regularization, with
   \label{eq:regularization_soft}
   R_\mathrm{soft}(Z) 
   = 
-  \lambda_\mathrm{spline} 
-  \frac{1}{2} \left\|\Delta Z\right\|_2^2
+  \frac{  \lambda_\mathrm{spline} }{2} \left\|\Delta Z\right\|_2^2
   +
-  \lambda_\mathrm{rank} \| Z \|_*.
+  \lambda_\mathrm{rank} \| Z \|_*
+  +
+   \frac{\lambda_\mathrm{ridge}}{2}  \| Z \|_\mathrm{F}^2
+   .
 \end{equation}
 The spline term controls the smoothness of solutions, 
 and the rank term allows us to recover low-rank solutions.
@@ -174,10 +176,12 @@ The second option is ``hard'' rank regularization, where
   \label{eq:regularization_soft}
   R_\mathrm{hard}(Z) 
   = 
-  \lambda_\mathrm{spline} 
-  \frac{1}{2} \left\|\Delta Z\right\|_2^2
+  \frac{\lambda_\mathrm{spline}}{2} \left\|\Delta Z\right\|_2^2
   +
-  \lambda_\mathrm{rank} \, \mathrm{rank}(Z).
+  \lambda_\mathrm{rank} \, \mathrm{rank}(Z)
+  +
+  \frac{\lambda_\mathrm{ridge}}{2} \| Z \|_\mathrm{F}^2
+  .
 \end{equation}
 Here, the rank penalty is the actual rank of $Z$,
 and note that $\mathrm{rank}(Z) = \| \sigma \|_0$.
@@ -191,14 +195,16 @@ The third option allows more general smoothing but ignores all rank penalization
   R_\mathrm{indep}(Z) 
   = 
   \lambda_\mathrm{TV} 
-  \left(
-    \alpha_\mathrm{TV}\left\|\Delta Z\right\|_1 + \frac{(1-\alpha_\mathrm{TV})}{2}\left\|\Delta Z\right\|_2^2
-  \right) .
+  \left\|\Delta Z\right\|_1 
+  + 
+  \frac{\lambda_\mathrm{spline}}{2} \left\|\Delta Z\right\|_2^2
+  +
+  \frac{\lambda_\mathrm{ridge}}{2} \| Z \|_\mathrm{F}^2
+  .
 \end{equation}
 The TV terms control the smoothness of solutions, 
 and the rank term allows us to recover low-rank solutions.
-The function $R_\mathrm{indep}$ is convex; 
-therefore we have a convex optimization problem.
+The function $R_\mathrm{indep}$ is convex.
 Note also that the columns of $Z$ are uncoupled, 
 so that we may solve this case as $\kappa_k$ different subproblems.
 

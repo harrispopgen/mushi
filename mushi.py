@@ -178,7 +178,7 @@ class kSFS():
             def prox_update(Z, s):
                 return Z
 
-        # Accelerated proximal gradient descent: our loss function decomposes
+        # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
         # We transform logZ to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
@@ -187,10 +187,10 @@ class kSFS():
         W = np.eye(self.η.m)
         W[0, 0] = 0  # W matrix deals with boundary condition
         D1 = W @ D  # 1st difference matrix
-        D2 = D1.T @ D1 # square of 1st difference matrix (Laplacian)
+        D2 = D1.T @ D1  # square of 1st difference matrix (Laplacian)
 
         def g(logZ, grad=False):
-            '''differentiable piece of loss'''
+            '''differentiable piece of cost'''
             Z = np.exp(logZ)
             if grad:
                 loss, grad_loss = loss_func(Z, grad=True)
@@ -202,54 +202,60 @@ class kSFS():
             if grad:
                 grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                return g, grad_g * Z
+                grad_g_log = grad_g * Z  # change of variables
+                return g, grad_g_log
             return g
 
         def h(logZ):
-            '''nondifferentiable piece of loss'''
+            '''nondifferentiable piece of cost'''
             Z = np.exp(logZ)
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
+            # now add in TV term... you will never have both
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
         def f(logZ):
-            '''loss'''
+            '''cost'''
             return g(logZ) + h(logZ)
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        logZ = np.log(μ.Z)
-        # our auxiliary iterates for acceleration
-        logQ = np.log(μ.Z)
+        logZ = np.log(μ.Z)  # current iterate
+        logQ = np.log(μ.Z)  # momentum iterate
         # initial loss
         f_trajectory = [f(logZ)]
         # initialize step size
-        s0 = 1
-        s = s0
+        s0 = 1  # max step size
+        s = s0  # current step size
         # max number of Armijo step size reductions
         max_line_iter = 100
         for k in range(1, max_iter + 1):
-            # g(logQ) and ∇g(logQ)
+            # evaluate smooth part of loss at momentum point
             g1, grad_g1 = g(logQ, grad=True)
+            # store old iterate
+            logZ_old = logZ
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
                     raise RuntimeError(f'invalid gradient: {grad_g1}')
+                # new point via prox-gradient of momentum point
+                logZ = prox_update(logQ - s * grad_g1, s)
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (logQ - prox_update(logQ - s * grad_g1, s))
-                # test g(logQ - sG_s(logQ)) for line search
+                G = (1 / s) * (logQ - logZ)
+                # test g(logQ - sG_s(logQ)) for sufficient decrease
                 if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
                                        + (s / 2) * (G ** 2).sum()):
+                    # Armijo satisfied
                     break
-                s *= γ
-            # accelerated gradient step
-            logZ_old = logZ
-            logZ = logQ - s * G
-            logQ = logZ + (k / (k + 3)) * (logZ - logZ_old)
+                else:
+                    # Armijo not satisfied
+                    s *= γ  # shrink step size
+            # update momentum term
+            logQ = logZ + ((k - 1) / (k + 2)) * (logZ - logZ_old)
             if line_iter == max_line_iter - 1:
                 print('warning: line search failed')
                 s = s0
