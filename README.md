@@ -21,6 +21,8 @@ Dependencies
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
 
+Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
+
 Manuscript
 ---
 - TeX: [manuscript/main.tex](manuscript/main.tex)
