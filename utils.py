@@ -51,7 +51,7 @@ def M(n: int, η: histories.η) -> np.ndarray:
         @ np.diag(y)
 
 
-def ℓ(Z: np.ndarray, X: np.ndarray, L: np.ndarray,
+def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray,
       grad: bool = False) -> np.float:
     '''Poisson random field log-likelihood of history
 
