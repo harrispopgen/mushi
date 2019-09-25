@@ -140,7 +140,7 @@ class kSFS():
             X = self.X
         if fit == 'prf':
             def loss_func(Z, **kwargs):
-                return -utils.ℓ(Z, X, L, **kwargs)
+                return -utils.prf(Z, X, L, **kwargs)
         elif fit == 'kl':
             def loss_func(Z, **kwargs):
                 return utils.d_kl(Z, X, L, **kwargs)
