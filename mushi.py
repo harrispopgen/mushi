@@ -241,7 +241,8 @@ class kSFS():
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
-                    raise RuntimeError(f'invalid gradient: {grad_g1}')
+                    raise RuntimeError(f'invalid gradient at step {k}, line '
+                                       f'search step {line_iter}: {grad_g1}')
                 # new point via prox-gradient of momentum point
                 logZ = prox_update(logQ - s * grad_g1, s)
                 # G_s(Q) as in the notes linked above
