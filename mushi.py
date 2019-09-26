@@ -42,6 +42,7 @@ class kSFS():
         else:
             self.n = n
         self.L = utils.C(self.n) @ utils.M(self.n, self.η)
+        self.bins = None
 
     def tmrca_cdf(self) -> np.ndarray:
         '''The cdf of the TMRCA of at each change point'''
@@ -140,7 +141,7 @@ class kSFS():
             X = self.X
         if fit == 'prf':
             def loss_func(Z, **kwargs):
-                return -utils.ℓ(Z, X, L, **kwargs)
+                return -utils.prf(Z, X, L, **kwargs)
         elif fit == 'kl':
             def loss_func(Z, **kwargs):
                 return utils.d_kl(Z, X, L, **kwargs)
@@ -238,7 +239,8 @@ class kSFS():
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
-                    raise RuntimeError(f'invalid gradient: {grad_g1}')
+                    raise RuntimeError(f'invalid gradient at step {k}, line '
+                                       f'search step {line_iter}: {grad_g1}')
                 # new point via prox-gradient of momentum point
                 Z = prox_update(Q - s * grad_g1, s)
                 # G_s(Q) as in the notes linked above
@@ -277,36 +279,66 @@ class kSFS():
             self.L = L_true
         return μ, f_trajectory
 
-    def plot(self, i: int = None, μ: histories.μ = None, prf_quantiles=False):
-        '''plot the SFS data and optionally the expected SFS given μ
+    def plot1(self, type: int, μ: histories.μ = None, prf_quantiles=False):
+        '''plot the SFS data of one type and optionally its expectation and
+        confidence bands
 
-        i: component i of kSFS (default first)
+        type: mutation type to plot (i.e. 'TCC>TTC')
         μ: mutation intensity history (optional)
         prf_quantiles: if True show 95% marginal intervals using the Poisson
                        random field
         '''
-        if i is None:
-            i = 0
+        i = self.mutation_types.get_loc(type)
         if μ is not None:
             z = μ.Z[:, i]
             ξ = self.L @ z
             if self.bins is not None:
                 for bin in self.bins:
-                    plt.axvline(bin, c='k', ls=':', alpha=0.2)
-            plt.plot(range(1, self.n), ξ, 'r--', label=r'$\xi$')
+                    plt.axvline(bin, c='C3', ls=':', alpha=0.2)
+            plt.plot(range(1, self.n), ξ, c='C1', ls='--', label=r'$\xi$')
             if prf_quantiles:
                 ξ_lower = poisson.ppf(.025, ξ)
                 ξ_upper = poisson.ppf(.975, ξ)
                 plt.fill_between(range(1, self.n),
                                  ξ_lower, ξ_upper,
-                                 facecolor='r', alpha=0.25,
+                                 facecolor='C1', alpha=0.25,
                                  label='inner 95%\nquantile')
         plt.plot(range(1, len(self.X) + 1), self.X[:, i],
-                 'k.', alpha=.25, label=r'data')
-        plt.xlabel('$b$')
-        plt.ylabel(r'$ξ_b$')
+                 c='C0', ls='', marker='.', alpha=.25, label=r'data')
+        plt.xlabel('sample frequency')
+        plt.ylabel(r'number of variants')
         plt.xscale('log')
         plt.yscale('symlog')
+        plt.tight_layout()
+
+    def plot(self, idxs: List[int] = None, normed: bool = False,
+             μ: histories.μ = None, **kwargs) -> None:
+        '''
+        normed: flag to normalize to relative mutation intensity
+        '''
+        if μ is not None:
+            Ξ = self.L @ μ.Z
+        if normed:
+            X = self.X / self.X.sum(1, keepdims=True)
+            if μ is not None:
+                Ξ = Ξ / Ξ.sum(1, keepdims=True)
+            plt.ylabel('mutation type fraction')
+        else:
+            plt.ylabel('$\\mu(t)$')
+        if idxs is not None:
+            X = X[:, idxs]
+            if μ is not None:
+                Ξ = Ξ[:, idxs]
+
+        if μ is not None:
+            plt.plot(range(1, self.n), X, ls='', marker='.', **kwargs)
+            plt.plot(range(1, self.n), Ξ, **kwargs)
+        else:
+            plt.plot(range(1, self.n), X, **kwargs)
+        plt.xlabel('sample frequency')
+        plt.xscale('symlog')
+        if 'label' in kwargs:
+            plt.legend()
         plt.tight_layout()
 
     def clustermap(self, μ: histories.μ = None,
@@ -335,4 +367,5 @@ class kSFS():
         g = sns.clustermap(df, row_cluster=False, metric='correlation',
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
+        plt.tight_layout()
         return g
