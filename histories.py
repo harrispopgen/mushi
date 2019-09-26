@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import List
 
 import numpy as np
-
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -65,7 +65,7 @@ class History():
         else:
             return True
 
-    def plot(self, idxs=None, **kwargs) -> None:
+    def plot(self, idxs=None, **kwargs) -> List[mpl.lines.Line2D]:
         '''plot the history
 
         idxs: indices of value column(s) to plot (optional)
@@ -76,10 +76,13 @@ class History():
             vals = self.vals[:, idxs]
         else:
             vals = self.vals
-        plt.step(t, vals, where='post', **kwargs)
+        lines = plt.step(t, vals, where='post', **kwargs)
         plt.xlabel('$t$')
+        plt.xscale('symlog')
         if 'label' in kwargs:
             plt.legend()
+        plt.tight_layout()
+        return lines
 
 
 class η(History):
@@ -101,13 +104,12 @@ class η(History):
         super().__post_init__()
         assert len(self.y.shape) == 1, self.y.shape
 
-    def plot(self, **kwargs) -> None:
-        super().plot(**kwargs)
-        plt.xlabel('$t$')
+    def plot(self, **kwargs) -> List[mpl.lines.Line2D]:
+        lines = super().plot(**kwargs)
         plt.ylabel('$η(t)$')
-        plt.xscale('symlog')
         plt.yscale('log')
         plt.tight_layout()
+        return lines
 
 
 @dataclass
@@ -142,12 +144,29 @@ class μ(History):
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
-    def plot(self, idxs=None, **kwargs) -> None:
-        super().plot(idxs=idxs, **kwargs)
-        plt.xlabel('$t$')
-        plt.ylabel('$\\mu(t)$')
-        plt.xscale('symlog')
+    def plot(self, idxs=None, normed=False,
+             **kwargs) -> List[mpl.lines.Line2D]:
+        '''
+        normed: flag to normalize to relative mutation intensity
+        '''
+        lines = super().plot(idxs=idxs, **kwargs)
+        if normed:
+            Z = self.Z / self.Z.sum(1, keepdims=True)
+            if idxs is None:
+                idxs = range(len(lines))
+            for idx, line in zip(idxs, lines):
+                line.set_ydata(Z[:, idx])
+            # recompute the ax.dataLim
+            ax = plt.gca()
+            ax.relim()
+            # update ax.viewLim using the new dataLim
+            ax.autoscale_view()
+            # plt.ylabel('relative mutation intensity')
+            plt.ylabel('mutation intensity fraction')
+        else:
+            plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
+        return lines
 
     def clustermap(self, **kwargs):
         '''clustermap of k-SFS
@@ -164,5 +183,6 @@ class μ(History):
                            metric='correlation',
                            cbar_kws={'label': 'relative mutation intensity'},
                            **kwargs)
-        g.ax_heatmap.set_yscale('symlog')
+        # g.ax_heatmap.set_yscale('symlog')
+        plt.tight_layout()
         return g
