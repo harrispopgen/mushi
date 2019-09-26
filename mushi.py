@@ -180,7 +180,7 @@ class kSFS():
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
-        # We transform logZ to restrict to positive solutions
+        # We transform Z to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
@@ -189,9 +189,8 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
         D2 = D1.T @ D1  # square of 1st difference matrix (Laplacian)
 
-        def g(logZ, grad=False):
+        def g(Z, grad=False):
             '''differentiable piece of cost'''
-            Z = np.exp(logZ)
             if grad:
                 loss, grad_loss = loss_func(Z, grad=True)
             else:
@@ -202,13 +201,11 @@ class kSFS():
             if grad:
                 grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                grad_g_log = grad_g * Z  # change of variables
-                return g, grad_g_log
+                return g, grad_g
             return g
 
-        def h(logZ):
+        def h(Z):
             '''nondifferentiable piece of cost'''
-            Z = np.exp(logZ)
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
@@ -218,16 +215,16 @@ class kSFS():
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
-        def f(logZ):
+        def f(Z):
             '''cost'''
-            return g(logZ) + h(logZ)
+            return g(Z) + h(Z)
 
         # initialize using constant μ history MLE
         μ = self.constant_μ_MLE()
-        logZ = np.log(μ.Z)  # current iterate
-        logQ = np.log(μ.Z)  # momentum iterate
+        Z = μ.Z  # current iterate
+        Q = Z    # momentum iterate
         # initial loss
-        f_trajectory = [f(logZ)]
+        f_trajectory = [f(Z)]
         # initialize step size
         s0 = 1  # max step size
         s = s0  # current step size
@@ -235,19 +232,19 @@ class kSFS():
         max_line_iter = 100
         for k in range(1, max_iter + 1):
             # evaluate smooth part of loss at momentum point
-            g1, grad_g1 = g(logQ, grad=True)
+            g1, grad_g1 = g(Q, grad=True)
             # store old iterate
-            logZ_old = logZ
+            Z_old = Z
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
                     raise RuntimeError(f'invalid gradient: {grad_g1}')
                 # new point via prox-gradient of momentum point
-                logZ = prox_update(logQ - s * grad_g1, s)
+                Z = prox_update(Q - s * grad_g1, s)
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (logQ - logZ)
-                # test g(logQ - sG_s(logQ)) for sufficient decrease
-                if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
+                G = (1 / s) * (Q - Z)
+                # test g(Q - sG_s(Q)) for sufficient decrease
+                if g(Q - s * G) <= (g1 - s * (grad_g1 * G).sum()
                                        + (s / 2) * (G ** 2).sum()):
                     # Armijo satisfied
                     break
@@ -255,14 +252,16 @@ class kSFS():
                     # Armijo not satisfied
                     s *= γ  # shrink step size
             # update momentum term
-            logQ = logZ + ((k - 1) / (k + 2)) * (logZ - logZ_old)
+            Q = Z + ((k - 1) / (k + 2)) * (Z - Z_old)
             if line_iter == max_line_iter - 1:
                 print('warning: line search failed')
                 s = s0
-            if not np.all(np.isfinite(logZ)):
-                print(f'warning: Z contains invalid values')
+            if not np.all(np.isfinite(Z)):
+                print(f'warning: Z contains infinite values')
+            if not np.all(Z >= 0):
+                print(f'warning: Z is negative')
             # terminate if loss function is constant within tolerance
-            f_trajectory.append(f(logZ))
+            f_trajectory.append(f(Z))
             rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
                                 / f_trajectory[-2])
             if rel_change < tol:
@@ -276,7 +275,6 @@ class kSFS():
             # restore stashed unbinned variables
             self.X = X_true
             self.L = L_true
-        μ.Z = np.exp(logZ)
         return μ, f_trajectory
 
     def plot(self, i: int = None, μ: histories.μ = None, prf_quantiles=False):
