@@ -77,11 +77,20 @@ class kSFS():
         self.X = poisson.rvs(self.L @ μ.Z)
         self.mutation_types = μ.mutation_types
 
-    def constant_μ_MLE(self) -> histories.μ:
-        '''gives the MLE for a constant μ history'''
+    def constant_μ_MLE(self, mask: np.ndarray = None) -> histories.μ:
+        '''gives the MLE for a constant μ history
+
+        mask: array of bools, with True indicating exclusion of that frequency
+        '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        z0 = self.X.sum(axis=0) / np.sum(self.L)
+        if mask is not None:
+            L = self.L[~mask, :]
+            X = self.X[~mask, :]
+        else:
+            L = self.L
+            X = self.X
+        z0 = X.sum(axis=0) / np.sum(L)
         return histories.μ(self.η.change_points,
                            z0[np.newaxis, :] * np.ones((self.η.m, 1)),
                            mutation_types=self.mutation_types.values)
@@ -93,7 +102,7 @@ class kSFS():
                 tol: np.float64 = 1e-4, fit='prf',
                 bins: np.ndarray = None,
                 hard=False,
-                exclude_singletons: bool = False) -> histories.μ:
+                mask: np.ndarray = None) -> histories.μ:
         '''return inferred μ history given the sfs and η history
 
         λ_tv: fused LASSO regularization strength
@@ -107,7 +116,7 @@ class kSFS():
              Kullback-Leibler divergence, 'lsq' for least-squares
         bins: SFS frequency bins
         hard: hard Vs soft singular value thresholding
-        exclude_singletons: flag to exclude singleton frequency variants
+        mask: array of bools, with True indicating exclusion of that frequency
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
@@ -115,6 +124,8 @@ class kSFS():
         assert λ_r >= 0, 'λ_r must be nonnegative'
         assert 0 <= α_tv <= 1, 'α_tv must be in the unit interval'
         assert 0 <= α_r <= 1, 'α_r must be in the unit interval'
+        if mask is not None:
+            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
         self.bins = bins
         if bins is not None:
             bin_idxs = np.digitize(np.arange(self.n - 1), bins=bins)
@@ -133,9 +144,9 @@ class kSFS():
             self.X = X_binned
             self.L = L_binned
         # badness of fit
-        if exclude_singletons:
-            L = self.L[1:-1, :]
-            X = self.X[1:-1, :]
+        if mask is not None:
+            L = self.L[~mask, :]
+            X = self.X[~mask, :]
         else:
             L = self.L
             X = self.X
@@ -181,7 +192,6 @@ class kSFS():
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
-        # We transform logZ to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
@@ -190,9 +200,8 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
         D2 = D1.T @ D1  # square of 1st difference matrix (Laplacian)
 
-        def g(logZ, grad=False):
+        def g(Z, grad=False):
             '''differentiable piece of cost'''
-            Z = np.exp(logZ)
             if grad:
                 loss, grad_loss = loss_func(Z, grad=True)
             else:
@@ -203,32 +212,29 @@ class kSFS():
             if grad:
                 grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
                                      + λ_r * (1 - α_r) * Z
-                grad_g_log = grad_g * Z  # change of variables
-                return g, grad_g_log
+                return g, grad_g
             return g
 
-        def h(logZ):
+        def h(Z):
             '''nondifferentiable piece of cost'''
-            Z = np.exp(logZ)
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            # now add in TV term... you will never have both
             return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
                 + λ_r * α_r * rank_penalty
 
-        def f(logZ):
+        def f(Z):
             '''cost'''
-            return g(logZ) + h(logZ)
+            return g(Z) + h(Z)
 
         # initialize using constant μ history MLE
-        μ = self.constant_μ_MLE()
-        logZ = np.log(μ.Z)  # current iterate
-        logQ = np.log(μ.Z)  # momentum iterate
+        μ = self.constant_μ_MLE(mask)
+        Z = μ.Z  # current iterate
+        Q = μ.Z  # momentum iterate
         # initial loss
-        f_trajectory = [f(logZ)]
+        f_trajectory = [f(Z)]
         # initialize step size
         s0 = 1  # max step size
         s = s0  # current step size
@@ -236,20 +242,23 @@ class kSFS():
         max_line_iter = 100
         for k in range(1, max_iter + 1):
             # evaluate smooth part of loss at momentum point
-            g1, grad_g1 = g(logQ, grad=True)
+            g1, grad_g1 = g(Q, grad=True)
             # store old iterate
-            logZ_old = logZ
+            Z_old = Z
             # Armijo line search
             for line_iter in range(max_line_iter):
                 if not np.all(np.isfinite(grad_g1)):
                     raise RuntimeError(f'invalid gradient at step {k}, line '
                                        f'search step {line_iter}: {grad_g1}')
                 # new point via prox-gradient of momentum point
-                logZ = prox_update(logQ - s * grad_g1, s)
+                Z = prox_update(Q - s * grad_g1, s)
+                if not np.all(Z > 0):
+                    print(f'warning: Z contains negative values after prox')
+                    Z = np.clip(Z, 1e-6, np.inf)
                 # G_s(Q) as in the notes linked above
-                G = (1 / s) * (logQ - logZ)
-                # test g(logQ - sG_s(logQ)) for sufficient decrease
-                if g(logQ - s * G) <= (g1 - s * (grad_g1 * G).sum()
+                G = (1 / s) * (Q - Z)
+                # test g(Q - sG_s(Q)) for sufficient decrease
+                if g(Q - s * G) <= (g1 - s * (grad_g1 * G).sum()
                                        + (s / 2) * (G ** 2).sum()):
                     # Armijo satisfied
                     break
@@ -257,14 +266,16 @@ class kSFS():
                     # Armijo not satisfied
                     s *= γ  # shrink step size
             # update momentum term
-            logQ = logZ + ((k - 1) / (k + 2)) * (logZ - logZ_old)
+            Q = Z + ((k - 1) / (k + 2)) * (Z - Z_old)
             if line_iter == max_line_iter - 1:
                 print('warning: line search failed')
                 s = s0
-            if not np.all(np.isfinite(logZ)):
+            if not np.all(np.isfinite(Z)):
                 print(f'warning: Z contains invalid values')
+            if not np.all(Z > 0):
+                print(f'warning: Z contains negative values')
             # terminate if loss function is constant within tolerance
-            f_trajectory.append(f(logZ))
+            f_trajectory.append(f(Z))
             rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
                                 / f_trajectory[-2])
             if rel_change < tol:
@@ -278,7 +289,7 @@ class kSFS():
             # restore stashed unbinned variables
             self.X = X_true
             self.L = L_true
-        μ.Z = np.exp(logZ)
+        μ.Z = Z
         return μ, f_trajectory
 
     def plot1(self, type, μ: histories.μ = None, prf_quantiles=False):
