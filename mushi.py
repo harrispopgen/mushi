@@ -281,7 +281,7 @@ class kSFS():
         μ.Z = np.exp(logZ)
         return μ, f_trajectory
 
-    def plot1(self, type: int, μ: histories.μ = None, prf_quantiles=False):
+    def plot1(self, type, μ: histories.μ = None, prf_quantiles=False):
         '''plot the SFS data of one type and optionally its expectation and
         confidence bands
 
@@ -313,7 +313,7 @@ class kSFS():
         plt.yscale('symlog')
         plt.tight_layout()
 
-    def plot(self, idxs: List[int] = None, normed: bool = False,
+    def plot(self, type=None, normed: bool = False,
              μ: histories.μ = None, **kwargs) -> None:
         '''
         normed: flag to normalize to relative mutation intensity
@@ -326,15 +326,20 @@ class kSFS():
                 Ξ = Ξ / Ξ.sum(1, keepdims=True)
             plt.ylabel('mutation type fraction')
         else:
-            plt.ylabel('$\\mu(t)$')
-        if idxs is not None:
-            X = X[:, idxs]
+            X = self.X
+            plt.ylabel('number of variants')
+        if type is not None:
+            i = self.mutation_types.get_loc(type)
+            X = X[:, i]
             if μ is not None:
-                Ξ = Ξ[:, idxs]
+                Ξ = Ξ[:, i]
 
         if μ is not None:
             plt.plot(range(1, self.n), X, ls='', marker='.', **kwargs)
-            plt.plot(range(1, self.n), Ξ, **kwargs)
+            line_kwargs = kwargs
+            if 'label' in line_kwargs:
+                del line_kwargs['label']
+            plt.plot(range(1, self.n), Ξ, **line_kwargs)
         else:
             plt.plot(range(1, self.n), X, **kwargs)
         plt.xlabel('sample frequency')
@@ -369,5 +374,4 @@ class kSFS():
         g = sns.clustermap(df, row_cluster=False, metric='correlation',
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
-        plt.tight_layout()
         return g

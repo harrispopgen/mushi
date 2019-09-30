@@ -65,14 +65,14 @@ class History():
         else:
             return True
 
-    def plot(self, idxs=None, **kwargs) -> List[mpl.lines.Line2D]:
+    def plot(self, types=None, **kwargs) -> List[mpl.lines.Line2D]:
         '''plot the history
 
-        idxs: indices of value column(s) to plot (optional)
         kwargs: key word arguments passed to plt.step
         '''
         t = np.concatenate((np.array([0]), self.change_points))
-        if idxs is not None:
+        if types is not None:
+            idxs = [self.mutation_types.get_loc(type) for type in types]
             vals = self.vals[:, idxs]
         else:
             vals = self.vals
@@ -144,16 +144,18 @@ class μ(History):
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
-    def plot(self, idxs=None, normed=False,
+    def plot(self, types=None, normed=False,
              **kwargs) -> List[mpl.lines.Line2D]:
         '''
         normed: flag to normalize to relative mutation intensity
         '''
-        lines = super().plot(idxs=idxs, **kwargs)
+        lines = super().plot(types=types, **kwargs)
         if normed:
             Z = self.Z / self.Z.sum(1, keepdims=True)
-            if idxs is None:
+            if types is None:
                 idxs = range(len(lines))
+            else:
+                idxs = [self.mutation_types.get_loc(type) for type in types]
             for idx, line in zip(idxs, lines):
                 line.set_ydata(Z[:, idx])
             # recompute the ax.dataLim
