@@ -10,6 +10,7 @@ Dependencies
   - python3.7+
   - numpy
   - scipy
+  - scikit-learn
   - matplotlib
   - jupyter
   - scons
@@ -20,6 +21,7 @@ Dependencies
   - bcftools
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
+  - [∂a∂i](https://bitbucket.org/gutenkunstlab/dadi/wiki/Installation)
 
 Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
 
