@@ -5,7 +5,6 @@ import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson
 
-import histories
 
 def C(n: int) -> np.ndarray:
     '''The C matrix defined in the text
@@ -29,14 +28,12 @@ def C(n: int) -> np.ndarray:
 
     return W1 - W2
 
-
-def M(n: int, η: histories.η) -> np.ndarray:
+def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
     '''The M matrix defined in the text
 
-    n: number of sampled haplotypes
-    η: demographic history
+    t: time grid, starting at zero and ending at np.inf
+    y: population size in each epoch
     '''
-    t, y = η.arrays()
     # epoch durations
     s = np.diff(t)
     u = np.exp(-s / y, dtype=np.longdouble)
