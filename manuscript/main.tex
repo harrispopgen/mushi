@@ -120,8 +120,8 @@ In linkage equilibrium the log likelihood function of the mutation spectrum hist
 where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $Z$.
 
 %WD more inverse problem intro
-The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general, 
-so many very different histories can be equally consistent with the data 
+The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general,
+so many very different histories can be equally consistent with the data
 \citep{oscillation paper? Yun's other papers?}.
 We deal with this problem using regularization, to enforce well-behaved histories.
 Our cost function to minimize, a penalized log-likelihood, is
@@ -149,11 +149,11 @@ When $p = 1$, this is referred to as a fused LASSO or total variation (TV) penal
 whereas $p=2$ is called a spline penalty.
 We have implemented three different types of regularization.
 
-The first option we call ``soft'' rank regularization, with 
+The first option we call ``soft'' rank regularization, with
 \begin{equation}
   \label{eq:regularization_soft}
-  R_\mathrm{soft}(Z) 
-  = 
+  R_\mathrm{soft}(Z)
+  =
   \frac{  \lambda_\mathrm{spline} }{2} \left\|\Delta Z\right\|_2^2
   +
   \lambda_\mathrm{rank} \| Z \|_*
@@ -161,21 +161,21 @@ The first option we call ``soft'' rank regularization, with
    \frac{\lambda_\mathrm{ridge}}{2}  \| Z \|_\mathrm{F}^2
    .
 \end{equation}
-The spline term controls the smoothness of solutions, 
+The spline term controls the smoothness of solutions,
 and the rank term allows us to recover low-rank solutions.
-The rank penalty is the nuclear norm $\| Z \|_*$, 
+The rank penalty is the nuclear norm $\| Z \|_*$,
 which is equivalent to the $\ell^1$-norm on the singular values.
 If $Z = U S V^\intercal$ is the SVD of $Z$, with $S = \mathrm{diag}(\sigma)$ then $\| Z \|_* = \| \sigma \|_1$.
 The parameters $\lambda_\mathrm{spline}$ and $\lambda_\mathrm{rank}$ control the overall strength
 of smoothing and rank regularization.
-The function $R_\mathrm{soft}$ is convex; therefore we have a convex optimization problem 
+The function $R_\mathrm{soft}$ is convex; therefore we have a convex optimization problem
 in this scenario.
 
 The second option is ``hard'' rank regularization, where
 \begin{equation}
   \label{eq:regularization_soft}
-  R_\mathrm{hard}(Z) 
-  = 
+  R_\mathrm{hard}(Z)
+  =
   \frac{\lambda_\mathrm{spline}}{2} \left\|\Delta Z\right\|_2^2
   +
   \lambda_\mathrm{rank} \, \mathrm{rank}(Z)
@@ -192,20 +192,20 @@ and optimize with prox-gradients.
 The third option allows more general smoothing but ignores all rank penalization:
 \begin{equation}
   \label{eq:regularization_soft}
-  R_\mathrm{indep}(Z) 
-  = 
-  \lambda_\mathrm{TV} 
-  \left\|\Delta Z\right\|_1 
-  + 
+  R_\mathrm{indep}(Z)
+  =
+  \lambda_\mathrm{TV}
+  \left\|\Delta Z\right\|_1
+  +
   \frac{\lambda_\mathrm{spline}}{2} \left\|\Delta Z\right\|_2^2
   +
   \frac{\lambda_\mathrm{ridge}}{2} \| Z \|_\mathrm{F}^2
   .
 \end{equation}
-The TV terms control the smoothness of solutions, 
+The TV terms control the smoothness of solutions,
 and the rank term allows us to recover low-rank solutions.
 The function $R_\mathrm{indep}$ is convex.
-Note also that the columns of $Z$ are uncoupled, 
+Note also that the columns of $Z$ are uncoupled,
 so that we may solve this case as $\kappa_k$ different subproblems.
 
 
@@ -251,6 +251,8 @@ The \texttt{mushi} software package is available at \url{https://github.com/harr
 %WD cite whatever packages we use, e.g. proxtv, msprime, stdpopsim, etc.
 
 \section*{Acknowledgements}\label{sec:ack}
+
+Peter Ralph, Erick Matsen, Harris lab, Jeff Spence?
 
 \bibliographystyle{plainnat}
 \bibliography{refs}

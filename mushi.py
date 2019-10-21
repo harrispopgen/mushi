@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 from scipy.special import binom
 from scipy.stats import poisson, chi2
+from scipy.optimize import minimize, Bounds, OptimizeResult
 import prox_tv as ptv
 
 import histories
@@ -18,7 +19,8 @@ import seaborn as sns
 class kSFS():
     '''The kSFS model described in the text'''
 
-    def __init__(self, η: histories.η, X: np.ndarray = None, n: int = None,
+    def __init__(self, η: histories.η = None, μ: histories.μ = None,
+                 X: np.ndarray = None, n: int = None,
                  mutation_types: List[str] = None):
         '''Sample frequency spectrum
 
@@ -28,6 +30,7 @@ class kSFS():
         mutation_types: names of X columns
         '''
         self.η = η
+        self.μ = μ
         if X is not None:
             self.X = X
             self.n = len(X) + 1
@@ -35,17 +38,25 @@ class kSFS():
                 self.mutation_types = pd.Index(mutation_types,
                                                name='mutation type')
             else:
-                self.mutation_types = pd.Index(range(self.X.shape[1]),
+                self.mutation_types = pd.Index(range(1, self.X.shape[1] + 1),
                                                name='mutation type')
         elif not n:
             raise ValueError('either x or n must be specified')
         else:
             self.n = n
-        self.L = utils.C(self.n) @ utils.M(self.n, self.η)
-        self.bins = None
+        self.C = utils.C(self.n)
+        if self.η is None:
+            self.M = None
+            self.L = None
+        else:
+            t, y = self.η.arrays()
+            self.M = utils.M(self.n, t, y)
+            self.L = (self.C @ self.M).astype(np.float64)
 
     def tmrca_cdf(self) -> np.ndarray:
         '''The cdf of the TMRCA of at each change point'''
+        if self.η is None:
+            raise ValueError('η(t) must be defined first')
         t, y = self.η.arrays()
         # epoch durations
         s = np.diff(t)
@@ -64,24 +75,108 @@ class kSFS():
                                  axis=1) ** binom(np.arange(2, self.n + 1), 2
                                                   )[:, np.newaxis]).T
 
-    def simulate(self, μ: histories.μ, seed: int = None) -> None:
+    def simulate(self, seed: int = None) -> None:
         '''simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
 
-        μ: mutation spectrum history
         seed: random seed (optional)
         '''
-        if not self.η.check_grid(μ):
+        if self.η is None:
+            raise ValueError('η(t) must be defined first')
+        if self.μ is None:
+            raise ValueError('μ(t) must be defined first')
+        if not self.η.check_grid(self.μ):
             raise ValueError('η and μ histories must use the same time grid')
         np.random.seed(seed)
-        self.X = poisson.rvs(self.L @ μ.Z)
-        self.mutation_types = μ.mutation_types
+        self.X = poisson.rvs(self.L @ self.μ.Z)
+        self.mutation_types = self.μ.mutation_types
 
-    def constant_μ_MLE(self, mask: np.ndarray = None) -> histories.μ:
+    def infer_η(self, change_points: np.array = None, fit='prf',
+                λ_tv: np.float64 = 0,
+                μ_0: np.float64 = 1,
+                mask: np.ndarray = None, **kwargs) -> OptimizeResult:
+        '''infer η. Either self.μ is not None or change_points is not None. If
+        the latter, fit using the total (row-summed) SFS and a unit constant
+        total mutation rate history
+
+        change_points: epoch change points (times)
+        λ_tv: fused LASSO regularization strength
+        μ_0: total mutation rate
+        fit: loss function, 'prf' for Poisson random field, 'kl' for
+             Kullback-Leibler divergence, 'lsq' for least-squares
+        mask: array of bools, with True indicating exclusion of that frequency
+        kwargs: key word arguments passed to scipy.optimize.minimize
+        '''
+        if self.X is None:
+            raise ValueError('use simulate() to generate data first')
+        assert λ_tv >= 0, 'λ_tv must be nonnegative'
+        assert (self.μ is None) != (change_points is None)
+        if mask is not None:
+            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
+        # badness of fit
+        if mask is not None:
+            C = self.C[~mask, :]
+            X = self.X[~mask, :]
+        else:
+            C = self.C
+            X = self.X
+        X_total = X.sum(1, keepdims=True)
+        if self.μ is None:
+            μ_total = histories.μ(change_points,
+                                  μ_0 * np.ones((len(change_points) + 1, 1)))
+        else:
+            change_points = self.μ.change_points
+            μ_total = histories.μ(change_points,
+                                  self.μ.Z.sum(1, keepdims=True))
+        t, z = μ_total.arrays()
+        if fit == 'prf':
+            def loss_func(y, **kwargs):
+                L = (C @ utils.M(self.n, t, y)).astype(np.float64)
+                return -utils.prf(μ_total.Z, X_total, L, **kwargs)
+        elif fit == 'kl':
+            def loss_func(y, **kwargs):
+                L = (C @ utils.M(self.n, t, y)).astype(np.float64)
+                return utils.d_kl(μ_total.Z, X_total, L, **kwargs)
+        elif fit == 'lsq':
+            def loss_func(y, **kwargs):
+                L = (C @ utils.M(self.n, t, y)).astype(np.float64)
+                return utils.lsq(μ_total.Z, X_total, L, **kwargs)
+        else:
+            raise ValueError(f'unrecognized fit argument {fit}')
+
+        if self.η is None:
+            # number of segregating sites
+            S = X_total.sum()
+            # Harmonic number
+            H = (1 / np.arange(1, self.n - 1)).sum()
+            # constant MLE
+            y = (S / 2 / H / μ_0) * np.ones(len(z))
+        else:
+            y = self.η.y
+        Λ = 1 / y
+
+        def f(logΛ):
+            y = 1 / np.exp(logΛ)
+            return loss_func(y) + (λ_tv / 2) * (np.diff(y) ** 2).sum()
+
+        result = minimize(f, np.log(Λ),
+                          **kwargs)
+        y = 1 / np.exp(result.x)
+        self.η = histories.η(change_points, y)
+        self.μ = histories.μ(self.η.change_points,
+                             μ_0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             mutation_types=self.mutation_types.values)
+        self.M = utils.M(self.n, t, y)
+        self.L = (self.C @ self.M).astype(np.float64)
+        return result
+
+    def constant_μ_MLE(self, mask: np.ndarray = None):
         '''gives the MLE for a constant μ history
 
         mask: array of bools, with True indicating exclusion of that frequency
         '''
+        if self.η is None:
+            raise ValueError('η(t) must be defined first')
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
         if mask is not None:
@@ -91,19 +186,18 @@ class kSFS():
             L = self.L
             X = self.X
         z0 = X.sum(axis=0) / np.sum(L)
-        return histories.μ(self.η.change_points,
-                           z0[np.newaxis, :] * np.ones((self.η.m, 1)),
-                           mutation_types=self.mutation_types.values)
+        self.μ = histories.μ(self.η.change_points,
+                             z0[np.newaxis, :] * np.ones((self.η.m, 1)),
+                             mutation_types=self.mutation_types.values)
 
     def infer_μ(self,
                 λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
                 λ_r: np.float64 = 0,  α_r: np.float64 = 0,
                 γ: np.float64 = 0.8, max_iter: int = 1000,
                 tol: np.float64 = 1e-4, fit='prf',
-                bins: np.ndarray = None,
                 hard=False,
-                mask: np.ndarray = None) -> histories.μ:
-        '''return inferred μ history given the sfs and η history
+                mask: np.ndarray = None) -> np.ndarray:
+        '''infer μ
 
         λ_tv: fused LASSO regularization strength
         α_tv: relative penalty on L1 vs L2 in fused LASSO
@@ -114,9 +208,10 @@ class kSFS():
         tol: relative tolerance in objective function
         fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
-        bins: SFS frequency bins
         hard: hard Vs soft singular value thresholding
         mask: array of bools, with True indicating exclusion of that frequency
+
+        returns array of cost function at each iterate
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
@@ -126,23 +221,6 @@ class kSFS():
         assert 0 <= α_r <= 1, 'α_r must be in the unit interval'
         if mask is not None:
             assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
-        self.bins = bins
-        if bins is not None:
-            bin_idxs = np.digitize(np.arange(self.n - 1), bins=bins)
-            X_binned = np.zeros((len(bins), self.X.shape[1]))
-            L_binned = np.zeros((len(bins), self.η.m))
-            for col in range(self.X.shape[1]):
-                X_binned[:, col] = np.bincount(bin_idxs,
-                                               weights=self.X[:, col])
-            for col in range(self.η.m):
-                L_binned[:, col] = np.bincount(bin_idxs,
-                                               weights=self.L[:, col])
-            # stash the unbinned variables
-            X_true = self.X
-            L_true = self.L
-            # temporarily update instance variables to the binned ones
-            self.X = X_binned
-            self.L = L_binned
         # badness of fit
         if mask is not None:
             L = self.L[~mask, :]
@@ -229,10 +307,10 @@ class kSFS():
             '''cost'''
             return g(Z) + h(Z)
 
-        # initialize using constant μ history MLE
-        μ = self.constant_μ_MLE(mask)
-        Z = μ.Z  # current iterate
-        Q = μ.Z  # momentum iterate
+        # # initialize using constant μ history MLE
+        # μ = self.constant_μ_MLE(mask)
+        Z = self.μ.Z  # current iterate
+        Q = self.μ.Z  # momentum iterate
         # initial loss
         f_trajectory = [f(Z)]
         # initialize step size
@@ -285,38 +363,28 @@ class kSFS():
             if k == max_iter:
                 print(f'maximum iteration {max_iter} reached with relative '
                       f'change in loss function {rel_change:.2g}')
-        if bins is not None:
-            # restore stashed unbinned variables
-            self.X = X_true
-            self.L = L_true
-        μ.Z = Z
-        return μ, f_trajectory
+        self.μ = histories.μ(self.η.change_points, Z,
+                             mutation_types=self.mutation_types.values)
+        return np.array(f_trajectory)
 
-    def plot1(self, type, μ: histories.μ = None, prf_quantiles=False):
-        '''plot the SFS data of one type and optionally its expectation and
-        confidence bands
-
-        type: mutation type to plot (i.e. 'TCC>TTC')
-        μ: mutation intensity history (optional)
-        prf_quantiles: if True show 95% marginal intervals using the Poisson
-                       random field
+    def plot_total(self):
+        '''plot the total SFS
         '''
-        i = self.mutation_types.get_loc(type)
-        if μ is not None:
-            z = μ.Z[:, i]
-            ξ = self.L @ z
-            if self.bins is not None:
-                for bin in self.bins:
-                    plt.axvline(bin, c='C3', ls=':', alpha=0.2)
+        if self.η is not None:
+            if self.μ is not None:
+                z = self.μ.Z.sum(1)
+            else:
+                z = np.ones_like(self.η.y)
+            ξ = self.L.dot(z)
             plt.plot(range(1, self.n), ξ, c='C1', ls='--', label=r'$\xi$')
-            if prf_quantiles:
-                ξ_lower = poisson.ppf(.025, ξ)
-                ξ_upper = poisson.ppf(.975, ξ)
-                plt.fill_between(range(1, self.n),
-                                 ξ_lower, ξ_upper,
-                                 facecolor='C1', alpha=0.25,
-                                 label='inner 95%\nquantile')
-        plt.plot(range(1, len(self.X) + 1), self.X[:, i],
+            ξ_lower = poisson.ppf(.025, ξ)
+            ξ_upper = poisson.ppf(.975, ξ)
+            plt.fill_between(range(1, self.n),
+                             ξ_lower, ξ_upper,
+                             facecolor='C1', alpha=0.25,
+                             label='inner 95%\nquantile')
+        x = self.X.sum(1, keepdims=True)
+        plt.plot(range(1, len(x) + 1), x,
                  c='C0', ls='', marker='.', alpha=.25, label=r'data')
         plt.xlabel('sample frequency')
         plt.ylabel(r'number of variants')
@@ -324,16 +392,15 @@ class kSFS():
         plt.yscale('symlog')
         plt.tight_layout()
 
-    def plot(self, type=None, normed: bool = False,
-             μ: histories.μ = None, **kwargs) -> None:
+    def plot(self, type=None, normed: bool = False, **kwargs) -> None:
         '''
         normed: flag to normalize to relative mutation intensity
         '''
-        if μ is not None:
-            Ξ = self.L @ μ.Z
+        if self.μ is not None:
+            Ξ = self.L @ self.μ.Z
         if normed:
             X = self.X / self.X.sum(1, keepdims=True)
-            if μ is not None:
+            if self.μ is not None:
                 Ξ = Ξ / Ξ.sum(1, keepdims=True)
             plt.ylabel('mutation type fraction')
         else:
@@ -342,10 +409,10 @@ class kSFS():
         if type is not None:
             i = self.mutation_types.get_loc(type)
             X = X[:, i]
-            if μ is not None:
+            if self.μ is not None:
                 Ξ = Ξ[:, i]
 
-        if μ is not None:
+        if self.μ is not None:
             plt.plot(range(1, self.n), X, ls='', marker='.', **kwargs)
             line_kwargs = kwargs
             if 'label' in line_kwargs:
@@ -359,20 +426,19 @@ class kSFS():
             plt.legend()
         plt.tight_layout()
 
-    def clustermap(self, μ: histories.μ = None,
-                   linthresh=1, **kwargs):
+    def clustermap(self, linthresh=1, **kwargs):
         '''clustermap with mixed linear-log scale color bar
 
         μ: inferred mutation spectrum history, χ^2 values are shown if not None
         linthresh: the range within which the plot is linear (when μ = None)
         kwargs: additional keyword arguments passed to pd.clustermap
         '''
-        if μ is None:
+        if self.μ is None:
             Z = self.X / self.X.sum(axis=1, keepdims=True)
             Z = Z / Z.mean(0, keepdims=True)
             cbar_label = 'mutation type\nenrichment'
         else:
-            Ξ = self.L @ μ.Z
+            Ξ = self.L @ self.μ.Z
             Z = (self.X - Ξ) ** 2 / Ξ
             cbar_label = '$\\chi^2$'
             χ2_total = Z.sum()
