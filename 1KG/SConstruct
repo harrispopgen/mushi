@@ -87,7 +87,7 @@ if bcf_dir is not None:
         pop_list = None
 
     # mask for conserved sites and repeats
-    mask_file = os.path.join(outdir, 'mask.tsv')
+    mask_file = os.path.join(outdir, 'mask.gz')
     tgt = [mask_file, mask_file + '.tbi']
     src = [phastcons, repeats]
     cmd = ('python region_mask.py ${SOURCES} | sort -k1V -k2n -k3n'
@@ -96,6 +96,7 @@ if bcf_dir is not None:
     mask = env.Command(tgt, src, cmd)
 
     snps_context = []
+    masked_sizes = []
     # loop over chromosome bcf files
     for chro in (str(chro_int) for chro_int in range(1, 23)):
         # get bcf for this chromosome
@@ -124,13 +125,27 @@ if bcf_dir is not None:
         assert len(anc_fasta) == 1
         anc_fasta = anc_fasta[0]
 
-        # compute snps file with ancestral k-mer contexts
+        # snps file with ancestral k-mer contexts
         tgt = os.path.join(outdir, f'snps.{k}mer.{chro}.tsv')
         src = [anc_fasta, snps]
         cmd = f'python ancestor.py ${{SOURCES}} {k} > $TARGET'
         snps_context.append(env.Command(tgt, src, cmd))
 
+        # masked chromosome sizes for mutation rate estimation
+        tgt = os.path.join(outdir, f'masked_size.{chro}.tsv')
+        src = [mask[0], anc_fasta]
+        cmd = f'tabix ${{SOURCES[0]}} {chro}: > ${{TARGET}}.mask.tmp && '
+        cmd += 'python masked_size.py ${SOURCES[1]} ${TARGET}.mask.tmp '
+        cmd += '> ${TARGET} && '
+        cmd += 'rm ${TARGET}.mask.tmp'
+        masked_sizes.append(env.Command(tgt, src, cmd))
+
+    # masked genome size for mutation rate estimation
+    tgt = os.path.join(outdir, f'masked_size.tsv')
+    cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
+    masked_size = env.Command(tgt, masked_sizes, cmd)
+
     # compute k-SFS
     tgt = os.path.join(outdir, f'{k}-SFS.tsv')
-    cmd = f'python ksfs.py ${{SOURCES}} > $TARGET'
-    snps_context.append(env.Command(tgt, snps_context, cmd))
+    cmd = 'python ksfs.py ${SOURCES} > $TARGET'
+    ksfs = env.Command(tgt, snps_context, cmd)
