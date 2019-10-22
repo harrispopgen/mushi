@@ -92,16 +92,16 @@ class kSFS():
         self.mutation_types = self.μ.mutation_types
 
     def infer_η(self, change_points: np.array = None, fit='prf',
-                λ_tv: np.float64 = 0,
-                μ_0: np.float64 = 1,
+                λ: np.float64 = 0,
+                μ_0: np.float64 = None,
                 mask: np.ndarray = None, **kwargs) -> OptimizeResult:
         '''infer η. Either self.μ is not None or change_points is not None. If
         the latter, fit using the total (row-summed) SFS and a unit constant
         total mutation rate history
 
         change_points: epoch change points (times)
-        λ_tv: fused LASSO regularization strength
-        μ_0: total mutation rate
+        λ: fused LASSO regularization strength
+        μ_0: total mutation rate, if self.μ is None
         fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
         mask: array of bools, with True indicating exclusion of that frequency
@@ -109,7 +109,7 @@ class kSFS():
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        assert λ_tv >= 0, 'λ_tv must be nonnegative'
+        assert λ >= 0, 'λ must be nonnegative'
         assert (self.μ is None) != (change_points is None)
         if mask is not None:
             assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
@@ -157,7 +157,7 @@ class kSFS():
 
         def f(logΛ):
             y = 1 / np.exp(logΛ)
-            return loss_func(y) + (λ_tv / 2) * (np.diff(y) ** 2).sum()
+            return loss_func(y) + (λ / 2) * (np.diff(y) ** 2).sum()
 
         result = minimize(f, np.log(Λ),
                           **kwargs)
