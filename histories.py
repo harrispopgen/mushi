@@ -31,9 +31,8 @@ class History():
             raise ValueError(f'len(change_points) = {len(self.change_points)}'
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
-        if np.any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError(f'elements of vals must be finite and '
-                             'positive')
+        if np.any(self.vals < 0) or np.sum(np.isinf(self.vals)):
+            raise ValueError(f'elements of vals must be finite and nonnegative')
         self.m = len(self.vals)
 
     def arrays(self):
