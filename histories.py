@@ -169,6 +169,21 @@ class μ(History):
         plt.tight_layout()
         return lines
 
+    def plot_total(self, **kwargs):
+        '''plot the total mutation rate summing over all types
+
+        kwargs: key word arguments passed to plt.step
+        '''
+        t = np.concatenate((np.array([0]), self.change_points))
+        vals = self.vals.sum(1)
+        lines = plt.step(t, vals, where='post', **kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$\\mu(t)$')
+        plt.xscale('symlog')
+        if 'label' in kwargs:
+            plt.legend()
+        plt.tight_layout()
+
     def clustermap(self, **kwargs):
         '''clustermap of k-SFS
 
