@@ -98,26 +98,16 @@ class kSFS():
         self.X = poisson.rvs(self.L @ self.μ.Z)
         self.mutation_types = self.μ.mutation_types
 
-    def infer_η(self, change_points: np.array = None, fit='prf',
-                λ: np.float64 = 0,
-                μ_0: np.float64 = None,
-                mask: np.ndarray = None, **kwargs) -> OptimizeResult:
-        '''infer η. Either self.μ is not None or change_points is not None. If
-        the latter, fit using the total (row-summed) SFS and a unit constant
-        total mutation rate history
+    def infer_constant(self, change_points: np.array, μ_0: np.float64 = None,
+                       mask: np.ndarray = None):
+        '''infer constant η and μ
 
         change_points: epoch change points (times)
-        λ: fused LASSO regularization strength
         μ_0: total mutation rate, if self.μ is None
-        fit: loss function, 'prf' for Poisson random field, 'kl' for
-             Kullback-Leibler divergence, 'lsq' for least-squares
         mask: array of bools, with True indicating exclusion of that frequency
-        kwargs: key word arguments passed to scipy.optimize.minimize
         '''
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        assert λ >= 0, 'λ must be nonnegative'
-        assert (self.μ is None) != (change_points is None)
         if mask is not None:
             assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
         # badness of fit
@@ -128,69 +118,35 @@ class kSFS():
             C = self.C
             X = self.X
         X_total = X.sum(1, keepdims=True)
-        if self.μ is None:
-            μ_total = histories.μ(change_points,
-                                  μ_0 * np.ones((len(change_points) + 1, 1)))
-        else:
-            change_points = self.μ.change_points
-            μ_total = histories.μ(change_points,
-                                  self.μ.Z.sum(1, keepdims=True))
+        μ_total = histories.μ(change_points,
+                              μ_0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
-        if fit == 'prf':
-            def loss_func(y):
-                L = C @ utils.M(self.n, t, y)
-                return -utils.prf(μ_total.Z, X_total, L)
-        elif fit == 'kl':
-            def loss_func(y):
-                L = C @ utils.M(self.n, t, y)
-                return utils.d_kl(μ_total.Z, X_total, L)
-        elif fit == 'lsq':
-            def loss_func(y):
-                L = C @ utils.M(self.n, t, y)
-                return utils.lsq(μ_total.Z, X_total, L)
-        else:
-            raise ValueError(f'unrecognized fit argument {fit}')
+        # number of segregating sites
+        S = X_total.sum()
+        # Harmonic number
+        H = (1 / np.arange(1, self.n - 1)).sum()
+        # constant MLE
+        y = (S / 2 / H / μ_0) * np.ones(len(z))
 
-        if self.η is None:
-            # number of segregating sites
-            S = X_total.sum()
-            # Harmonic number
-            H = (1 / np.arange(1, self.n - 1)).sum()
-            # constant MLE
-            y = (S / 2 / H / μ_0) * np.ones(len(z))
-        else:
-            y = self.η.y
-        # log of coalescent intensity function (usually denoted λ(t), but
-        # that's already used)
-        logΛ = np.log(1 / y)
-
-        def f(logΛ):
-            y = 1 / np.exp(logΛ)
-            return loss_func(y) + (λ / 2) * (np.diff(y) ** 2).sum()
-
-        result = minimize(jit(f), logΛ, jac=jit(grad(f)),
-                          **kwargs)
-        y = 1 / np.exp(result.x)
         self.η = histories.η(change_points, y)
         self.μ = histories.μ(self.η.change_points,
                              μ_0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
                              mutation_types=self.mutation_types.values)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
-        return result
 
-    def infer_μ(self,
-                α_tv: np.float64 = 0,
-                α_spline: np.float64 = 0,
-                β_tv: np.float64 = 0,
-                β_spline: np.float64 = 0,
-                β_rank: np.float64 = 0,
-                β_ridge: np.float64 = 0,
-                γ: np.float64 = 0.8, max_iter: int = 1000,
-                tol: np.float64 = 1e-4, fit='prf',
-                hard=False,
-                mask: np.ndarray = None) -> np.ndarray:
-        '''infer μ
+    def coord_desc(self,
+                   α_tv: np.float64 = 0,
+                   α_spline: np.float64 = 0,
+                   β_tv: np.float64 = 0,
+                   β_spline: np.float64 = 0,
+                   β_rank: np.float64 = 0,
+                   β_ridge: np.float64 = 0,
+                   γ: np.float64 = 0.8, max_iter: int = 1000,
+                   tol: np.float64 = 1e-4, fit='prf',
+                   hard=False,
+                   mask: np.ndarray = None) -> np.ndarray:
+        '''perform one iteration of block coordinate descent to fit η and μ
 
         η(t) regularization parameters:
         - α_tv: fused LASSO regularization strength
@@ -204,16 +160,17 @@ class kSFS():
                  ridge for η, μ and t)
 
         γ: step size shrinkage rate for line search
-        max_iter: maximum number of proximal gradient descent iterations
+        max_iter: maximum number of proximal gradient descent steps
         tol: relative tolerance in objective function
         fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
         hard: hard Vs soft singular value thresholding
         mask: array of bools, with True indicating exclusion of that frequency
 
-        returns array of cost function at each iterate
+        returns cost function at final iterate
         '''
         assert self.X is not None, 'use simulate() to generate data first'
+        assert self.η is not None, 'must initialize e.g. with infer_constant()'
 
         if mask is not None:
             X = self.X[~mask, :]
@@ -297,9 +254,6 @@ class kSFS():
                 + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
-        # compiled autograd of g
-        grad_logy_g = jit(grad(g, argnums=0))
-        grad_Z_g = jit(grad(g, argnums=1))
 
         @jit
         def h(logy, Z):
@@ -311,126 +265,42 @@ class kSFS():
                 rank_penalty = np.linalg.norm(σ, 1)
             return α_tv * np.abs(D1 @ logy).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
 
-        @jit
-        def f(logy, Z):
-            '''cost'''
-            return g(logy, Z) + h(logy, Z)
-
-        # current iterate
+        # initial iterate
         logy = np.log(self.η.y)
         Z = self.μ.Z
-        # momentum iterate
-        Q_logy = logy
-        Q_Z = Z
         # initial loss as first element of f_trajectory we'll append to
-        f_trajectory = [f(logy, Z)]
+        f_trajectory = [g(logy, Z) + h(logy, Z)]
         # max step size
         s0 = 1
         # max number of Armijo step size reductions
         max_line_iter = 100
 
-
         print('η block')
-        # initialize step size
-        s = s0
-        for k in range(1, max_iter + 1):
-            print(f'iteration {k}', end='        \r')
-            # evaluate smooth part of loss at momentum point
-            g1 = g(Q_logy, Q_Z)
-            grad_logy_g1 = grad_logy_g(Q_logy, Q_Z)
-            grad_Z_g1 = grad_Z_g(Q_logy, Q_Z)
-            # store old iterate
-            logy_old = logy
-            Z_old = Z
-            # Armijo line search
-            for line_iter in range(max_line_iter):
-                if not np.all(np.isfinite(grad_logy_g1)):
-                    raise RuntimeError(f'invalid logy gradient at step {k}, line '
-                                       f'search step {line_iter}: {grad_logy_g1}')
-                # new point via prox-gradient of momentum point
-                logy = prox_update_logy(Q_logy - s * grad_logy_g1, s)
-                # G_s(Q) as in the notes linked above
-                G_logy = (1 / s) * (Q_logy - logy)
-                # test g(Q - sG_s(Q)) for sufficient decrease
-                if g(Q_logy - s * G_logy, Q_Z) <= (g1 - s * (grad_logy_g1 * G_logy).sum()
-                                              + (s / 2) * (G_logy ** 2).sum()):
-                    # Armijo satisfied
-                    break
-                else:
-                    # Armijo not satisfied
-                    s *= γ  # shrink step size
-            # update momentum term
-            Q_logy = logy + ((k - 1) / (k + 2)) * (logy - logy_old)
-            if line_iter == max_line_iter - 1:
-                print('warning: line search failed')
-                s = s0
-            if not np.all(np.isfinite(logy)):
-                print(f'warning: logy contains invalid values')
-            # terminate if loss function is constant within tolerance
-            f_trajectory.append(f(logy, Z))
-            rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
-                                / f_trajectory[-2])
-            if rel_change < tol:
-                print(f'relative change in loss function {rel_change:.2g} '
-                      f'is within tolerance {tol} after {k} iterations')
-                break
-            if k == max_iter:
-                print(f'maximum iteration {max_iter} reached with relative '
-                      f'change in loss function {rel_change:.2g}')
-
+        logy = utils.acc_prox_grad_descent(
+                              logy,
+                              jit(lambda logy: g(logy, Z)),
+                              jit(grad(lambda logy: g(logy, Z))),
+                              jit(lambda logy: h(logy, Z)),
+                              prox_update_logy,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ)
 
         print('μ block')
-        # initialize step size
-        s = s0
-        for k in range(1, max_iter + 1):
-            print(f'iteration {k}', end='        \r')
-            # evaluate smooth part of loss at momentum point
-            g1 = g(Q_logy, Q_Z)
-            grad_logy_g1 = grad_logy_g(Q_logy, Q_Z)
-            grad_Z_g1 = grad_Z_g(Q_logy, Q_Z)
-            # store old iterate
-            logy_old = logy
-            Z_old = Z
-            # Armijo line search
-            for line_iter in range(max_line_iter):
-                if not np.all(np.isfinite(grad_Z_g1)):
-                    raise RuntimeError(f'invalid Z gradient at step {k}, line '
-                                       f'search step {line_iter}: {grad_Z_g1}')
-                # new point via prox-gradient of momentum point
-                Z = prox_update_Z(Q_Z - s * grad_Z_g1, s)
-                if np.any(Z < 0):
-                    print(f'warning: Z contained negative values after prox, clipping')
-                    Z = np.clip(Z, 0, np.inf)
-                # G_s(Q) as in the notes linked above
-                G_Z = (1 / s) * (Q_Z - Z)
-                # test g(Q - sG_s(Q)) for sufficient decrease
-                if g(Q_logy, Q_Z - s * G_Z) <= (g1 - s * (grad_Z_g1 * G_Z).sum()
-                                              + (s / 2) * (G_Z ** 2).sum()):
-                    # Armijo satisfied
-                    break
-                else:
-                    # Armijo not satisfied
-                    s *= γ  # shrink step size
-            # update momentum term
-            Q_Z = Z + ((k - 1) / (k + 2)) * (Z - Z_old)
-            if line_iter == max_line_iter - 1:
-                print('warning: line search failed')
-                s = s0
-            if not np.all(np.isfinite(Z)):
-                print(f'warning: Z contains invalid values')
-            if np.any(Z < 0):
-                print(f'warning: Z contains negative values')
-            # terminate if loss function is constant within tolerance
-            f_trajectory.append(f(logy, Z))
-            rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
-                                / f_trajectory[-2])
-            if rel_change < tol:
-                print(f'relative change in loss function {rel_change:.2g} '
-                      f'is within tolerance {tol} after {k} iterations')
-                break
-            if k == max_iter:
-                print(f'maximum iteration {max_iter} reached with relative '
-                      f'change in loss function {rel_change:.2g}')
+        Z = utils.acc_prox_grad_descent(
+                              Z,
+                              jit(lambda Z: g(logy, Z)),
+                              jit(grad(lambda Z: g(logy, Z))),
+                              jit(lambda Z: h(logy, Z)),
+                              prox_update_Z,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ,
+                              nonneg=True)
 
         y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
@@ -438,7 +308,7 @@ class kSFS():
         self.L = self.C @ self.M
         self.μ = histories.μ(self.η.change_points, Z,
                              mutation_types=self.mutation_types.values)
-        return np.array(f_trajectory)
+        return g(logy, Z) + h(logy, Z)
 
     def plot_total(self):
         '''plot the total SFS
@@ -490,6 +360,7 @@ class kSFS():
             line_kwargs = kwargs
             if 'label' in line_kwargs:
                 del line_kwargs['label']
+            plt.gca().set_prop_cycle(None)
             plt.plot(range(1, self.n), Ξ, **line_kwargs)
         else:
             plt.plot(range(1, self.n), X, **kwargs)

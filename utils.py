@@ -3,6 +3,7 @@
 
 import numpy as onp
 import jax.numpy as np
+from typing import Callable
 
 
 def C(n: int) -> onp.ndarray:
@@ -88,3 +89,85 @@ def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
     Ξ = L @ Z
     lsq = (1 / 2) * ((Ξ - X) ** 2).sum()
     return lsq
+
+
+def acc_prox_grad_descent(x: np.ndarray,
+                          g: Callable[[np.ndarray], np.float64],
+                          grad_g: Callable[[np.ndarray], np.float64],
+                          h: Callable[[np.ndarray], np.float64],
+                          prox: Callable[[np.ndarray, np.float64], np.float64],
+                          tol: np.float64 = 1e-10,
+                          max_iter: int = 100,
+                          s0: np.float64 = 1,
+                          max_line_iter: int = 100,
+                          γ: np.float64 = 0.8,
+                          nonneg: bool = False) -> np.ndarray:
+    '''Nesterov accelerated proximal gradient descent
+
+    x: initial point
+    g: differential term in onjective function
+    grad_g: gradient of g
+    h: non-differentiable term in objective function
+    prox: proximal operator corresponding to h
+    tol: relative tolerance in objective function for convergence
+    max_iter: maximum number of proximal gradient steps
+    s0: initial step size
+    max_line_iter: maximum number of line search steps
+    γ: step size shrinkage rate for line search
+    nonneg: if True, line search succeeds only for steps in positive orthant
+    '''
+    # initialize step size
+    s = s0
+    # initialize momentum iterate
+    q = x
+    # initial objective value as first element of f_trajectory we'll append to
+    f = g(x) + h(x)
+    for k in range(1, max_iter + 1):
+        print(f'iteration {k}', end='        \r')
+        # evaluate differtiable part of objective at momentum point
+        g1 = g(q)
+        grad_g1 = grad_g(q)
+        # store old iterate
+        x_old = x
+        # Armijo line search
+        for line_iter in range(max_line_iter):
+            if not np.all(np.isfinite(grad_g1)):
+                raise RuntimeError(f'invalid gradient at step {k}, line '
+                                   f'search step {line_iter}: {grad_g1}')
+            # new point via prox-gradient of momentum point
+            x = prox(q - s * grad_g1, s)
+            if nonneg and np.any(x < 0):
+                s *= γ # shrink step size due to negativity
+                continue
+            # G_s(q) as in the notes linked above
+            G = (1 / s) * (q - x)
+            # test g(q - sG_s(q)) for sufficient decrease
+            if g(q - s * G) <= (g1 - s * (grad_g1 * G).sum()
+                                + (s / 2) * (G ** 2).sum()):
+                # Armijo satisfied
+                break
+            else:
+                # Armijo not satisfied
+                s *= γ  # shrink step size
+        # update momentum term
+        q = x + ((k - 1) / (k + 2)) * (x - x_old)
+        if line_iter == max_line_iter - 1:
+            print('warning: line search failed')
+            s = s0
+        if not np.all(np.isfinite(x)):
+            print(f'warning: x contains invalid values')
+        if nonneg and np.any(x < 0):
+            print(f'warning: x contains negative values')
+        # terminate if objective function is constant within tolerance
+        f_old = f
+        f = g(x) + h(x)
+        rel_change = np.abs((f - f_old) / f_old)
+        if rel_change < tol:
+            print(f'relative change in objective function {rel_change:.2g} '
+                  f'is within tolerance {tol} after {k} iterations')
+            break
+        if k == max_iter:
+            print(f'maximum iteration {max_iter} reached with relative '
+                  f'change in objective function {rel_change:.2g}')
+
+    return x
