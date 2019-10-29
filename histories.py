@@ -31,9 +31,8 @@ class History():
             raise ValueError(f'len(change_points) = {len(self.change_points)}'
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
-        if np.any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError(f'elements of vals must be finite and '
-                             'positive')
+        if np.any(self.vals < 0) or np.sum(np.isinf(self.vals)):
+            raise ValueError(f'elements of vals must be finite and nonnegative')
         self.m = len(self.vals)
 
     def arrays(self):
@@ -169,6 +168,21 @@ class μ(History):
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
         return lines
+
+    def plot_total(self, **kwargs):
+        '''plot the total mutation rate summing over all types
+
+        kwargs: key word arguments passed to plt.step
+        '''
+        t = np.concatenate((np.array([0]), self.change_points))
+        vals = self.vals.sum(1)
+        lines = plt.step(t, vals, where='post', **kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$\\mu(t)$')
+        plt.xscale('symlog')
+        if 'label' in kwargs:
+            plt.legend()
+        plt.tight_layout()
 
     def clustermap(self, **kwargs):
         '''clustermap of k-SFS
