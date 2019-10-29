@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from jax.config import config
-config.update("jax_enable_x64", True)
-# config.update("jax_debug_nans", True)
+config.update('jax_enable_x64', True)
+# config.update('jax_debug_nans', True)
 import numpy as onp
 import jax.numpy as np
 from jax import jit, grad
@@ -24,18 +24,18 @@ import seaborn as sns
 
 
 class kSFS():
-    '''The kSFS model described in the text'''
+    """The kSFS model described in the text"""
 
     def __init__(self, η: histories.η = None, μ: histories.μ = None,
                  X: np.ndarray = None, n: int = None,
                  mutation_types: List[str] = None):
-        '''Sample frequency spectrum
+        u"""Sample frequency spectrum
 
         η: demographic history
         X: observed k-SFS matrix (optional)
         n: number of haplotypes (optional)
         mutation_types: names of X columns
-        '''
+        """
         self.η = η
         self.μ = μ
         if X is not None:
@@ -61,7 +61,7 @@ class kSFS():
             self.L = self.C @ self.M
 
     def tmrca_cdf(self) -> onp.ndarray:
-        '''The CDF of the TMRCA of at each change point'''
+        """The CDF of the TMRCA of at each change point"""
         if self.η is None:
             raise ValueError('η(t) must be defined first')
         t, y = self.η.arrays()
@@ -83,11 +83,11 @@ class kSFS():
                                                   )[:, onp.newaxis]).T
 
     def simulate(self, seed: int = None) -> None:
-        '''simulate a SFS under the Poisson random field model (no linkage)
+        """simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
 
         seed: random seed (optional)
-        '''
+        """
         if self.η is None:
             raise ValueError('η(t) must be defined first')
         if self.μ is None:
@@ -100,12 +100,12 @@ class kSFS():
 
     def infer_constant(self, change_points: np.array, μ_0: np.float64 = None,
                        mask: np.ndarray = None):
-        '''infer constant η and μ
+        u"""infer constant η and μ
 
         change_points: epoch change points (times)
         μ_0: total mutation rate, if self.μ is None
         mask: array of bools, with True indicating exclusion of that frequency
-        '''
+        """
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
         if mask is not None:
@@ -146,7 +146,7 @@ class kSFS():
                    tol: np.float64 = 1e-4, fit='prf',
                    hard=False,
                    mask: np.ndarray = None) -> np.ndarray:
-        '''perform one iteration of block coordinate descent to fit η and μ
+        u"""perform one iteration of block coordinate descent to fit η and μ
 
         η(t) regularization parameters:
         - α_tv: fused LASSO regularization strength
@@ -168,7 +168,7 @@ class kSFS():
         mask: array of bools, with True indicating exclusion of that frequency
 
         returns cost function at final iterate
-        '''
+        """
         assert self.X is not None, 'use simulate() to generate data first'
         assert self.η is not None, 'must initialize e.g. with infer_constant()'
 
@@ -196,8 +196,7 @@ class kSFS():
 
         if α_tv > 0:
             def prox_update_logy(logy, s):
-                '''L1 prox operator
-                '''
+                """L1 prox operator"""
                 return ptv.tv1_1d(logy, s * α_tv)
         else:
             def prox_update_logy(logy, s):
@@ -208,30 +207,27 @@ class kSFS():
                                       'regularization not available')
         elif β_tv > 0:
             def prox_update_Z(Z, s):
-                '''L1 prox operator on row dimension (oddly 1-based indexed in
+                """L1 prox operator on row dimension (oddly 1-based indexed in
                 proxtv)
-                '''
+                """
                 return ptv.tvgen(Z, [s * β_tv], [1], [1])
         elif β_rank > 0:
             if hard:
                 def prox_update_Z(Z, s):
-                    '''l0 norm on singular values (hard-thresholding)
-                    '''
+                    """l0 norm on singular values (hard-thresholding)"""
                     U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
                     σ = index_update(σ, index[σ <= s * β_rank], 0)
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
             else:
                 def prox_update_Z(Z, s):
-                    '''l1 norm on singular values (soft-thresholding)
-                    '''
+                    """l1 norm on singular values (soft-thresholding)"""
                     U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
                     Σ = np.diag(np.maximum(0, σ - s * β_rank))
                     return U @ Σ @ Vt
         else:
             def prox_update_Z(Z, s):
-                '''project onto positive orthant
-                '''
+                """project onto positive orthant"""
                 return np.clip(Z, 0, np.inf)
 
         # Accelerated proximal gradient descent: our cost function decomposes
@@ -248,8 +244,7 @@ class kSFS():
 
         @jit
         def g(logy, Z):
-            '''differentiable piece of cost
-            '''
+            """differentiable piece of cost"""
             return loss_func(logy, Z) \
                 + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
@@ -257,7 +252,7 @@ class kSFS():
 
         @jit
         def h(logy, Z):
-            '''nondifferentiable piece of cost'''
+            """nondifferentiable piece of cost"""
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
@@ -311,8 +306,7 @@ class kSFS():
         return g(logy, Z) + h(logy, Z)
 
     def plot_total(self):
-        '''plot the total SFS
-        '''
+        """plot the total SFS"""
         if self.η is not None:
             if self.μ is not None:
                 z = self.μ.Z.sum(1)
@@ -336,9 +330,7 @@ class kSFS():
         plt.tight_layout()
 
     def plot(self, type=None, normed: bool = False, **kwargs) -> None:
-        '''
-        normed: flag to normalize to relative mutation intensity
-        '''
+        """normed: flag to normalize to relative mutation intensity"""
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
         if normed:
@@ -371,12 +363,12 @@ class kSFS():
         plt.tight_layout()
 
     def clustermap(self, linthresh=1, **kwargs):
-        '''clustermap with mixed linear-log scale color bar
+        u"""clustermap with mixed linear-log scale color bar
 
         μ: inferred mutation spectrum history, χ^2 values are shown if not None
         linthresh: the range within which the plot is linear (when μ = None)
         kwargs: additional keyword arguments passed to pd.clustermap
-        '''
+        """
         if self.μ is None:
             Z = self.X / self.X.sum(axis=1, keepdims=True)
             Z = Z / Z.mean(0, keepdims=True)

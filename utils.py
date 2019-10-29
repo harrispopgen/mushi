@@ -7,10 +7,10 @@ from typing import Callable
 
 
 def C(n: int) -> onp.ndarray:
-    '''The C matrix defined in the text
+    """The C matrix defined in the text
 
     n: number of sampled haplotypes
-    '''
+    """
     W1 = onp.zeros((n - 1, n - 1))
     W2 = onp.zeros((n - 1, n - 1))
     b = onp.arange(1, n - 1 + 1)
@@ -31,11 +31,11 @@ def C(n: int) -> onp.ndarray:
 
 
 def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
-    '''The M matrix defined in the text
+    """The M matrix defined in the text
 
     t: time grid, starting at zero and ending at np.inf
     y: population size in each epoch
-    '''
+    """
     # epoch durations
     s = np.diff(t)
     # we handle the final infinite epoch carefully to facilitate autograd
@@ -52,26 +52,26 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    '''Poisson random field log-likelihood of history
+    u"""Poisson random field log-likelihood of history
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
     L: model matrix
-    '''
+    """
     Ξ = L @ Z
     ℓ = (X * np.log(Ξ) - Ξ).sum()
     return ℓ
 
 
 def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    '''Kullback-Liebler divergence between normalized SFS and its
+    u"""Kullback-Liebler divergence between normalized SFS and its
     expectation under history
     ignores constant term
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
     L: model matrix
-    '''
+    """
     X_normalized = X / X.sum(axis=0)
     Ξ = L @ Z
     Ξ_normalized = Ξ / Ξ.sum(axis=1, keepdims=True)
@@ -80,12 +80,12 @@ def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
 
 
 def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
-    '''least-squares loss between SFS and its expectation under history
+    u"""least-squares loss between SFS and its expectation under history
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
     L: model matrix
-    '''
+    """
     Ξ = L @ Z
     lsq = (1 / 2) * ((Ξ - X) ** 2).sum()
     return lsq
@@ -102,7 +102,7 @@ def acc_prox_grad_descent(x: np.ndarray,
                           max_line_iter: int = 100,
                           γ: np.float64 = 0.8,
                           nonneg: bool = False) -> np.ndarray:
-    '''Nesterov accelerated proximal gradient descent
+    u"""Nesterov accelerated proximal gradient descent
 
     x: initial point
     g: differential term in onjective function
@@ -115,7 +115,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     max_line_iter: maximum number of line search steps
     γ: step size shrinkage rate for line search
     nonneg: if True, line search succeeds only for steps in positive orthant
-    '''
+    """
     # initialize step size
     s = s0
     # initialize momentum iterate
