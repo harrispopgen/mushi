@@ -138,6 +138,7 @@ class kSFS():
     def coord_desc(self,
                    α_tv: np.float64 = 0,
                    α_spline: np.float64 = 0,
+                   α_ridge: np.float64 = 0,
                    β_tv: np.float64 = 0,
                    β_spline: np.float64 = 0,
                    β_rank: np.float64 = 0,
@@ -151,13 +152,14 @@ class kSFS():
         η(t) regularization parameters:
         - α_tv: fused LASSO regularization strength
         - α_spline: regularization strength for L2 on diff
+        - α_ridge: L2 penalty for strong convexity
 
         μ(t) regularization parameters:
         - β_tv: fused LASSO regularization strength
         - β_spline: regularization strength for L2 on diff
         - β_rank: spectral regularization strength
-        - β_ridge: regularization strength for Frobenius norm on Z (removes scale
-                 ridge for η, μ and t)
+        - β_ridge: regularization strength for Frobenius norm on Z (removes
+                   scale ridge for η, μ and t, and promotes strong convexity)
 
         γ: step size shrinkage rate for line search
         max_iter: maximum number of proximal gradient descent steps
@@ -247,6 +249,7 @@ class kSFS():
             """differentiable piece of cost"""
             return loss_func(logy, Z) \
                 + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                + (α_ridge / 2) * (logy ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
