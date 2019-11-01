@@ -13,12 +13,12 @@ import seaborn as sns
 
 @dataclass
 class History():
-    '''base class piecewise constant history. The first epoch starts at zero,
+    """base class piecewise constant history. The first epoch starts at zero,
     and the last epoch extends to infinity
 
     change_points: epoch change points (times)
     vals: constant values for each epoch (rows)
-    '''
+    """
     change_points: np.array
     vals: np.ndarray
 
@@ -31,21 +31,20 @@ class History():
             raise ValueError(f'len(change_points) = {len(self.change_points)}'
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
-        if np.any(self.vals <= 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError(f'elements of vals must be finite and '
-                             'positive')
+        if np.any(self.vals < 0) or np.sum(np.isinf(self.vals)):
+            raise ValueError(f'elements of vals must be finite and nonnegative')
         self.m = len(self.vals)
 
     def arrays(self):
-        '''return time grid and values in each cell'''
+        """return time grid and values in each cell"""
         t = np.concatenate((np.array([0]),
                             self.change_points,
                             np.array([np.inf])))
         return t, self.vals
 
     def epochs(self):
-        '''generator yielding epochs as tuples: (start_time, end_time, value)
-        '''
+        """generator yielding epochs as tuples: (start_time, end_time, value)
+        """
         for i in range(self.m):
             if i == 0:
                 start_time = 0
@@ -59,20 +58,20 @@ class History():
             yield (start_time, end_time, value)
 
     def check_grid(self, other: int):
-        '''test if time grid is the same as another instance'''
+        """test if time grid is the same as another instance"""
         if any(self.change_points != other.change_points):
             return False
         else:
             return True
 
-    def plot(self, idxs=None, **kwargs) -> List[mpl.lines.Line2D]:
-        '''plot the history
+    def plot(self, types=None, **kwargs) -> List[mpl.lines.Line2D]:
+        """plot the history
 
-        idxs: indices of value column(s) to plot (optional)
         kwargs: key word arguments passed to plt.step
-        '''
+        """
         t = np.concatenate((np.array([0]), self.change_points))
-        if idxs is not None:
+        if types is not None:
+            idxs = [self.mutation_types.get_loc(type) for type in types]
             vals = self.vals[:, idxs]
         else:
             vals = self.vals
@@ -86,14 +85,14 @@ class History():
 
 
 class η(History):
-    '''demographic history
+    """demographic history
 
     change_points: epoch change points (times)
     y: vector of constant population sizes in each epoch
-    '''
+    """
     @property
     def y(self):
-        '''read-only alias to vals attribute in base class'''
+        """read-only alias to vals attribute in base class"""
         return self.vals
 
     @y.setter
@@ -114,18 +113,18 @@ class η(History):
 
 @dataclass
 class μ(History):
-    '''mutation spectrum history
+    """mutation spectrum history
 
     change_points: epoch change points (times)
     Z: matrix of constant values for each epoch (rows) in each mutation type
        (columns)
     mutation_types: list of mutation type names (default integer names)
-    '''
+    """
     mutation_types: List[str] = None
 
     @property
     def Z(self):
-        '''read-only alias to vals attribute in base class'''
+        """read-only alias to vals attribute in base class"""
         return self.vals
 
     @Z.setter
@@ -144,16 +143,18 @@ class μ(History):
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
-    def plot(self, idxs=None, normed=False,
+    def plot(self, types=None, normed=False,
              **kwargs) -> List[mpl.lines.Line2D]:
-        '''
+        """
         normed: flag to normalize to relative mutation intensity
-        '''
-        lines = super().plot(idxs=idxs, **kwargs)
+        """
+        lines = super().plot(types=types, **kwargs)
         if normed:
             Z = self.Z / self.Z.sum(1, keepdims=True)
-            if idxs is None:
+            if types is None:
                 idxs = range(len(lines))
+            else:
+                idxs = [self.mutation_types.get_loc(type) for type in types]
             for idx, line in zip(idxs, lines):
                 line.set_ydata(Z[:, idx])
             # recompute the ax.dataLim
@@ -168,12 +169,27 @@ class μ(History):
         plt.tight_layout()
         return lines
 
+    def plot_total(self, **kwargs):
+        """plot the total mutation rate summing over all types
+
+        kwargs: key word arguments passed to plt.step
+        """
+        t = np.concatenate((np.array([0]), self.change_points))
+        vals = self.vals.sum(1)
+        lines = plt.step(t, vals, where='post', **kwargs)
+        plt.xlabel('$t$')
+        plt.ylabel('$\\mu(t)$')
+        plt.xscale('symlog')
+        if 'label' in kwargs:
+            plt.legend()
+        plt.tight_layout()
+
     def clustermap(self, **kwargs):
-        '''clustermap of k-SFS
+        """clustermap of k-SFS
 
         mutation_types: list of column names
         kwargs: additional keyword arguments passed to pd.clustermap
-        '''
+        """
         t = np.concatenate((np.array([0]), self.change_points))
         Z = self.Z / self.Z.sum(1, keepdims=True)
         Z = Z / Z.mean(0, keepdims=True)
