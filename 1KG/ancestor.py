@@ -172,13 +172,6 @@ class Ancestor():
 
         return snps
 
-        # ksfs = snps.groupby(['b',
-        #                      'mutation type']).size().unstack('mutation type',
-        #                                                       fill_value=0)
-        # assert ksfs.shape[0] == n - 1
-        #
-        # return ksfs
-
 
 def main():
     """
@@ -186,7 +179,8 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description='write kSFS to stdout')
+    parser = argparse.ArgumentParser(description='write snps with kmer context'
+                                                 ' to stdout')
     parser.add_argument('anc_aln_file', type=str, default=None,
                         help='path to ancestral alignment fasta (one '
                              'chromosome)')
@@ -199,8 +193,8 @@ def main():
     args = parser.parse_args()
 
     ancestor = Ancestor(args.anc_aln_file)
-    ksfs = ancestor.context(args.snps_file, k=args.k)
-    ksfs.to_csv(sys.stdout, sep='\t')
+    snps_context = ancestor.context(args.snps_file, k=args.k)
+    snps_context.to_csv(sys.stdout, sep='\t')
 
 
 if __name__ == '__main__':

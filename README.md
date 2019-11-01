@@ -10,6 +10,7 @@ Dependencies
   - python3.7+
   - numpy
   - scipy
+  - scikit-learn
   - matplotlib
   - jupyter
   - scons

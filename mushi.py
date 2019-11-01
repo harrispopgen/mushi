@@ -1,11 +1,19 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import List
-import numpy as np
+from jax.config import config
+config.update('jax_enable_x64', True)
+# config.update('jax_debug_nans', True)
+import numpy as onp
+import jax.numpy as np
+from jax import jit, grad
+from jax.ops import index, index_update
 from scipy.special import binom
 from scipy.stats import poisson, chi2
+from scipy.optimize import minimize, OptimizeResult
 import prox_tv as ptv
+
+from typing import List
 
 import histories
 import utils
@@ -16,18 +24,20 @@ import seaborn as sns
 
 
 class kSFS():
-    '''The kSFS model described in the text'''
+    """The kSFS model described in the text"""
 
-    def __init__(self, η: histories.η, X: np.ndarray = None, n: int = None,
+    def __init__(self, η: histories.η = None, μ: histories.μ = None,
+                 X: np.ndarray = None, n: int = None,
                  mutation_types: List[str] = None):
-        '''Sample frequency spectrum
+        u"""Sample frequency spectrum
 
         η: demographic history
         X: observed k-SFS matrix (optional)
         n: number of haplotypes (optional)
         mutation_types: names of X columns
-        '''
+        """
         self.η = η
+        self.μ = μ
         if X is not None:
             self.X = X
             self.n = len(X) + 1
@@ -35,275 +45,286 @@ class kSFS():
                 self.mutation_types = pd.Index(mutation_types,
                                                name='mutation type')
             else:
-                self.mutation_types = pd.Index(range(self.X.shape[1]),
+                self.mutation_types = pd.Index(range(1, self.X.shape[1] + 1),
                                                name='mutation type')
         elif not n:
             raise ValueError('either x or n must be specified')
         else:
             self.n = n
-        self.L = utils.C(self.n) @ utils.M(self.n, self.η)
-        self.bins = None
+        self.C = utils.C(self.n)
+        if self.η is None:
+            self.M = None
+            self.L = None
+        else:
+            t, y = self.η.arrays()
+            self.M = utils.M(self.n, t, y)
+            self.L = self.C @ self.M
 
-    def tmrca_cdf(self) -> np.ndarray:
-        '''The cdf of the TMRCA of at each change point'''
+    def tmrca_cdf(self) -> onp.ndarray:
+        """The CDF of the TMRCA of at each change point"""
+        if self.η is None:
+            raise ValueError('η(t) must be defined first')
         t, y = self.η.arrays()
         # epoch durations
-        s = np.diff(t)
-        u = np.exp(-s / y)
-        u = np.concatenate((np.array([1]), u))
+        s = onp.diff(t)
+        u = onp.exp(-s / y)
+        u = onp.concatenate((onp.array([1]), u))
         # the A_2j are the product of this matrix
         # NOTE: using letter  "l" as a variable name to match text
-        l = np.arange(2, self.n + 1)[:, np.newaxis]
-        with np.errstate(divide='ignore'):
+        l = onp.arange(2, self.n + 1)[:, onp.newaxis]
+        with onp.errstate(divide='ignore'):
             A2_terms = l * (l-1) / (l * (l-1) - l.T * (l.T-1))
-        np.fill_diagonal(A2_terms, 1)
-        A2 = np.prod(A2_terms, axis=0)
+        onp.fill_diagonal(A2_terms, 1)
+        A2 = onp.prod(A2_terms, axis=0)
 
-        return 1 - (A2[np.newaxis, :]
-                    @ np.cumprod(u[np.newaxis, 1:-1],
-                                 axis=1) ** binom(np.arange(2, self.n + 1), 2
-                                                  )[:, np.newaxis]).T
+        return 1 - (A2[onp.newaxis, :]
+                    @ onp.cumprod(u[onp.newaxis, 1:-1],
+                                 axis=1) ** binom(onp.arange(2, self.n + 1), 2
+                                                  )[:, onp.newaxis]).T
 
-    def simulate(self, μ: histories.μ, seed: int = None) -> None:
-        '''simulate a SFS under the Poisson random field model (no linkage)
+    def simulate(self, seed: int = None) -> None:
+        """simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
 
-        μ: mutation spectrum history
         seed: random seed (optional)
-        '''
-        if not self.η.check_grid(μ):
+        """
+        if self.η is None:
+            raise ValueError('η(t) must be defined first')
+        if self.μ is None:
+            raise ValueError('μ(t) must be defined first')
+        if not self.η.check_grid(self.μ):
             raise ValueError('η and μ histories must use the same time grid')
-        np.random.seed(seed)
-        self.X = poisson.rvs(self.L @ μ.Z)
-        self.mutation_types = μ.mutation_types
+        onp.random.seed(seed)
+        self.X = poisson.rvs(self.L @ self.μ.Z)
+        self.mutation_types = self.μ.mutation_types
 
-    def constant_μ_MLE(self) -> histories.μ:
-        '''gives the MLE for a constant μ history'''
+    def infer_constant(self, change_points: np.array, μ_0: np.float64 = None,
+                       mask: np.ndarray = None):
+        u"""infer constant η and μ
+
+        change_points: epoch change points (times)
+        μ_0: total mutation rate, if self.μ is None
+        mask: array of bools, with True indicating exclusion of that frequency
+        """
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
-        z0 = self.X.sum(axis=0) / np.sum(self.L)
-        return histories.μ(self.η.change_points,
-                           z0[np.newaxis, :] * np.ones((self.η.m, 1)),
-                           mutation_types=self.mutation_types.values)
+        if mask is not None:
+            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
+        # badness of fit
+        if mask is not None:
+            C = self.C[~mask, :]
+            X = self.X[~mask, :]
+        else:
+            C = self.C
+            X = self.X
+        X_total = X.sum(1, keepdims=True)
+        μ_total = histories.μ(change_points,
+                              μ_0 * np.ones((len(change_points) + 1, 1)))
+        t, z = μ_total.arrays()
+        # number of segregating sites
+        S = X_total.sum()
+        # Harmonic number
+        H = (1 / np.arange(1, self.n - 1)).sum()
+        # constant MLE
+        y = (S / 2 / H / μ_0) * np.ones(len(z))
 
-    def infer_μ(self,
-                λ_tv: np.float64 = 0, α_tv: np.float64 = 0,
-                λ_r: np.float64 = 0,  α_r: np.float64 = 0,
-                γ: np.float64 = 0.8, max_iter: int = 1000,
-                tol: np.float64 = 1e-4, fit='prf',
-                bins: np.ndarray = None,
-                hard=False,
-                exclude_singletons: bool = False) -> histories.μ:
-        '''return inferred μ history given the sfs and η history
+        self.η = histories.η(change_points, y)
+        self.μ = histories.μ(self.η.change_points,
+                             μ_0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             mutation_types=self.mutation_types.values)
+        self.M = utils.M(self.n, t, y)
+        self.L = self.C @ self.M
 
-        λ_tv: fused LASSO regularization strength
-        α_tv: relative penalty on L1 vs L2 in fused LASSO
-        λ_r: spectral (rank) regularization strength
-        α_r: relative penalty on L1 vs L2 in spectral regularization
+    def coord_desc(self,
+                   α_tv: np.float64 = 0,
+                   α_spline: np.float64 = 0,
+                   α_ridge: np.float64 = 0,
+                   β_tv: np.float64 = 0,
+                   β_spline: np.float64 = 0,
+                   β_rank: np.float64 = 0,
+                   β_ridge: np.float64 = 0,
+                   γ: np.float64 = 0.8, max_iter: int = 1000,
+                   tol: np.float64 = 1e-4, fit='prf',
+                   hard=False,
+                   mask: np.ndarray = None) -> np.ndarray:
+        u"""perform one iteration of block coordinate descent to fit η and μ
+
+        η(t) regularization parameters:
+        - α_tv: fused LASSO regularization strength
+        - α_spline: regularization strength for L2 on diff
+        - α_ridge: L2 penalty for strong convexity
+
+        μ(t) regularization parameters:
+        - β_tv: fused LASSO regularization strength
+        - β_spline: regularization strength for L2 on diff
+        - β_rank: spectral regularization strength
+        - β_ridge: regularization strength for Frobenius norm on Z (removes
+                   scale ridge for η, μ and t, and promotes strong convexity)
+
         γ: step size shrinkage rate for line search
-        max_iter: maximum number of proximal gradient descent iterations
+        max_iter: maximum number of proximal gradient descent steps
         tol: relative tolerance in objective function
         fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
-        bins: SFS frequency bins
         hard: hard Vs soft singular value thresholding
-        exclude_singletons: flag to exclude singleton frequency variants
-        '''
-        if self.X is None:
-            raise ValueError('use simulate() to generate data first')
-        assert λ_tv >= 0, 'λ_tv must be nonnegative'
-        assert λ_r >= 0, 'λ_r must be nonnegative'
-        assert 0 <= α_tv <= 1, 'α_tv must be in the unit interval'
-        assert 0 <= α_r <= 1, 'α_r must be in the unit interval'
-        self.bins = bins
-        if bins is not None:
-            bin_idxs = np.digitize(np.arange(self.n - 1), bins=bins)
-            X_binned = np.zeros((len(bins), self.X.shape[1]))
-            L_binned = np.zeros((len(bins), self.η.m))
-            for col in range(self.X.shape[1]):
-                X_binned[:, col] = np.bincount(bin_idxs,
-                                               weights=self.X[:, col])
-            for col in range(self.η.m):
-                L_binned[:, col] = np.bincount(bin_idxs,
-                                               weights=self.L[:, col])
-            # stash the unbinned variables
-            X_true = self.X
-            L_true = self.L
-            # temporarily update instance variables to the binned ones
-            self.X = X_binned
-            self.L = L_binned
-        # badness of fit
-        if exclude_singletons:
-            L = self.L[1:-1, :]
-            X = self.X[1:-1, :]
+        mask: array of bools, with True indicating exclusion of that frequency
+
+        returns cost function at final iterate
+        """
+        assert self.X is not None, 'use simulate() to generate data first'
+        assert self.η is not None, 'must initialize e.g. with infer_constant()'
+
+        if mask is not None:
+            X = self.X[~mask, :]
         else:
-            L = self.L
             X = self.X
-        if fit == 'prf':
-            def loss_func(Z, **kwargs):
-                return -utils.prf(Z, X, L, **kwargs)
-        elif fit == 'kl':
-            def loss_func(Z, **kwargs):
-                return utils.d_kl(Z, X, L, **kwargs)
-        elif fit == 'lsq':
-            def loss_func(Z, **kwargs):
-                return utils.lsq(Z, X, L, **kwargs)
+
+        t = self.η.arrays()[0]
+
+        # badness of fit
+        @jit
+        def loss_func(logy, Z):
+            L = self.C @ utils.M(self.n, t, np.exp(logy))
+            if mask is not None:
+                L = L[~mask, :]
+            if fit == 'prf':
+                return -utils.prf(Z, X, L)
+            elif fit == 'kl':
+                return utils.d_kl(Z, X, L)
+            elif fit == 'lsq':
+                return utils.lsq(Z, X, L)
+            else:
+                raise ValueError(f'unrecognized fit argument {fit}')
+
+        if α_tv > 0:
+            def prox_update_logy(logy, s):
+                """L1 prox operator"""
+                return ptv.tv1_1d(logy, s * α_tv)
         else:
-            raise ValueError(f'unrecognized fit argument {fit}')
-        if λ_tv * α_tv > 0 and λ_r * α_r > 0:
+            def prox_update_logy(logy, s):
+                return logy
+
+        if β_tv > 0 and β_rank > 0:
             raise NotImplementedError('fused LASSO with l1 spectral '
                                       'regularization not available')
-        elif λ_tv * α_tv > 0:
-            def prox_update(Z, s):
-                '''L1 prox operator on row dimension (oddly 1-based indexed in
-                proxtv) with weight λα
-                '''
-                return ptv.tvgen(Z, [s * λ_tv * α_tv], [1], [1])
-        elif λ_r * α_r > 0:
+        elif β_tv > 0:
+            def prox_update_Z(Z, s):
+                """L1 prox operator on row dimension (oddly 1-based indexed in
+                proxtv)
+                """
+                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+        elif β_rank > 0:
             if hard:
-                def prox_update(Z, s):
-                    '''l0 norm on singular values (hard-thresholding)
-                    '''
+                def prox_update_Z(Z, s):
+                    """l0 norm on singular values (hard-thresholding)"""
                     U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                    σ[σ <= s * λ_r * α_r] = 0.0
+                    σ = index_update(σ, index[σ <= s * β_rank], 0)
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
             else:
-                def prox_update(Z, s):
-                    '''l1 norm on singular values (soft-thresholding)
-                    '''
+                def prox_update_Z(Z, s):
+                    """l1 norm on singular values (soft-thresholding)"""
                     U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                    Σ = np.diag(np.maximum(0, σ - s * λ_r * α_r))
+                    Σ = np.diag(np.maximum(0, σ - s * β_rank))
                     return U @ Σ @ Vt
         else:
-            def prox_update(Z, s):
-                return Z
+            def prox_update_Z(Z, s):
+                """project onto positive orthant"""
+                return np.clip(Z, 0, np.inf)
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
-        # We transform Z to restrict to positive solutions
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+        # We'll do block coordinate descent partitioned by y and Z
+
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
+        # W matrix deals with boundary condition
         W = np.eye(self.η.m)
-        W[0, 0] = 0  # W matrix deals with boundary condition
+        W = index_update(W, index[0, 0], 0)
         D1 = W @ D  # 1st difference matrix
-        D2 = D1.T @ D1  # square of 1st difference matrix (Laplacian)
 
-        def g(Z, grad=False):
-            '''differentiable piece of cost'''
-            if grad:
-                loss, grad_loss = loss_func(Z, grad=True)
-            else:
-                loss = loss_func(Z)
-            g = loss \
-                + (λ_tv / 2) * (1 - α_tv) * ((D1 @ Z) ** 2).sum() \
-                + (λ_r / 2) * (1 - α_r) * (Z ** 2).sum()
-            if grad:
-                grad_g = grad_loss + λ_tv * (1 - α_tv) * D2 @ Z \
-                                     + λ_r * (1 - α_r) * Z
-                return g, grad_g
-            return g
+        @jit
+        def g(logy, Z):
+            """differentiable piece of cost"""
+            return loss_func(logy, Z) \
+                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                + (α_ridge / 2) * (logy ** 2).sum() \
+                + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                + (β_ridge / 2) * (Z ** 2).sum()
 
-        def h(Z):
-            '''nondifferentiable piece of cost'''
+        @jit
+        def h(logy, Z):
+            """nondifferentiable piece of cost"""
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            # now add in TV term... you will never have both
-            return λ_tv * α_tv * np.abs(D1 @ Z).sum() \
-                + λ_r * α_r * rank_penalty
+            return α_tv * np.abs(D1 @ logy).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
 
-        def f(Z):
-            '''cost'''
-            return g(Z) + h(Z)
-
-        # initialize using constant μ history MLE
-        μ = self.constant_μ_MLE()
-        Z = μ.Z  # current iterate
-        Q = Z    # momentum iterate
-        # initial loss
-        f_trajectory = [f(Z)]
-        # initialize step size
-        s0 = 1  # max step size
-        s = s0  # current step size
+        # initial iterate
+        logy = np.log(self.η.y)
+        Z = self.μ.Z
+        # initial loss as first element of f_trajectory we'll append to
+        f_trajectory = [g(logy, Z) + h(logy, Z)]
+        # max step size
+        s0 = 1
         # max number of Armijo step size reductions
         max_line_iter = 100
-        for k in range(1, max_iter + 1):
-            # evaluate smooth part of loss at momentum point
-            g1, grad_g1 = g(Q, grad=True)
-            # store old iterate
-            Z_old = Z
-            # Armijo line search
-            for line_iter in range(max_line_iter):
-                if not np.all(np.isfinite(grad_g1)):
-                    raise RuntimeError(f'invalid gradient at step {k}, line '
-                                       f'search step {line_iter}: {grad_g1}')
-                # new point via prox-gradient of momentum point
-                Z = prox_update(Q - s * grad_g1, s)
-                # G_s(Q) as in the notes linked above
-                G = (1 / s) * (Q - Z)
-                # test g(Q - sG_s(Q)) for sufficient decrease
-                if g(Q - s * G) <= (g1 - s * (grad_g1 * G).sum()
-                                       + (s / 2) * (G ** 2).sum()):
-                    # Armijo satisfied
-                    break
-                else:
-                    # Armijo not satisfied
-                    s *= γ  # shrink step size
-            # update momentum term
-            Q = Z + ((k - 1) / (k + 2)) * (Z - Z_old)
-            if line_iter == max_line_iter - 1:
-                print('warning: line search failed')
-                s = s0
-            if not np.all(np.isfinite(Z)):
-                print(f'warning: Z contains infinite values')
-            if not np.all(Z >= 0):
-                print(f'warning: Z is negative')
-            # terminate if loss function is constant within tolerance
-            f_trajectory.append(f(Z))
-            rel_change = np.abs((f_trajectory[-1] - f_trajectory[-2])
-                                / f_trajectory[-2])
-            if rel_change < tol:
-                print(f'relative change in loss function {rel_change:.2g} '
-                      f'is within tolerance {tol} after {k} iterations')
-                break
-            if k == max_iter:
-                print(f'maximum iteration {max_iter} reached with relative '
-                      f'change in loss function {rel_change:.2g}')
-        if bins is not None:
-            # restore stashed unbinned variables
-            self.X = X_true
-            self.L = L_true
-        return μ, f_trajectory
 
-    def plot1(self, type: int, μ: histories.μ = None, prf_quantiles=False):
-        '''plot the SFS data of one type and optionally its expectation and
-        confidence bands
+        print('η block')
+        logy = utils.acc_prox_grad_descent(
+                              logy,
+                              jit(lambda logy: g(logy, Z)),
+                              jit(grad(lambda logy: g(logy, Z))),
+                              jit(lambda logy: h(logy, Z)),
+                              prox_update_logy,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ)
 
-        type: mutation type to plot (i.e. 'TCC>TTC')
-        μ: mutation intensity history (optional)
-        prf_quantiles: if True show 95% marginal intervals using the Poisson
-                       random field
-        '''
-        i = self.mutation_types.get_loc(type)
-        if μ is not None:
-            z = μ.Z[:, i]
-            ξ = self.L @ z
-            if self.bins is not None:
-                for bin in self.bins:
-                    plt.axvline(bin, c='C3', ls=':', alpha=0.2)
+        print('μ block')
+        Z = utils.acc_prox_grad_descent(
+                              Z,
+                              jit(lambda Z: g(logy, Z)),
+                              jit(grad(lambda Z: g(logy, Z))),
+                              jit(lambda Z: h(logy, Z)),
+                              prox_update_Z,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ,
+                              nonneg=True)
+
+        y = np.exp(logy)
+        self.η = histories.η(self.η.change_points, y)
+        self.M = utils.M(self.n, t, y)
+        self.L = self.C @ self.M
+        self.μ = histories.μ(self.η.change_points, Z,
+                             mutation_types=self.mutation_types.values)
+        return g(logy, Z) + h(logy, Z)
+
+    def plot_total(self):
+        """plot the total SFS"""
+        if self.η is not None:
+            if self.μ is not None:
+                z = self.μ.Z.sum(1)
+            else:
+                z = np.ones_like(self.η.y)
+            ξ = self.L.dot(z)
             plt.plot(range(1, self.n), ξ, c='C1', ls='--', label=r'$\xi$')
-            if prf_quantiles:
-                ξ_lower = poisson.ppf(.025, ξ)
-                ξ_upper = poisson.ppf(.975, ξ)
-                plt.fill_between(range(1, self.n),
-                                 ξ_lower, ξ_upper,
-                                 facecolor='C1', alpha=0.25,
-                                 label='inner 95%\nquantile')
-        plt.plot(range(1, len(self.X) + 1), self.X[:, i],
+            ξ_lower = poisson.ppf(.025, ξ)
+            ξ_upper = poisson.ppf(.975, ξ)
+            plt.fill_between(range(1, self.n),
+                             ξ_lower, ξ_upper,
+                             facecolor='C1', alpha=0.25,
+                             label='inner 95%\nquantile')
+        x = self.X.sum(1, keepdims=True)
+        plt.plot(range(1, len(x) + 1), x,
                  c='C0', ls='', marker='.', alpha=.25, label=r'data')
         plt.xlabel('sample frequency')
         plt.ylabel(r'number of variants')
@@ -311,28 +332,31 @@ class kSFS():
         plt.yscale('symlog')
         plt.tight_layout()
 
-    def plot(self, idxs: List[int] = None, normed: bool = False,
-             μ: histories.μ = None, **kwargs) -> None:
-        '''
-        normed: flag to normalize to relative mutation intensity
-        '''
-        if μ is not None:
-            Ξ = self.L @ μ.Z
+    def plot(self, type=None, normed: bool = False, **kwargs) -> None:
+        """normed: flag to normalize to relative mutation intensity"""
+        if self.μ is not None:
+            Ξ = self.L @ self.μ.Z
         if normed:
             X = self.X / self.X.sum(1, keepdims=True)
-            if μ is not None:
+            if self.μ is not None:
                 Ξ = Ξ / Ξ.sum(1, keepdims=True)
             plt.ylabel('mutation type fraction')
         else:
-            plt.ylabel('$\\mu(t)$')
-        if idxs is not None:
-            X = X[:, idxs]
-            if μ is not None:
-                Ξ = Ξ[:, idxs]
+            X = self.X
+            plt.ylabel('number of variants')
+        if type is not None:
+            i = self.mutation_types.get_loc(type)
+            X = X[:, i]
+            if self.μ is not None:
+                Ξ = Ξ[:, i]
 
-        if μ is not None:
+        if self.μ is not None:
             plt.plot(range(1, self.n), X, ls='', marker='.', **kwargs)
-            plt.plot(range(1, self.n), Ξ, **kwargs)
+            line_kwargs = kwargs
+            if 'label' in line_kwargs:
+                del line_kwargs['label']
+            plt.gca().set_prop_cycle(None)
+            plt.plot(range(1, self.n), Ξ, **line_kwargs)
         else:
             plt.plot(range(1, self.n), X, **kwargs)
         plt.xlabel('sample frequency')
@@ -341,20 +365,19 @@ class kSFS():
             plt.legend()
         plt.tight_layout()
 
-    def clustermap(self, μ: histories.μ = None,
-                   linthresh=1, **kwargs):
-        '''clustermap with mixed linear-log scale color bar
+    def clustermap(self, linthresh=1, **kwargs):
+        u"""clustermap with mixed linear-log scale color bar
 
         μ: inferred mutation spectrum history, χ^2 values are shown if not None
         linthresh: the range within which the plot is linear (when μ = None)
         kwargs: additional keyword arguments passed to pd.clustermap
-        '''
-        if μ is None:
+        """
+        if self.μ is None:
             Z = self.X / self.X.sum(axis=1, keepdims=True)
             Z = Z / Z.mean(0, keepdims=True)
             cbar_label = 'mutation type\nenrichment'
         else:
-            Ξ = self.L @ μ.Z
+            Ξ = self.L @ self.μ.Z
             Z = (self.X - Ξ) ** 2 / Ξ
             cbar_label = '$\\chi^2$'
             χ2_total = Z.sum()
@@ -367,5 +390,4 @@ class kSFS():
         g = sns.clustermap(df, row_cluster=False, metric='correlation',
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
-        plt.tight_layout()
         return g
