@@ -116,6 +116,9 @@ def acc_prox_grad_descent(x: np.ndarray,
     γ: step size shrinkage rate for line search
     nonneg: if True, line search succeeds only for steps in positive orthant
     """
+    if nonneg:
+        assert np.all(x >= 0), 'initial x must be in positive orthant when ' \
+                               'nonneg=True'
     # initialize step size
     s = s0
     # initialize momentum iterate
@@ -137,7 +140,9 @@ def acc_prox_grad_descent(x: np.ndarray,
             # new point via prox-gradient of momentum point
             x = prox(q - s * grad_g1, s)
             if nonneg and np.any(x < 0):
-                s *= γ # shrink step size due to negativity
+                print('warning: line search left positive orthant, shrinking '
+                      'step size')
+                s *= γ
                 continue
             # G_s(q) as in the notes linked above
             G = (1 / s) * (q - x)
