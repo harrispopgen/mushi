@@ -10,7 +10,6 @@ from jax import jit, grad
 from jax.ops import index, index_update
 from scipy.special import binom
 from scipy.stats import poisson, chi2
-from scipy.optimize import minimize, OptimizeResult
 import prox_tv as ptv
 
 from typing import List
@@ -166,7 +165,7 @@ class kSFS():
         tol: relative tolerance in objective function
         fit: loss function, 'prf' for Poisson random field, 'kl' for
              Kullback-Leibler divergence, 'lsq' for least-squares
-        hard: hard Vs soft singular value thresholding
+        hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
         mask: array of bools, with True indicating exclusion of that frequency
 
         returns cost function at final iterate
