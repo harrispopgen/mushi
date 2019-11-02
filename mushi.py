@@ -143,8 +143,10 @@ class kSFS():
                    β_spline: np.float64 = 0,
                    β_rank: np.float64 = 0,
                    β_ridge: np.float64 = 0,
-                   γ: np.float64 = 0.8, max_iter: int = 1000,
-                   tol: np.float64 = 1e-4, fit='prf',
+                   γ: np.float64 = 0.8,
+                   max_iter: int = 1000,
+                   tol: np.float64 = 1e-4,
+                   fit='prf',
                    hard=False,
                    mask: np.ndarray = None) -> np.ndarray:
         u"""perform one iteration of block coordinate descent to fit η and μ
@@ -183,8 +185,8 @@ class kSFS():
 
         # badness of fit
         @jit
-        def loss_func(logy, Z):
-            L = self.C @ utils.M(self.n, t, np.exp(logy))
+        def loss_func(y, Z):
+            L = self.C @ utils.M(self.n, t, y)
             if mask is not None:
                 L = L[~mask, :]
             if fit == 'prf':
@@ -197,12 +199,12 @@ class kSFS():
                 raise ValueError(f'unrecognized fit argument {fit}')
 
         if α_tv > 0:
-            def prox_update_logy(logy, s):
+            def prox_update_y(y, s):
                 """L1 prox operator"""
-                return ptv.tv1_1d(logy, s * α_tv)
+                return ptv.tv1_1d(y, s * α_tv)
         else:
-            def prox_update_logy(logy, s):
-                return logy
+            def prox_update_y(y, s):
+                return y
 
         if β_tv > 0 and β_rank > 0:
             raise NotImplementedError('fused LASSO with l1 spectral '
@@ -245,41 +247,42 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
 
         @jit
-        def g(logy, Z):
+        def g(y, Z):
             """differentiable piece of cost"""
-            return loss_func(logy, Z) \
-                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
-                + (α_ridge / 2) * (logy ** 2).sum() \
+            return loss_func(y, Z) \
+                + (α_spline / 2) * ((D1 @ y) ** 2).sum() \
+                + (α_ridge / 2) * (y ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
         @jit
-        def h(logy, Z):
+        def h(y, Z):
             """nondifferentiable piece of cost"""
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            return α_tv * np.abs(D1 @ logy).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+            return α_tv * np.abs(D1 @ y).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
 
         # initial iterate
-        logy = np.log(self.η.y)
+        y = self.η.y
         Z = self.μ.Z
         # initial loss as first element of f_trajectory we'll append to
-        f_trajectory = [g(logy, Z) + h(logy, Z)]
+        f_trajectory = [g(y, Z) + h(y, Z)]
         # max step size
         s0 = 1
         # max number of Armijo step size reductions
         max_line_iter = 100
 
         print('η block')
-        logy = utils.acc_prox_grad_descent(
-                              logy,
-                              jit(lambda logy: g(logy, Z)),
-                              jit(grad(lambda logy: g(logy, Z))),
-                              jit(lambda logy: h(logy, Z)),
-                              prox_update_logy,
+        #logy = utils.acc_prox_grad_descent(
+        y = utils.three_op_prox_grad_descent(
+                              yy,
+                              jit(lambda y: g(y, Z)),
+                              jit(grad(lambda y: g(y, Z))),
+                              jit(lambda y: h(y, Z)),
+                              prox_update_y,
                               tol=tol,
                               max_iter=max_iter,
                               s0=s0,
@@ -287,11 +290,12 @@ class kSFS():
                               γ=γ)
 
         print('μ block')
-        Z = utils.acc_prox_grad_descent(
+        #Z = utils.acc_prox_grad_descent(
+        Z = utils.three_op_prox_grad_descent(
                               Z,
-                              jit(lambda Z: g(logy, Z)),
-                              jit(grad(lambda Z: g(logy, Z))),
-                              jit(lambda Z: h(logy, Z)),
+                              jit(lambda Z: g(y, Z)),
+                              jit(grad(lambda Z: g(y, Z))),
+                              jit(lambda Z: h(y, Z)),
                               prox_update_Z,
                               tol=tol,
                               max_iter=max_iter,
@@ -300,13 +304,12 @@ class kSFS():
                               γ=γ,
                               nonneg=True)
 
-        y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
         self.μ = histories.μ(self.η.change_points, Z,
                              mutation_types=self.mutation_types.values)
-        return g(logy, Z) + h(logy, Z)
+        return g(y, Z) + h(y, Z)
 
     def plot_total(self):
         """plot the total SFS"""

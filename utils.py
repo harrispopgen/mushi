@@ -171,3 +171,88 @@ def acc_prox_grad_descent(x: np.ndarray,
                   f'change in objective function {rel_change:.2g}')
 
     return x
+
+def three_op_prox_grad_descent(x: np.ndarray,
+                          g: Callable[[np.ndarray], np.float64],
+                          grad_g: Callable[[np.ndarray], np.float64],
+                          h: Callable[[np.ndarray], np.float64],
+                          prox: Callable[[np.ndarray, np.float64], np.float64],
+                          tol: np.float64 = 1e-10,
+                          max_iter: int = 100,
+                          s0: np.float64 = 1,
+                          max_line_iter: int = 100,
+                          γ: np.float64 = 0.8) -> np.ndarray:
+    u"""Three-operator splitting proximal gradient descent
+    
+    We implement the method of Davis and Yin (2015).
+
+    The optimization problem solved is:
+
+      min_x f(x) s.t. x >= 0
+
+    where f(x) = g(x) + h(x), g is differentiable, and prox_h is available.
+
+    x: initial point
+    g: differential term in onjective function
+    grad_g: gradient of g
+    h: non-differentiable term in objective function
+    prox: proximal operator corresponding to h
+    tol: relative tolerance in objective function for convergence
+    max_iter: maximum number of proximal gradient steps
+    s0: initial step size
+    max_line_iter: maximum number of line search steps
+    γ: step size shrinkage rate for line search
+    """
+    # initialize step size
+    s = s0
+    # initialize z, u variable
+    z = x
+    u = x
+    # initial objective value as first element of f_trajectory we'll append to
+    f = g(x) + h(x)
+    for k in range(1, max_iter + 1):
+        print(f'iteration {k}', end='        \r')
+        # evaluate differtiable part of objective at momentum point
+        g1 = g(z)
+        grad_g1 = grad_g(z)
+        # store old iterate
+        x_old = x
+        # Armijo line search
+        for line_iter in range(max_line_iter):
+            if not np.all(np.isfinite(grad_g1)):
+                raise RuntimeError(f'invalid gradient at step {k}, line '
+                                   f'search step {line_iter}: {grad_g1}')
+            # new point via prox-gradient of momentum point
+            x = prox(z - s * u - s * grad_g1, s)
+            # Qt
+            Qt = f(z) + (grad_g1 * (x - z)).sum() + ((x - z)**2).sum() / (2 * s)
+            # test for sufficient decrease
+            if f(x) <= Qt
+                # Armijo satisfied
+                break
+            else:
+                # Armijo not satisfied
+                s *= γ  # shrink step size
+        # now take prox of nonnegative constraint
+        z = np.maximum(x + s * u, 0)
+        u = u + (x - z) / s
+        if line_iter == max_line_iter - 1:
+            print('warning: line search failed')
+            s = s0
+        if not np.all(np.isfinite(x)):
+            print(f'warning: x contains invalid values')
+        if nonneg and np.any(x < 0):
+            print(f'warning: x contains negative values')
+        # terminate if objective function is constant within tolerance
+        f_old = f
+        f = g(x) + h(x)
+        rel_change = np.abs((f - f_old) / f_old)
+        if rel_change < tol:
+            print(f'relative change in objective function {rel_change:.2g} '
+                  f'is within tolerance {tol} after {k} iterations')
+            break
+        if k == max_iter:
+            print(f'maximum iteration {max_iter} reached with relative '
+                  f'change in objective function {rel_change:.2g}')
+
+    return x
