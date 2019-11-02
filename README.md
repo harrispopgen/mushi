@@ -21,6 +21,7 @@ Dependencies
   - bcftools
   - [prox-tv](https://github.com/albarji/proxTV)
   - [msprime](https://msprime.readthedocs.io)
+  - [JAX](http://jax.readthedocs.io)
 
 Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
 
