@@ -7,21 +7,14 @@ Dope bible, manga, and hardcore punk things that share this name: https://en.wik
 
 Dependencies
 ---
-  - python3.7+
-  - numpy
-  - scipy
-  - scikit-learn
-  - matplotlib
-  - jupyter
-  - scons
-  - gcc
-  - pip
-  - appdirs
-  - samtools
-  - bcftools
-  - [prox-tv](https://github.com/albarji/proxTV)
-  - [msprime](https://msprime.readthedocs.io)
-  - [JAX](http://jax.readthedocs.io)
+Dependences are listed in [env.yml](). You can set up a conda environment with
+```bash
+conda env create -f env.yml
+```
+and activate your new environment with
+```bash
+conda activate mushi
+```
 
 Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
 
