@@ -7,16 +7,17 @@ Dope bible, manga, and hardcore punk things that share this name: https://en.wik
 
 Dependencies
 ---
-Dependences are listed in [env.yml](). You can set up a conda environment with
+
+Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
+
+Dependences are listed in [env.yml](). You can set up a [conda](https://docs.conda.io/en/latest/) environment with
 ```bash
-conda env create -f env.yml
+$ conda env create -f env.yml
 ```
 and activate your new environment with
 ```bash
-conda activate mushi
+$ conda activate mushi
 ```
-
-Be sure to clone using the `--recurse-submodules` flag to get the `stdpopsim` dependency.
 
 Manuscript
 ---
