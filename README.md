@@ -7,7 +7,7 @@ Dope bible, manga, and hardcore punk things that share this name: https://en.wik
 
 Dependencies
 ---
-Dependences are listed in [env.yml](). You can set up a conda environment with
+Dependences are listed in [env.yml](env.yml). You can set up a conda environment with
 ```bash
 conda env create -f env.yml
 ```
