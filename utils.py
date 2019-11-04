@@ -227,7 +227,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
             # Qt
             Qt = f(z) + (grad_g1 * (x - z)).sum() + ((x - z)**2).sum() / (2 * s)
             # test for sufficient decrease
-            if f(x) <= Qt
+            if f(x) <= Qt:
                 # Armijo satisfied
                 break
             else:
