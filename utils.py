@@ -186,14 +186,17 @@ def three_op_prox_grad_descent(x: np.ndarray,
                           γ: np.float64 = 0.8) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
     
-    We implement the method of Pedregosa and Gidel (2018),
-    which combines splitting and a backtracking line search.
+    We implement the method of Damek & Davis (arXiv, 2015),
+    including backtracking line search.
 
     The optimization problem solved is:
 
-      min_x f(x) s.t. x >= 0
+      min_x f(x) 
+      s.t. x >= 0
 
     where f(x) = g(x) + h(x), g is differentiable, and prox_h is available.
+    In this problem, we use prox_h as well as the projection onto 
+    the nonnegative orthant as our two prox operators.
 
     x: initial point
     g: differential term in onjective function
@@ -244,8 +247,10 @@ def three_op_prox_grad_descent(x: np.ndarray,
         
         # new iterate
         x = x + xA - xB
-        x = x + ((k - 1) / (k + 2)) * (x - x_old)
-        rho /= γ
+        # # averaging
+        # x = x + ((k - 1) / (k + 2)) * (x - x_old)
+        # grow step size a little bit
+        rho /= γ**2
         
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
