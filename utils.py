@@ -126,7 +126,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     # initial objective value as first element of f_trajectory we'll append to
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}', end='        \r')
+        print(f'iteration {k}, cost {f: .2g}', end='        \r')
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
         grad_g1 = grad_g(q)
@@ -208,13 +208,21 @@ def three_op_prox_grad_descent(x: np.ndarray,
     """
     # initialize step size
     s = s0
-    # initialize z, u variable
-    z = x
-    u = x
-    # initial objective value as first element of f_trajectory we'll append to
+
+    # line search tolerance
+    ls_tol = 1e-10
+    
+    # initialize z, u variables by taking a step
+    z = np.maximum(x, 0)
+    g1 = g(z)
+    grad_g1 = grad_g(z)
+    x = prox(z - s * grad_g1, s)
+    u = np.zeros_like(x)
+    
+    # initial objective value
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}, cost {f}', end='        \r')
+        print(f'iteration {k}, cost {f: .2g}', end='        \r')
         # evaluate differtiable part of objective at momentum point
         g1 = g(z)
         grad_g1 = grad_g(z)
@@ -226,21 +234,26 @@ def three_op_prox_grad_descent(x: np.ndarray,
                 raise RuntimeError(f'invalid gradient at step {k}, line '
                                    f'search step {line_iter}: {grad_g1}')
             # new point via prox-gradient of momentum point
-            x = prox(z - s * u - s * grad_g1, s)
+            x = prox(z - s * (u + grad_g1), s)
+            incr = x - z
+            norm_incr = np.linalg.norm(incr)
             # Qt
-            Qt = g1 + (grad_g1 * (x - z)).sum() + ((x - z)**2).sum() / (2 * s)
-            if g(x) <= Qt:
+            Qt = g1 + (grad_g1 * incr).sum() + (norm_incr ** 2) / (2 * s)
+            if g(x) - Qt <= ls_tol:
                 # sufficient decrease satisfied
                 break
             else:
                 # sufficient decrease not satisfied
                 s *= γ  # shrink step size
+        if line_iter == max_line_iter - 1:
+            print('warning: line search failed')
+        
         # now take prox of nonnegative constraint
         z = np.maximum(x + s * u, 0)
         u = u + (x - z) / s
-        if line_iter == max_line_iter - 1:
-            print('warning: line search failed')
-            s = s0
+        certificate = norm_incr / s
+        s /= γ  # grow step size a little bit
+        
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
         if np.any(x < 0):
@@ -253,6 +266,10 @@ def three_op_prox_grad_descent(x: np.ndarray,
             print(f'relative change in objective function {rel_change:.2g} '
                   f'is within tolerance {tol} after {k} iterations')
             break
+        # if certificate < tol:
+        #     print(f'certificate norm {certificate:.2g} '
+        #           f'is within tolerance {tol} after {k} iterations')
+        #     break
         if k == max_iter:
             print(f'maximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}')
