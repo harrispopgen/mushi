@@ -295,7 +295,7 @@ class kSFS():
                               jit(grad(lambda Z: g(logy, Z))),
                               jit(lambda Z: h(logy, Z)),
                               prox_update_Z,
-                              tol=tol * 1e4,
+                              tol=tol,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
