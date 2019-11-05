@@ -282,7 +282,7 @@ class kSFS():
                               jit(grad(lambda y: g(y, Z))),
                               jit(lambda y: h(y, Z)),
                               prox_update_y,
-                              tol=tol / 100.,
+                              tol=tol,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
