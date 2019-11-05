@@ -233,7 +233,7 @@ class kSFS():
                 """project onto positive orthant"""
                 return np.clip(Z, 0, np.inf)
 
-        # Accelerated proximal gradient descent: our cost function decomposes
+        # Our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # We'll do block coordinate descent partitioned by y and Z
@@ -249,8 +249,8 @@ class kSFS():
         def g(y, Z):
             """differentiable piece of cost"""
             return loss_func(y, Z) \
-                + (α_spline / 2) * ((D1 @ y) ** 2).sum() \
-                + (α_ridge / 2) * (y ** 2).sum() \
+                + (α_spline / 2) * ((D1 @ np.log10(y)) ** 2).sum() \
+                + (α_ridge / 2) * (np.log10(y) ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
@@ -262,7 +262,7 @@ class kSFS():
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            return α_tv * np.abs(D1 @ y).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+            return α_tv * np.abs(D1 @ np.log10(y)).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
 
         # initial iterate
         y = self.η.y
@@ -272,17 +272,17 @@ class kSFS():
         # max step size
         s0 = 1
         # max number of Armijo step size reductions
-        max_line_iter = 100
+        max_line_iter = 20
 
         print('η block')
         #logy = utils.acc_prox_grad_descent(
         y = utils.three_op_prox_grad_descent(
-                              yy,
+                              y,
                               jit(lambda y: g(y, Z)),
                               jit(grad(lambda y: g(y, Z))),
                               jit(lambda y: h(y, Z)),
                               prox_update_y,
-                              tol=tol,
+                              tol=tol / 100.,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
@@ -300,8 +300,7 @@ class kSFS():
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
-                              γ=γ,
-                              nonneg=True)
+                              γ=γ)
 
         self.η = histories.η(self.η.change_points, y)
         self.M = utils.M(self.n, t, y)
