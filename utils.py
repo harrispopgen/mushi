@@ -126,7 +126,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     # initial objective value as first element of f_trajectory we'll append to
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}, cost {f: .2g}', end='        \r')
+        print(f'iteration {k}, cost {f}', end='        \r')
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
         grad_g1 = grad_g(q)
@@ -214,16 +214,17 @@ def three_op_prox_grad_descent(x: np.ndarray,
     
     # initial objective value
     f = g(x) + h(x)
+    rho = 1
+    
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}, cost {f: .2g}', end='        \r')
+        print(f'iteration {k}, cost {f}', end='        \r')
+        x_old = x
         xB = np.maximum(x, 0)
         # evaluate differtiable part of objective
         g1 = g(xB)
         grad_g1 = grad_g(xB)
         # store old iterate
-        x_old = x
         # Armijo line search
-        rho = 1
         for line_iter in range(max_line_iter):
             if not np.all(np.isfinite(grad_g1)):
                 raise RuntimeError(f'invalid gradient at step {k}, line '
@@ -231,8 +232,8 @@ def three_op_prox_grad_descent(x: np.ndarray,
             # new point via prox-gradient of momentum point
             xA = prox(xB + rho * (xB - x) - rho * s * grad_g1, rho * s)
             # Qt
-            Qt = g1 + (grad_g1 * (xA - xB)).sum() + ((xA - xB) ** 2) / (2 * rho * s)
-            if g(x) - Qt <= ls_tol:
+            Qt = g1 + (grad_g1 * (xA - xB)).sum() + ((xA - xB) ** 2).sum() / (2 * rho * s)
+            if g(xA) - Qt <= ls_tol:
                 # sufficient decrease satisfied
                 break
             else:
@@ -243,6 +244,8 @@ def three_op_prox_grad_descent(x: np.ndarray,
         
         # new iterate
         x = x + xA - xB
+        x = x + ((k - 1) / (k + 2)) * (x - x_old)
+        rho /= γ
         
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
