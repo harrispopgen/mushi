@@ -184,8 +184,8 @@ class kSFS():
 
         # badness of fit
         @jit
-        def loss_func(y, Z):
-            L = self.C @ utils.M(self.n, t, y)
+        def loss_func(logy, Z):
+            L = self.C @ utils.M(self.n, t, np.exp(logy))
             if mask is not None:
                 L = L[~mask, :]
             if fit == 'prf':
@@ -198,12 +198,12 @@ class kSFS():
                 raise ValueError(f'unrecognized fit argument {fit}')
 
         if α_tv > 0:
-            def prox_update_y(y, s):
+            def prox_update_logy(logy, s):
                 """L1 prox operator"""
-                return ptv.tv1_1d(y, s * α_tv)
+                return ptv.tv1_1d(logy, s * α_tv)
         else:
-            def prox_update_y(y, s):
-                return y
+            def prox_update_logy(logy, s):
+                return logy
 
         if β_tv > 0 and β_rank > 0:
             raise NotImplementedError('fused LASSO with l1 spectral '
@@ -233,7 +233,7 @@ class kSFS():
                 """project onto positive orthant"""
                 return np.clip(Z, 0, np.inf)
 
-        # Our cost function decomposes
+        # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
         # We'll do block coordinate descent partitioned by y and Z
@@ -246,68 +246,68 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
 
         @jit
-        def g(y, Z):
+        def g(logy, Z):
             """differentiable piece of cost"""
-            return loss_func(y, Z) \
-                + (α_spline / 2) * ((D1 @ np.log10(y)) ** 2).sum() \
-                + (α_ridge / 2) * (np.log10(y) ** 2).sum() \
+            return loss_func(logy, Z) \
+                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                + (α_ridge / 2) * (logy ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
         @jit
-        def h(y, Z):
+        def h(logy, Z):
             """nondifferentiable piece of cost"""
             σ = np.linalg.svd(Z, compute_uv=False)
             if hard:
                 rank_penalty = np.linalg.norm(σ, 0)
             else:
                 rank_penalty = np.linalg.norm(σ, 1)
-            return α_tv * np.abs(D1 @ np.log10(y)).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+            return α_tv * np.abs(D1 @ logy).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
 
         # initial iterate
-        y = self.η.y
+        logy = np.log(self.η.y)
         Z = self.μ.Z
         # initial loss as first element of f_trajectory we'll append to
-        f_trajectory = [g(y, Z) + h(y, Z)]
+        f_trajectory = [g(logy, Z) + h(logy, Z)]
         # max step size
         s0 = 1
         # max number of Armijo step size reductions
-        max_line_iter = 20
+        max_line_iter = 100
 
         print('η block')
-        #logy = utils.acc_prox_grad_descent(
-        y = utils.three_op_prox_grad_descent(
-                              y,
-                              jit(lambda y: g(y, Z)),
-                              jit(grad(lambda y: g(y, Z))),
-                              jit(lambda y: h(y, Z)),
-                              prox_update_y,
+        logy = utils.acc_prox_grad_descent(
+                              logy,
+                              jit(lambda logy: g(logy, Z)),
+                              jit(grad(lambda logy: g(logy, Z))),
+                              jit(lambda logy: h(logy, Z)),
+                              prox_update_logy,
                               tol=tol,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
-                              γ=γ)
+                              γ=γ, nonneg=False)
 
         print('μ block')
         #Z = utils.acc_prox_grad_descent(
         Z = utils.three_op_prox_grad_descent(
                               Z,
-                              jit(lambda Z: g(y, Z)),
-                              jit(grad(lambda Z: g(y, Z))),
-                              jit(lambda Z: h(y, Z)),
+                              jit(lambda Z: g(logy, Z)),
+                              jit(grad(lambda Z: g(logy, Z))),
+                              jit(lambda Z: h(logy, Z)),
                               prox_update_Z,
-                              tol=tol,
+                              tol=tol * 1e4,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
                               γ=γ)
 
+        y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
         self.μ = histories.μ(self.η.change_points, Z,
                              mutation_types=self.mutation_types.values)
-        return g(y, Z) + h(y, Z)
+        return g(logy, Z) + h(logy, Z)
 
     def plot_total(self):
         """plot the total SFS"""
