@@ -140,10 +140,7 @@ def acc_prox_grad_descent(x: np.ndarray,
             # new point via prox-gradient of momentum point
             x = prox(q - s * grad_g1, s)
             if nonneg and np.any(x < 0):
-                print('warning: line search left positive orthant, shrinking '
-                      'step size')
-                s *= γ
-                continue
+                print('warning: line search left positive orthant')
             # G_s(q) as in the notes linked above
             G = (1 / s) * (q - x)
             # test g(q - sG_s(q)) for sufficient decrease
@@ -187,9 +184,10 @@ def three_op_prox_grad_descent(x: np.ndarray,
                           s0: np.float64 = 1,
                           max_line_iter: int = 100,
                           γ: np.float64 = 0.8) -> np.ndarray:
-    u"""Three-operator splitting proximal gradient descent
+    u"""Three operator splitting proximal gradient descent
     
-    We implement the method of Davis and Yin (2015).
+    We implement the method of Pedregosa and Gidel (2018),
+    which combines splitting and a backtracking line search.
 
     The optimization problem solved is:
 
@@ -216,7 +214,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
     # initial objective value as first element of f_trajectory we'll append to
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}', end='        \r')
+        print(f'iteration {k}, cost {f}', end='        \r')
         # evaluate differtiable part of objective at momentum point
         g1 = g(z)
         grad_g1 = grad_g(z)
@@ -230,13 +228,12 @@ def three_op_prox_grad_descent(x: np.ndarray,
             # new point via prox-gradient of momentum point
             x = prox(z - s * u - s * grad_g1, s)
             # Qt
-            Qt = f(z) + (grad_g1 * (x - z)).sum() + ((x - z)**2).sum() / (2 * s)
-            # test for sufficient decrease
-            if f(x) <= Qt:
-                # Armijo satisfied
+            Qt = g1 + (grad_g1 * (x - z)).sum() + ((x - z)**2).sum() / (2 * s)
+            if g(x) <= Qt:
+                # sufficient decrease satisfied
                 break
             else:
-                # Armijo not satisfied
+                # sufficient decrease not satisfied
                 s *= γ  # shrink step size
         # now take prox of nonnegative constraint
         z = np.maximum(x + s * u, 0)
@@ -246,7 +243,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
             s = s0
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
-        if nonneg and np.any(x < 0):
+        if np.any(x < 0):
             print(f'warning: x contains negative values')
         # terminate if objective function is constant within tolerance
         f_old = f
