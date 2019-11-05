@@ -231,7 +231,9 @@ class kSFS():
         else:
             def prox_update_Z(Z, s):
                 """project onto positive orthant"""
-                return np.clip(Z, 0, np.inf)
+                #return np.maximum(Z, 0)
+                return Z
+            
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
@@ -309,6 +311,193 @@ class kSFS():
                              mutation_types=self.mutation_types.values)
         return g(logy, Z) + h(logy, Z)
 
+
+    def coord_desc_no_log(self,
+                   α_tv: np.float64 = 0,
+                   α_spline: np.float64 = 0,
+                   α_ridge: np.float64 = 0,
+                   β_tv: np.float64 = 0,
+                   β_spline: np.float64 = 0,
+                   β_rank: np.float64 = 0,
+                   β_ridge: np.float64 = 0,
+                   γ: np.float64 = 0.8,
+                   max_iter: int = 1000,
+                   tol: np.float64 = 1e-4,
+                   fit='prf',
+                   hard=False,
+                   mask: np.ndarray = None,
+                   log_reg = False) -> np.ndarray:
+        u"""perform one iteration of block coordinate descent to fit η and μ
+
+        η(t) regularization parameters:
+        - α_tv: fused LASSO regularization strength
+        - α_spline: regularization strength for L2 on diff
+        - α_ridge: L2 penalty for strong convexity
+
+        μ(t) regularization parameters:
+        - β_tv: fused LASSO regularization strength
+        - β_spline: regularization strength for L2 on diff
+        - β_rank: spectral regularization strength
+        - β_ridge: regularization strength for Frobenius norm on Z (removes
+                   scale ridge for η, μ and t, and promotes strong convexity)
+
+        γ: step size shrinkage rate for line search
+        max_iter: maximum number of proximal gradient descent steps
+        tol: relative tolerance in objective function
+        fit: loss function, 'prf' for Poisson random field, 'kl' for
+             Kullback-Leibler divergence, 'lsq' for least-squares
+        hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
+        mask: array of bools, with True indicating exclusion of that frequency
+
+        returns cost function at final iterate
+        """
+        assert self.X is not None, 'use simulate() to generate data first'
+        assert self.η is not None, 'must initialize e.g. with infer_constant()'
+
+        if mask is not None:
+            X = self.X[~mask, :]
+        else:
+            X = self.X
+
+        t = self.η.arrays()[0]
+
+        # badness of fit
+        @jit
+        def loss_func(y, Z):
+            L = self.C @ utils.M(self.n, t, y)
+            if mask is not None:
+                L = L[~mask, :]
+            if fit == 'prf':
+                return -utils.prf(Z, X, L)
+            elif fit == 'kl':
+                return utils.d_kl(Z, X, L)
+            elif fit == 'lsq':
+                return utils.lsq(Z, X, L)
+            else:
+                raise ValueError(f'unrecognized fit argument {fit}')
+
+        if α_tv > 0:
+            def prox_update_y(y, s):
+                """L1 prox operator"""
+                return ptv.tv1_1d(y, s * α_tv)
+        else:
+            def prox_update_y(y, s):
+                return y
+
+        if β_tv > 0 and β_rank > 0:
+            raise NotImplementedError('fused LASSO with l1 spectral '
+                                      'regularization not available')
+        elif β_tv > 0:
+            def prox_update_Z(Z, s):
+                """L1 prox operator on row dimension (oddly 1-based indexed in
+                proxtv)
+                """
+                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+        elif β_rank > 0:
+            if hard:
+                def prox_update_Z(Z, s):
+                    """l0 norm on singular values (hard-thresholding)"""
+                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                    σ = index_update(σ, index[σ <= s * β_rank], 0)
+                    Σ = np.diag(σ)
+                    return U @ Σ @ Vt
+            else:
+                def prox_update_Z(Z, s):
+                    """l1 norm on singular values (soft-thresholding)"""
+                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                    Σ = np.diag(np.maximum(0, σ - s * β_rank))
+                    return U @ Σ @ Vt
+        else:
+            def prox_update_Z(Z, s):
+                """project onto positive orthant"""
+                return np.clip(Z, 0, np.inf)
+
+        # Accelerated proximal gradient descent: our cost function decomposes
+        # as f = g + h, where g is differentiable and h is not.
+        # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+        # We'll do block coordinate descent partitioned by y and Z
+
+        # some matrices we'll need for the first difference penalties
+        D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
+        # W matrix deals with boundary condition
+        W = np.eye(self.η.m)
+        W = index_update(W, index[0, 0], 0)
+        D1 = W @ D  # 1st difference matrix
+
+        @jit
+        def g(y, Z):
+            """differentiable piece of cost"""
+            if log_reg:
+                return loss_func(y, Z) \
+                  + (α_spline / 2) * ((D1 @ np.log(y)) ** 2).sum() \
+                  + (α_ridge / 2) * (np.log(y) ** 2).sum() \
+                  + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                  + (β_ridge / 2) * (Z ** 2).sum()
+            else:
+                return loss_func(y, Z) \
+                  + (α_spline / 2) * ((D1 @ y) ** 2).sum() \
+                  + (α_ridge / 2) * (y ** 2).sum() \
+                  + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                  + (β_ridge / 2) * (Z ** 2).sum()
+
+        @jit
+        def h(y, Z):
+            """nondifferentiable piece of cost"""
+            σ = np.linalg.svd(Z, compute_uv=False)
+            if hard:
+                rank_penalty = np.linalg.norm(σ, 0)
+            else:
+                rank_penalty = np.linalg.norm(σ, 1)
+            if log_reg:
+                return α_tv * np.abs(D1 @ np.log(y)).sum() \
+                  + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+            else:
+                return α_tv * np.abs(D1 @ y).sum() \
+                  + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+
+        # initial iterate
+        y = self.η.y
+        Z = self.μ.Z
+        # initial loss as first element of f_trajectory we'll append to
+        f_trajectory = [g(y, Z) + h(y, Z)]
+        # max step size
+        s0 = 1
+        # max number of Armijo step size reductions
+        max_line_iter = 100
+        
+        print('Optimizing η block')
+        y = utils.three_op_prox_grad_descent(
+                              y,
+                              jit(lambda y: g(y, Z)),
+                              jit(grad(lambda y: g(y, Z))),
+                              jit(lambda y: h(y, Z)),
+                              prox_update_y,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ)
+
+        print('Optimizing μ block')
+        Z = utils.three_op_prox_grad_descent(
+                              Z,
+                              jit(lambda Z: g(y, Z)),
+                              jit(grad(lambda Z: g(y, Z))),
+                              jit(lambda Z: h(y, Z)),
+                              prox_update_Z,
+                              tol=tol,
+                              max_iter=max_iter,
+                              s0=s0,
+                              max_line_iter=max_line_iter,
+                              γ=γ)
+
+        self.η = histories.η(self.η.change_points, y)
+        self.M = utils.M(self.n, t, y)
+        self.L = self.C @ self.M
+        self.μ = histories.μ(self.η.change_points, Z,
+                             mutation_types=self.mutation_types.values)
+        return g(y, Z) + h(y, Z)
+    
     def plot_total(self):
         """plot the total SFS"""
         if self.η is not None:
