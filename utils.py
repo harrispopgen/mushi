@@ -212,47 +212,37 @@ def three_op_prox_grad_descent(x: np.ndarray,
     # line search tolerance
     ls_tol = 1e-10
     
-    # initialize z, u variables by taking a step
-    z = np.maximum(x, 0)
-    g1 = g(z)
-    grad_g1 = grad_g(z)
-    x = prox(z - s * grad_g1, s)
-    u = np.zeros_like(x)
-    
     # initial objective value
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
         print(f'iteration {k}, cost {f: .2g}', end='        \r')
-        # evaluate differtiable part of objective at momentum point
-        g1 = g(z)
-        grad_g1 = grad_g(z)
+        xB = np.maximum(x, 0)
+        # evaluate differtiable part of objective
+        g1 = g(xB)
+        grad_g1 = grad_g(xB)
         # store old iterate
         x_old = x
         # Armijo line search
+        rho = 1
         for line_iter in range(max_line_iter):
             if not np.all(np.isfinite(grad_g1)):
                 raise RuntimeError(f'invalid gradient at step {k}, line '
                                    f'search step {line_iter}: {grad_g1}')
             # new point via prox-gradient of momentum point
-            x = prox(z - s * (u + grad_g1), s)
-            incr = x - z
-            norm_incr = np.linalg.norm(incr)
+            xA = prox(xB + rho * (xB - x) - rho * s * grad_g1, rho * s)
             # Qt
-            Qt = g1 + (grad_g1 * incr).sum() + (norm_incr ** 2) / (2 * s)
+            Qt = g1 + (grad_g1 * (xA - xB)).sum() + ((xA - xB) ** 2) / (2 * rho * s)
             if g(x) - Qt <= ls_tol:
                 # sufficient decrease satisfied
                 break
             else:
                 # sufficient decrease not satisfied
-                s *= γ  # shrink step size
+                rho *= γ  # shrink step size
         if line_iter == max_line_iter - 1:
             print('warning: line search failed')
         
-        # now take prox of nonnegative constraint
-        z = np.maximum(x + s * u, 0)
-        u = u + (x - z) / s
-        certificate = norm_incr / s
-        s /= γ  # grow step size a little bit
+        # new iterate
+        x = x + xA - xB
         
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
