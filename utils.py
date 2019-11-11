@@ -126,7 +126,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     # initial objective value as first element of f_trajectory we'll append to
     f = g(x) + h(x)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}', end='        \r')
+        print(f'iteration {k}', end='        \r', flush=True)
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
         grad_g1 = grad_g(q)
@@ -141,7 +141,7 @@ def acc_prox_grad_descent(x: np.ndarray,
             x = prox(q - s * grad_g1, s)
             if nonneg and np.any(x < 0):
                 print('warning: line search left positive orthant, shrinking '
-                      'step size')
+                      'step size', flush=True)
                 s *= γ
                 continue
             # G_s(q) as in the notes linked above
@@ -157,22 +157,22 @@ def acc_prox_grad_descent(x: np.ndarray,
         # update momentum term
         q = x + ((k - 1) / (k + 2)) * (x - x_old)
         if line_iter == max_line_iter - 1:
-            print('warning: line search failed')
+            print('warning: line search failed', flush=True)
             s = s0
         if not np.all(np.isfinite(x)):
-            print(f'warning: x contains invalid values')
+            print(f'warning: x contains invalid values', flush=True)
         if nonneg and np.any(x < 0):
-            print(f'warning: x contains negative values')
+            print(f'warning: x contains negative values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
             print(f'relative change in objective function {rel_change:.2g} '
-                  f'is within tolerance {tol} after {k} iterations')
+                  f'is within tolerance {tol} after {k} iterations', flush=True)
             break
         if k == max_iter:
             print(f'maximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}')
+                  f'change in objective function {rel_change:.2g}', flush=True)
 
     return x

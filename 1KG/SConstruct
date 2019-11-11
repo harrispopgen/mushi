@@ -76,21 +76,21 @@ n_jobs = GetOption('num_jobs')
 
 # need this so scons -h runs without error
 if bcf_dir is not None:
-    for pop in ('AFR', 'AMR', 'EAS', 'EUR', 'SAS'):
+    # mask for conserved sites and repeats
+    mask_file = os.path.join(outdir, 'mask.gz')
+    tgt = [mask_file, mask_file + '.tbi']
+    src = [phastcons, repeats]
+    cmd = ('python region_mask.py ${SOURCES} | sort -k1V -k2n -k3n'
+           ' | bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 '
+           '${TARGETS[0]}')
+    mask = env.Command(tgt, src, cmd)
+
+    for idx, pop in enumerate(('AFR', 'AMR', 'EAS', 'EUR', 'SAS')):
         pop_outdir = os.path.join(outdir, pop)
         pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
                                sample_pops,
                                f'grep {pop} ${{SOURCE}} | '
                                f'cut -f1 > ${{TARGET}}')
-
-        # mask for conserved sites and repeats
-        mask_file = os.path.join(pop_outdir, 'mask.gz')
-        tgt = [mask_file, mask_file + '.tbi']
-        src = [phastcons, repeats]
-        cmd = ('python region_mask.py ${SOURCES} | sort -k1V -k2n -k3n'
-               ' | bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 '
-               '${TARGETS[0]}')
-        mask = env.Command(tgt, src, cmd)
 
         snps_context = []
         masked_sizes = []
@@ -105,12 +105,9 @@ if bcf_dir is not None:
 
             # create snps file with columns CHROM POS REF ALT AC AN
             tgt = os.path.join(pop_outdir, f'snps.{chro}.tsv')
-            src = [mask[0], bcf]
-            if pop_list is not None:
-                src.append(pop_list)
+            src = [mask[0], bcf, pop_list]
             cmd = 'bcftools view -T ^${SOURCES[0]} '
-            if pop_list is not None:
-                cmd += '-S ${SOURCES[2]} '
+            cmd += '-S ${SOURCES[2]} '
             cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
             cmd += ' ${SOURCES[1]} | '
             cmd += 'bcftools query -f '
@@ -129,28 +126,30 @@ if bcf_dir is not None:
             snps_context.append(env.Command(tgt, src, cmd))
 
             # masked chromosome sizes for mutation rate estimation
-            tgt = os.path.join(pop_outdir, f'masked_size.{chro}.tsv')
-            src = [mask[0], anc_fasta]
-            cmd = f'tabix ${{SOURCES[0]}} {chro}: > ${{TARGET}}.mask.tmp && '
-            cmd += 'python masked_size.py ${SOURCES[1]} ${TARGET}.mask.tmp '
-            cmd += '> ${TARGET} && '
-            cmd += 'rm ${TARGET}.mask.tmp'
-            masked_sizes.append(env.Command(tgt, src, cmd))
-
-        # masked genome size for mutation rate estimation
-        tgt = os.path.join(pop_outdir, f'masked_size.tsv')
-        cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
-        masked_size = env.Command(tgt, masked_sizes, cmd)
+            if idx == 0:
+                tgt = os.path.join(outdir, f'masked_size.{chro}.tsv')
+                src = [mask[0], anc_fasta]
+                cmd = f'tabix ${{SOURCES[0]}} {chro}: > ${{TARGET}}.mask.tmp && '
+                cmd += 'python masked_size.py ${SOURCES[1]} ${TARGET}.mask.tmp '
+                cmd += '> ${TARGET} && '
+                cmd += 'rm ${TARGET}.mask.tmp'
+                masked_sizes.append(env.Command(tgt, src, cmd))
 
         # compute k-SFS
         tgt = os.path.join(pop_outdir, f'{k}-SFS.tsv')
         cmd = 'python ksfs.py ${SOURCES} > $TARGET'
         ksfs = env.Command(tgt, snps_context, cmd)
 
+        if idx == 0:
+            # masked genome size for mutation rate estimation
+            tgt = os.path.join(outdir, f'masked_size.tsv')
+            cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
+            masked_size = env.Command(tgt, masked_sizes, cmd)
+
         # infer η and μ
         mushi_outbase = os.path.join(pop_outdir, 'mushi')
         tgt = f'{mushi_outbase}.ksfs.pkl'
         src = [ksfs, masked_size]
-        cmd = f'python run_mushi.py ${{SOURCES}} {mutation_rate} ' \
+        cmd = f'python ../mushi.py ${{SOURCES}} {mutation_rate} ' \
               f'{mushi_outbase} > {mushi_outbase}.log'
         mushi = env.Command(tgt, src, cmd)
