@@ -20,16 +20,18 @@ def main():
 
     for i, snps_file in enumerate(args.snps_files):
         snps = pd.read_csv(snps_file, sep='\t', index_col=0)
-        n = snps.n.iloc[0]
-        assert all(snps.n == n)
+        if i == 0:
+            n = snps.n.iloc[0]
+        assert all(snps.n == n), f'SNPs file {snps_file} contains inconsistent n'
         this_ksfs = snps.groupby(['sample frequency',
                                   'mutation type']).size().unstack('mutation type',
                                                                    fill_value=0)
         if i == 0:
             ksfs = this_ksfs
         else:
-            ksfs += this_ksfs
-        assert this_ksfs.shape[0] == n - 1
+            ksfs = ksfs.add(this_ksfs, fill_value=0)
+
+    assert all(ksfs.index == range(1, n)), f'index is missing values:\n{ksfs.index}'
 
     ksfs.to_csv(sys.stdout, sep='\t')
 

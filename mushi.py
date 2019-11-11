@@ -142,7 +142,9 @@ class kSFS():
                    β_spline: np.float64 = 0,
                    β_rank: np.float64 = 0,
                    β_ridge: np.float64 = 0,
-                   γ: np.float64 = 0.8, max_iter: int = 1000,
+                   max_iter: int = 1000,
+                   max_line_iter=100,
+                   γ: np.float64 = 0.8,
                    tol: np.float64 = 1e-4, fit='prf',
                    hard=False,
                    mask: np.ndarray = None) -> np.ndarray:
@@ -160,6 +162,8 @@ class kSFS():
         - β_ridge: regularization strength for Frobenius norm on Z (removes
                    scale ridge for η, μ and t, and promotes strong convexity)
 
+        max_iter: maximum number of proximal gradient descent steps
+        max_line_iter: maximum number of line search steps
         γ: step size shrinkage rate for line search
         max_iter: maximum number of proximal gradient descent steps
         tol: relative tolerance in objective function
@@ -272,7 +276,7 @@ class kSFS():
         # max number of Armijo step size reductions
         max_line_iter = 100
 
-        print('η block')
+        print('η block', flush=True)
         logy = utils.acc_prox_grad_descent(
                               logy,
                               jit(lambda logy: g(logy, Z)),
@@ -285,7 +289,7 @@ class kSFS():
                               max_line_iter=max_line_iter,
                               γ=γ)
 
-        print('μ block')
+        print('μ block', flush=True)
         Z = utils.acc_prox_grad_descent(
                               Z,
                               jit(lambda Z: g(logy, Z)),
@@ -390,3 +394,109 @@ class kSFS():
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g
+
+
+def main():
+    """
+    usage: python run_mushi.py -h
+    """
+    import argparse
+    import pickle
+
+    parser = argparse.ArgumentParser(description='write snps with kmer context'
+                                                 ' to stdout')
+    parser.add_argument('ksfs', type=str, default=None,
+                        help='path to k-SFS file')
+    parser.add_argument('masked_size', type=str, default=None,
+                        help='path to file with masked genome size')
+    parser.add_argument('mutation_rate', type=np.float64, default=None,
+                        help='site-wise mutation rate')
+    parser.add_argument('outbase', type=str, default=None,
+                        help='base name for output files')
+
+    args = parser.parse_args()
+
+    # load k-SFS
+    ksfs_df = pd.read_csv(args.ksfs, sep='\t', index_col=0)
+    assert np.isnan(ksfs_df.values).sum() == 0
+    mutation_types = ksfs_df.columns
+    n = ksfs_df.shape[0] + 1
+    ksfs = kSFS(X=ksfs_df.values, mutation_types=mutation_types)
+
+    # genome size and mutation rate estimation
+    masked_size = int(open(args.masked_size).read())
+    μ_0 = args.mutation_rate * masked_size
+    print(f'mutation rate in units of mutations per masked genome per '
+          f'generation: {μ_0:.2f}', flush=True)
+
+    change_points = np.logspace(0, 5.3, 200)
+
+    # mask sites
+    mask = np.array([False if (0 <= i <= n - 20) else True
+                     for i in range(n - 1)])
+
+    # Initialize to constant
+    ksfs.infer_constant(change_points=change_points, μ_0=μ_0, mask=mask)
+
+    f_trajectory = []
+
+    sweeps = 10
+    tol = 1e-10
+    f_old = None
+    for sweep in range(1, 1 + sweeps):
+        print(f'block coordinate descent sweep {sweep:.2g}', flush=True)
+        f = ksfs.coord_desc(# loss function parameters
+                            fit='prf',
+                            mask=mask,
+                            # η(t) regularization parameters
+                            α_tv=0,#1e3,
+                            α_spline=1e3,
+                            α_ridge=1e-10,
+                            # μ(t) regularization parameters
+                            β_rank=3e3,
+                            β_tv=0,
+                            β_spline=2e5,
+                            β_ridge=1e-10,
+                            hard=True,
+                            # convergence parameters
+                            max_iter=10000,
+                            max_line_iter=300,
+                            tol=tol,
+                            γ=0.8)
+        print(f'cost: {f}', flush=True)
+        if sweep > 1:
+            relative_change = np.abs((f - f_old) / f_old)
+            print(f'relative change: {relative_change:.2g}', flush=True)
+        print(flush=True)
+        f_old = f
+        f_trajectory.append(f)
+
+        if sweep > 1 and relative_change < tol:
+            break
+
+    plt.figure(figsize=(4, 2))
+    plt.plot(f_trajectory)
+    plt.xlabel('iterations')
+    plt.ylabel('cost')
+    # plt.xscale('symlog')
+    plt.tight_layout()
+    plt.savefig(f'{args.outbase}.iterations.pdf')
+
+    plt.figure(figsize=(6, 6))
+    plt.subplot(221)
+    ksfs.plot_total()
+    plt.subplot(222)
+    ksfs.η.plot()
+    plt.subplot(223)
+    ksfs.plot(normed=True, alpha=0.5)
+    plt.subplot(224)
+    ksfs.μ.plot(normed=True, alpha=0.5)
+    plt.savefig(f'{args.outbase}.fit.pdf')
+
+    # pickle the final ksfs (which contains all the inferred history info)
+    with open(f'{args.outbase}.pkl', 'wb') as f:
+        pickle.dump(ksfs, f)
+
+
+if __name__ == '__main__':
+    main()
