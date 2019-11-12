@@ -215,12 +215,12 @@ def three_op_prox_grad_descent(x: np.ndarray,
     print(f'initial cost {f:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
-        # x_old = x
         xB = np.maximum(x, 0)
         # evaluate differentiable part of objective
         g1 = g(xB)
         grad_g1 = grad_g(xB)
         # store old iterate
+        # x_old = x
         # Armijo line search
         for line_iter in range(max_line_iter):
             if not np.all(np.isfinite(grad_g1)):
