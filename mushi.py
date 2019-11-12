@@ -201,19 +201,19 @@ class kSFS():
 
         if α_tv > 0:
             def prox_update_logy(logy, s):
-                """L1 prox operator"""
+                """total variation prox operator"""
                 return ptv.tv1_1d(logy, s * α_tv)
         else:
             def prox_update_logy(logy, s):
                 return logy
 
         if β_tv > 0 and β_rank > 0:
-            raise NotImplementedError('fused LASSO with l1 spectral '
+            raise NotImplementedError('fused LASSO with spectral '
                                       'regularization not available')
         elif β_tv > 0:
             def prox_update_Z(Z, s):
-                """L1 prox operator on row dimension (oddly 1-based indexed in
-                proxtv)
+                """total variation prox operator on row dimension
+                (oddly 1-based indexed in proxtv)
                 """
                 return ptv.tvgen(Z, [s * β_tv], [1], [1])
         elif β_rank > 0:
@@ -287,7 +287,7 @@ class kSFS():
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
-                              γ=γ, nonneg=False)
+                              γ=γ)
 
         print('μ block', flush=True)
         Z = utils.three_op_prox_grad_descent(Z,
