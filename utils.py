@@ -100,8 +100,7 @@ def acc_prox_grad_descent(x: np.ndarray,
                           max_iter: int = 100,
                           s0: np.float64 = 1,
                           max_line_iter: int = 100,
-                          γ: np.float64 = 0.8,
-                          nonneg: bool = False) -> np.ndarray:
+                          γ: np.float64 = 0.8) -> np.ndarray:
     u"""Nesterov accelerated proximal gradient descent
 
     x: initial point
@@ -114,19 +113,15 @@ def acc_prox_grad_descent(x: np.ndarray,
     s0: initial step size
     max_line_iter: maximum number of line search steps
     γ: step size shrinkage rate for line search
-    nonneg: if True, line search succeeds only for steps in positive orthant
     """
-    if nonneg:
-        assert np.all(x >= 0), 'initial x must be in positive orthant when ' \
-                               'nonneg=True'
     # initialize step size
     s = s0
     # initialize momentum iterate
     q = x
-    # initial objective value as first element of f_trajectory we'll append to
+    # initial objective value
     f = g(x) + h(x)
+    print(f'initial cost {f:.6e}', flush=True)
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}, cost {f}', end='        \r')
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
         grad_g1 = grad_g(q)
@@ -135,12 +130,10 @@ def acc_prox_grad_descent(x: np.ndarray,
         # Armijo line search
         for line_iter in range(max_line_iter):
             if not np.all(np.isfinite(grad_g1)):
-                raise RuntimeError(f'invalid gradient at step {k}, line '
-                                   f'search step {line_iter}: {grad_g1}')
+                raise RuntimeError(f'invalid gradient at step {k + 1}, line '
+                                   f'search step {line_iter + 1}: {grad_g1}')
             # new point via prox-gradient of momentum point
             x = prox(q - s * grad_g1, s)
-            if nonneg and np.any(x < 0):
-                print('warning: line search left positive orthant')
             # G_s(q) as in the notes linked above
             G = (1 / s) * (q - x)
             # test g(q - sG_s(q)) for sufficient decrease
@@ -154,23 +147,23 @@ def acc_prox_grad_descent(x: np.ndarray,
         # update momentum term
         q = x + ((k - 1) / (k + 2)) * (x - x_old)
         if line_iter == max_line_iter - 1:
-            print('warning: line search failed')
+            print('warning: line search failed', flush=True)
             s = s0
         if not np.all(np.isfinite(x)):
-            print(f'warning: x contains invalid values')
-        if nonneg and np.any(x < 0):
-            print(f'warning: x contains negative values')
+            print(f'warning: x contains invalid values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
+        print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
-            print(f'relative change in objective function {rel_change:.2g} '
-                  f'is within tolerance {tol} after {k} iterations')
+            print(f'\nrelative change in objective function {rel_change:.2g} '
+                  f'is within tolerance {tol} after {k} iterations',
+                  flush=True)
             break
         if k == max_iter:
             print(f'maximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}')
+                  f'change in objective function {rel_change:.2g}', flush=True)
 
     return x
 
@@ -185,17 +178,17 @@ def three_op_prox_grad_descent(x: np.ndarray,
                           max_line_iter: int = 100,
                           γ: np.float64 = 0.8) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
-    
+
     We implement the method of Damek & Davis (arXiv, 2015),
     including backtracking line search.
 
     The optimization problem solved is:
 
-      min_x f(x) 
+      min_x f(x)
       s.t. x >= 0
 
     where f(x) = g(x) + h(x), g is differentiable, and prox_h is available.
-    In this problem, we use prox_h as well as the projection onto 
+    In this problem, we use prox_h as well as the projection onto
     the nonnegative orthant as our two prox operators.
 
     x: initial point
@@ -214,11 +207,11 @@ def three_op_prox_grad_descent(x: np.ndarray,
 
     # line search tolerance
     ls_tol = 1e-10
-    
+
     # initial objective value
     f = g(x) + h(x)
     rho = 1
-    
+
     for k in range(1, max_iter + 1):
         print(f'iteration {k}, cost {f}', end='        \r')
         x_old = x
@@ -244,14 +237,14 @@ def three_op_prox_grad_descent(x: np.ndarray,
                 rho *= γ  # shrink step size
         if line_iter == max_line_iter - 1:
             print('warning: line search failed')
-        
+
         # new iterate
         x = x + xA - xB
         # # averaging
         # x = x + ((k - 1) / (k + 2)) * (x - x_old)
         # grow step size a little bit
         rho /= γ**2
-        
+
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values')
         if np.any(x < 0):
