@@ -162,21 +162,23 @@ def acc_prox_grad_descent(x: np.ndarray,
                   flush=True)
             break
         if k == max_iter:
-            print(f'maximum iteration {max_iter} reached with relative '
+            print(f'\nmaximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}', flush=True)
 
     return x
 
+
 def three_op_prox_grad_descent(x: np.ndarray,
-                          g: Callable[[np.ndarray], np.float64],
-                          grad_g: Callable[[np.ndarray], np.float64],
-                          h: Callable[[np.ndarray], np.float64],
-                          prox: Callable[[np.ndarray, np.float64], np.float64],
-                          tol: np.float64 = 1e-10,
-                          max_iter: int = 100,
-                          s0: np.float64 = 1,
-                          max_line_iter: int = 100,
-                          γ: np.float64 = 0.8) -> np.ndarray:
+                               g: Callable[[np.ndarray], np.float64],
+                               grad_g: Callable[[np.ndarray], np.float64],
+                               h: Callable[[np.ndarray], np.float64],
+                               prox: Callable[[np.ndarray, np.float64],
+                                              np.float64],
+                               tol: np.float64 = 1e-10,
+                               max_iter: int = 100,
+                               s0: np.float64 = 1,
+                               max_line_iter: int = 100,
+                               γ: np.float64 = 0.8) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
 
     We implement the method of Damek & Davis (arXiv, 2015),
@@ -202,6 +204,8 @@ def three_op_prox_grad_descent(x: np.ndarray,
     max_line_iter: maximum number of line search steps
     γ: step size shrinkage rate for line search
     """
+    assert np.all(x >= 0), 'initial x must be in nonnegative orthant'
+
     # initialize step size
     s = s0
 
@@ -210,13 +214,12 @@ def three_op_prox_grad_descent(x: np.ndarray,
 
     # initial objective value
     f = g(x) + h(x)
-    rho = 1
+    ρ = 1
 
     for k in range(1, max_iter + 1):
-        print(f'iteration {k}, cost {f}', end='        \r')
-        x_old = x
+        # x_old = x
         xB = np.maximum(x, 0)
-        # evaluate differtiable part of objective
+        # evaluate differentiable part of objective
         g1 = g(xB)
         grad_g1 = grad_g(xB)
         # store old iterate
@@ -226,43 +229,46 @@ def three_op_prox_grad_descent(x: np.ndarray,
                 raise RuntimeError(f'invalid gradient at step {k}, line '
                                    f'search step {line_iter}: {grad_g1}')
             # new point via prox-gradient of momentum point
-            xA = prox(xB + rho * (xB - x) - rho * s * grad_g1, rho * s)
+            xA = prox(xB + ρ * (xB - x) - ρ * s * grad_g1, ρ * s)
             # Qt
-            Qt = g1 + (grad_g1 * (xA - xB)).sum() + ((xA - xB) ** 2).sum() / (2 * rho * s)
+            Qt = (g1 + (grad_g1 * (xA - xB)).sum()
+                  + ((xA - xB) ** 2).sum() / (2 * ρ * s))
             if g(xA) - Qt <= ls_tol:
                 # sufficient decrease satisfied
                 break
             else:
                 # sufficient decrease not satisfied
-                rho *= γ  # shrink step size
+                ρ *= γ  # shrink step size
         if line_iter == max_line_iter - 1:
-            print('warning: line search failed')
+            print('warning: line search failed', flush=True)
 
         # new iterate
         x = x + xA - xB
         # # averaging
         # x = x + ((k - 1) / (k + 2)) * (x - x_old)
         # grow step size a little bit
-        rho /= γ**2
+        ρ /= γ**2
 
         if not np.all(np.isfinite(x)):
-            print(f'warning: x contains invalid values')
+            print(f'warning: x contains invalid values', flush=True)
         if np.any(x < 0):
-            print(f'warning: x contains negative values')
+            raise RuntimeError('x contains negative values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
+        print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
-            print(f'relative change in objective function {rel_change:.2g} '
-                  f'is within tolerance {tol} after {k} iterations')
+            print(f'\nrelative change in objective function {rel_change:.2g} '
+                  f'is within tolerance {tol} after {k} iterations',
+                  flush=True)
             break
         # if certificate < tol:
         #     print(f'certificate norm {certificate:.2g} '
         #           f'is within tolerance {tol} after {k} iterations')
         #     break
         if k == max_iter:
-            print(f'maximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}')
+            print(f'\nmaximum iteration {max_iter} reached with relative '
+                  f'change in objective function {rel_change:.2g}', flush=True)
 
     return x
