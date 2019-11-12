@@ -405,10 +405,9 @@ def main():
                                                  ' to stdout')
     parser.add_argument('ksfs', type=str, default=None,
                         help='path to k-SFS file')
-    parser.add_argument('masked_size', type=str, default=None,
-                        help='path to file with masked genome size')
     parser.add_argument('mutation_rate', type=np.float64, default=None,
-                        help='site-wise mutation rate')
+                        help='mutation rate per (masked) genome per '
+                             'generation')
     parser.add_argument('outbase', type=str, default=None,
                         help='base name for output files')
 
@@ -421,24 +420,19 @@ def main():
     n = ksfs_df.shape[0] + 1
     ksfs = kSFS(X=ksfs_df.values, mutation_types=mutation_types)
 
-    # genome size and mutation rate estimation
-    masked_size = int(open(args.masked_size).read())
-    μ_0 = args.mutation_rate * masked_size
-    print(f'mutation rate in units of mutations per masked genome per '
-          f'generation: {μ_0:.2f}', flush=True)
-
-    change_points = np.logspace(0, 5.3, 200)
+    change_points = np.logspace(0, 5.3, 50)
 
     # mask sites
     mask = np.array([False if (0 <= i <= n - 20) else True
                      for i in range(n - 1)])
 
     # Initialize to constant
-    ksfs.infer_constant(change_points=change_points, μ_0=μ_0, mask=mask)
+    ksfs.infer_constant(change_points=change_points, μ_0=args.mutation_rate,
+                        mask=mask)
 
     f_trajectory = []
 
-    sweeps = 10
+    sweeps = 1
     tol = 1e-10
     f_old = None
     for sweep in range(1, 1 + sweeps):
@@ -451,11 +445,11 @@ def main():
                             α_spline=1e3,
                             α_ridge=1e-10,
                             # μ(t) regularization parameters
-                            β_rank=3e3,
+                            β_rank=1e4,
                             β_tv=0,
-                            β_spline=2e5,
+                            β_spline=1e4,
                             β_ridge=1e-10,
-                            hard=True,
+                            hard=False,
                             # convergence parameters
                             max_iter=10000,
                             max_line_iter=300,

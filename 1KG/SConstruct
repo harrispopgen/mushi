@@ -149,7 +149,8 @@ if bcf_dir is not None:
         # infer η and μ
         mushi_outbase = os.path.join(pop_outdir, 'mushi')
         tgt = f'{mushi_outbase}.ksfs.pkl'
-        src = [ksfs, masked_size]
-        cmd = f'python ../mushi.py ${{SOURCES}} {mutation_rate} ' \
+        src = [masked_size, ksfs]
+        cmd = f'mu=$(< ${{SOURCES[0]}})&& mu=$(($mu * {mutation_rate}))&& '
+        cmd += f'python ../mushi.py ${{SOURCES[1]}} $mu ' \
               f'{mushi_outbase} > {mushi_outbase}.log'
         mushi = env.Command(tgt, src, cmd)
