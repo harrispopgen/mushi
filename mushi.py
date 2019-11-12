@@ -273,8 +273,6 @@ class kSFS():
         f_trajectory = [g(logy, Z) + h(logy, Z)]
         # max step size
         s0 = 1
-        # max number of Armijo step size reductions
-        max_line_iter = 100
 
         print('η block', flush=True)
         logy = utils.acc_prox_grad_descent(
@@ -398,7 +396,7 @@ class kSFS():
 
 def main():
     """
-    usage: python run_mushi.py -h
+    usage: python mushi.py -h
     """
     import argparse
     import pickle
@@ -491,7 +489,7 @@ def main():
     ksfs.plot(normed=True, alpha=0.5)
     plt.subplot(224)
     ksfs.μ.plot(normed=True, alpha=0.5)
-    plt.savefig(f'{args.outbase}.fit.pdf')
+    plt.savefig(f'{args.outbase}.fit.png')
 
     # pickle the final ksfs (which contains all the inferred history info)
     with open(f'{args.outbase}.pkl', 'wb') as f:
