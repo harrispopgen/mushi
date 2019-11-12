@@ -178,7 +178,9 @@ def three_op_prox_grad_descent(x: np.ndarray,
                                max_iter: int = 100,
                                s0: np.float64 = 1,
                                max_line_iter: int = 100,
-                               γ: np.float64 = 0.8) -> np.ndarray:
+                               γ: np.float64 = 0.8,
+                               ls_tol: np.float64 = 0,
+                               ρ: np.float64 = 1) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
 
     We implement the method of Damek & Davis (arXiv, 2015),
@@ -194,27 +196,23 @@ def three_op_prox_grad_descent(x: np.ndarray,
     the nonnegative orthant as our two prox operators.
 
     x: initial point
-    g: differential term in onjective function
+    g: differential term in objective function
     grad_g: gradient of g
     h: non-differentiable term in objective function
     prox: proximal operator corresponding to h
     tol: relative tolerance in objective function for convergence
     max_iter: maximum number of proximal gradient steps
-    s0: initial step size
+    s0: step size
     max_line_iter: maximum number of line search steps
     γ: step size shrinkage rate for line search
+    ls_tol: line search tolerance
     """
     assert np.all(x >= 0), 'initial x must be in nonnegative orthant'
-
-    # initialize step size
-    s = s0
-
-    # line search tolerance
-    ls_tol = 1e-10
 
     # initial objective value
     f = g(x) + h(x)
     ρ = 1
+    print(f'initial cost {f:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
         # x_old = x
@@ -226,13 +224,13 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # Armijo line search
         for line_iter in range(max_line_iter):
             if not np.all(np.isfinite(grad_g1)):
-                raise RuntimeError(f'invalid gradient at step {k}, line '
-                                   f'search step {line_iter}: {grad_g1}')
+                raise RuntimeError(f'invalid gradient at step {k + 1}, line '
+                                   f'search step {line_iter + 1}: {grad_g1}')
             # new point via prox-gradient of momentum point
-            xA = prox(xB + ρ * (xB - x) - ρ * s * grad_g1, ρ * s)
+            xA = prox(xB + ρ * (xB - x) - ρ * s0 * grad_g1, ρ * s0)
             # Qt
             Qt = (g1 + (grad_g1 * (xA - xB)).sum()
-                  + ((xA - xB) ** 2).sum() / (2 * ρ * s))
+                  + ((xA - xB) ** 2).sum() / (2 * ρ * s0))
             if g(xA) - Qt <= ls_tol:
                 # sufficient decrease satisfied
                 break
@@ -252,7 +250,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values', flush=True)
         if np.any(x < 0):
-            raise RuntimeError('x contains negative values', flush=True)
+            print(f'warning: x contains negative values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
