@@ -97,12 +97,12 @@ class kSFS():
         self.X = poisson.rvs(self.L @ self.μ.Z)
         self.mutation_types = self.μ.mutation_types
 
-    def infer_constant(self, change_points: np.array, μ_0: np.float64 = None,
+    def infer_constant(self, change_points: np.array, μ0: np.float64 = None,
                        mask: np.ndarray = None):
         u"""infer constant η and μ
 
         change_points: epoch change points (times)
-        μ_0: total mutation rate, if self.μ is None
+        μ0: total mutation rate, if self.μ is None
         mask: array of bools, with True indicating exclusion of that frequency
         """
         if self.X is None:
@@ -118,18 +118,18 @@ class kSFS():
             X = self.X
         X_total = X.sum(1, keepdims=True)
         μ_total = histories.μ(change_points,
-                              μ_0 * np.ones((len(change_points) + 1, 1)))
+                              μ0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
         # number of segregating sites
         S = X_total.sum()
         # Harmonic number
         H = (1 / np.arange(1, self.n - 1)).sum()
         # constant MLE
-        y = (S / 2 / H / μ_0) * np.ones(len(z))
+        y = (S / 2 / H / μ0) * np.ones(len(z))
 
         self.η = histories.η(change_points, y)
         self.μ = histories.μ(self.η.change_points,
-                             μ_0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             μ0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
                              mutation_types=self.mutation_types.values)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
@@ -150,6 +150,12 @@ class kSFS():
                    mask: np.ndarray = None) -> np.ndarray:
         u"""perform one iteration of block coordinate descent to fit η and μ
 
+        loss parameters:
+        - fit: loss function, 'prf' for Poisson random field, 'kl' for
+               Kullback-Leibler divergence, 'lsq' for least-squares
+        - mask: array of bools, with True indicating exclusion of that
+                frequency
+
         η(t) regularization parameters:
         - α_tv: fused LASSO regularization strength
         - α_spline: regularization strength for L2 on diff
@@ -162,17 +168,15 @@ class kSFS():
         - β_ridge: regularization strength for Frobenius norm on Z (removes
                    scale ridge for η, μ and t, and promotes strong convexity)
 
-        max_iter: maximum number of proximal gradient descent steps
-        max_line_iter: maximum number of line search steps
-        γ: step size shrinkage rate for line search
-        max_iter: maximum number of proximal gradient descent steps
-        tol: relative tolerance in objective function
-        fit: loss function, 'prf' for Poisson random field, 'kl' for
-             Kullback-Leibler divergence, 'lsq' for least-squares
-        hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
-        mask: array of bools, with True indicating exclusion of that frequency
+        convergence parameters:
+        - max_iter: maximum number of proximal gradient descent steps
+        - max_line_iter: maximum number of line search steps
+        - γ: step size shrinkage rate for line search
+        - max_iter: maximum number of proximal gradient descent steps
+        - tol: relative tolerance in objective function
+        - hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
 
-        returns cost function at final iterate
+        returns cost function
         """
         assert self.X is not None, 'use simulate() to generate data first'
         assert self.η is not None, 'must initialize e.g. with infer_constant()'
@@ -400,14 +404,13 @@ def main():
     """
     import argparse
     import pickle
+    import configparser
 
     parser = argparse.ArgumentParser(description='write snps with kmer context'
                                                  ' to stdout')
     parser.add_argument('ksfs', type=str, default=None,
                         help='path to k-SFS file')
-    parser.add_argument('mutation_rate', type=np.float64, default=None,
-                        help='mutation rate per (masked) genome per '
-                             'generation')
+    parser.add_argument('config', type=str, help='path to config file')
     parser.add_argument('outbase', type=str, default=None,
                         help='base name for output files')
 
@@ -420,41 +423,76 @@ def main():
     n = ksfs_df.shape[0] + 1
     ksfs = kSFS(X=ksfs_df.values, mutation_types=mutation_types)
 
-    change_points = np.logspace(0, 5.3, 50)
+    # parse configuration file if present
+    config = configparser.ConfigParser()
+    config.read(args.config)
+
+    # change points for time grid
+    first = config.getfloat('change points', 'first')
+    last = config['change points'].getfloat('last')
+    npts = config['change points'].getint('npts')
+    change_points = np.logspace(np.log10(first),
+                                np.log10(last),
+                                npts)
 
     # mask sites
-    mask = np.array([False if (0 <= i <= n - 20) else True
-                     for i in range(n - 1)])
+    clip = config.getint('loss', 'clip', fallback=None)
+    if clip:
+        mask = np.array([False if (0 <= i <= n - clip)
+                         else True
+                         for i in range(n - 1)])
+    else:
+        mask = None
+
+    # mutation rate estimate
+    μ0 = config.getfloat('mutation rate', 'μ0', fallback=1)
 
     # Initialize to constant
-    ksfs.infer_constant(change_points=change_points, μ_0=args.mutation_rate,
+    ksfs.infer_constant(change_points=change_points,
+                        μ0=μ0,
                         mask=mask)
 
     f_trajectory = []
 
-    sweeps = 1
-    tol = 1e-10
+    sweeps = config.getint('convergence', 'sweeps', fallback=1)
+    tol = config.getfloat('convergence', 'tol', fallback=None)
+
+    # parameter dict for η regularization
+    η_regularization = {key: config.getfloat('η regularization', key)
+                        for key in config['η regularization']
+                        if key in ['η regularization']}
+
+    # parameter dict for μ regularization
+    μ_regularization = {key: config.getfloat('μ regularization', key)
+                        for key in config['μ regularization']
+                        if key in config['μ regularization']
+                        and key.startswith('β_')}
+    if 'hard' in config['μ regularization']:
+        μ_regularization['hard'] = config.getboolean('μ regularization',
+                                                     'hard')
+
+    # parameter dict for convergence parameters
+    convergence = {**{key: config.getint('convergence', key)
+                      for key in config['convergence']
+                      if key in config['convergence']
+                      and key.endswith('_iter')},
+                   **{key: config.getfloat('convergence', key)
+                      for key in config['convergence']
+                      if key in config['convergence']
+                      and not key.endswith('_iter')}}
+    if 'sweeps' in convergence:
+        del convergence['sweeps']
+
+    # parameter dict for loss parameters
+    loss = dict(mask=mask)
+    if 'fit' in config['loss']:
+        loss['fit'] = config.get('loss', 'fit')
+
     f_old = None
     for sweep in range(1, 1 + sweeps):
         print(f'block coordinate descent sweep {sweep:.2g}', flush=True)
-        f = ksfs.coord_desc(# loss function parameters
-                            fit='prf',
-                            mask=mask,
-                            # η(t) regularization parameters
-                            α_tv=0,#1e3,
-                            α_spline=1e3,
-                            α_ridge=1e-10,
-                            # μ(t) regularization parameters
-                            β_rank=1e4,
-                            β_tv=0,
-                            β_spline=1e4,
-                            β_ridge=1e-10,
-                            hard=False,
-                            # convergence parameters
-                            max_iter=10000,
-                            max_line_iter=300,
-                            tol=tol,
-                            γ=0.8)
+        f = ksfs.coord_desc(**loss, **η_regularization, **μ_regularization,
+                            **convergence)
         print(f'cost: {f}', flush=True)
         if sweep > 1:
             relative_change = np.abs((f - f_old) / f_old)
