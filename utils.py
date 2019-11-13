@@ -220,8 +220,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         g1 = g(z)
         grad_g1 = grad_g(z)
         if not np.all(np.isfinite(grad_g1)):
-            raise RuntimeError(f'invalid gradient at step {k + 1}, line '
-                                   f'search step {line_iter + 1}: {grad_g1}')
+            raise RuntimeError(f'invalid gradient at step {k + 1}: {grad_g1}')
         # store old iterate
         # x_old = x
         # Armijo line search
