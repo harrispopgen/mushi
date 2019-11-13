@@ -178,8 +178,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
                                s0: np.float64 = 1,
                                max_line_iter: int = 100,
                                γ: np.float64 = 0.8,
-                               ls_tol: np.float64 = 0,
-                               ρ: np.float64 = 1) -> np.ndarray:
+                               ls_tol: np.float64 = 0) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
 
     We implement the method of Pedregosa & Gidel (ICML 2018),
