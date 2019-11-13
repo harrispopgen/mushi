@@ -248,8 +248,6 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # TODO: convergence based on dual certificate
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values', flush=True)
-        if np.any(x < 0):
-            print(f'warning: x contains negative values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         # DIFFERENCE FROM PAPER: use z as next iterate
