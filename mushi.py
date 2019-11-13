@@ -215,7 +215,7 @@ class kSFS():
                 """total variation prox operator on row dimension
                 (oddly 1-based indexed in proxtv)
                 """
-                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+                return np.maximum(ptv.tvgen(Z, [s * β_tv], [1], [1]), 0)
         elif β_rank > 0:
             if hard:
                 def prox_update_Z(Z, s):
@@ -283,7 +283,7 @@ class kSFS():
                               jit(grad(lambda logy: g(logy, Z))),
                               jit(lambda logy: h(logy, Z)),
                               prox_update_logy,
-                              tol=tol,
+                              tol=tol/1000.,
                               max_iter=max_iter,
                               s0=s0,
                               max_line_iter=max_line_iter,
@@ -299,7 +299,8 @@ class kSFS():
                                              max_iter=max_iter,
                                              s0=s0,
                                              max_line_iter=max_line_iter,
-                                             γ=γ)
+                                             γ=γ,
+                                             ls_tol=0)
 
         y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
