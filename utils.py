@@ -254,6 +254,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
             print(f'warning: x contains negative values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
+        # DIFFERENCE FROM PAPER: use z as next iterate
         f = g(z) + h(z)
         print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
