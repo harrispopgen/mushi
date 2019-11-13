@@ -488,16 +488,15 @@ def main():
     # coordinate descent sweeps
     f_old = None
     for sweep in range(1, 1 + sweeps):
-        print(f'block coordinate descent sweep {sweep:.2g}', flush=True)
+        print(f'block coordinate descent sweep {sweep:.2g}\n', flush=True)
         f = ksfs.coord_desc(**loss,
                             **η_regularization,
                             **μ_regularization,
                             **convergence)
-        print(f'cost: {f}', flush=True)
+        print(f'\ncost: {f}', flush=True)
         if sweep > 1:
             relative_change = np.abs((f - f_old) / f_old)
-            print(f'relative change: {relative_change:.2g}', flush=True)
-        print(flush=True)
+            print(f'relative change: {relative_change:.2g}\n', flush=True)
         f_old = f
         f_trajectory.append(f)
 
