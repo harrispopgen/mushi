@@ -102,6 +102,7 @@ def acc_prox_grad_descent(x: np.ndarray,
                           max_line_iter: int = 100,
                           γ: np.float64 = 0.8) -> np.ndarray:
     u"""Nesterov accelerated proximal gradient descent
+    https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
     x: initial point
     g: differential term in onjective function
