@@ -460,14 +460,12 @@ def main():
 
     # parameter dict for η regularization
     η_regularization = {key: config.getfloat('η regularization', key)
-                        for key in config['η regularization']
-                        if key in ['η regularization']}
+                        for key in config['η regularization']}
 
     # parameter dict for μ regularization
     μ_regularization = {key: config.getfloat('μ regularization', key)
                         for key in config['μ regularization']
-                        if key in config['μ regularization']
-                        and key.startswith('β_')}
+                        if key.startswith('β_')}
     if 'hard' in config['μ regularization']:
         μ_regularization['hard'] = config.getboolean('μ regularization',
                                                      'hard')
@@ -475,12 +473,10 @@ def main():
     # parameter dict for convergence parameters
     convergence = {**{key: config.getint('convergence', key)
                       for key in config['convergence']
-                      if key in config['convergence']
-                      and key.endswith('_iter')},
+                      if key.endswith('_iter')},
                    **{key: config.getfloat('convergence', key)
                       for key in config['convergence']
-                      if key in config['convergence']
-                      and not key.endswith('_iter')}}
+                      if not key.endswith('_iter')}}
     if 'sweeps' in convergence:
         del convergence['sweeps']
 
@@ -489,10 +485,13 @@ def main():
     if 'fit' in config['loss']:
         loss['fit'] = config.get('loss', 'fit')
 
+    # coordinate descent sweeps
     f_old = None
     for sweep in range(1, 1 + sweeps):
         print(f'block coordinate descent sweep {sweep:.2g}', flush=True)
-        f = ksfs.coord_desc(**loss, **η_regularization, **μ_regularization,
+        f = ksfs.coord_desc(**loss,
+                            **η_regularization,
+                            **μ_regularization,
                             **convergence)
         print(f'cost: {f}', flush=True)
         if sweep > 1:
