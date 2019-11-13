@@ -247,6 +247,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # grow step size
         s = min(s / γ**2, s0)
 
+        # TODO: convergence based on dual certificate
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values', flush=True)
         if np.any(x < 0):
