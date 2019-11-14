@@ -437,9 +437,11 @@ def main():
                                 npts)
 
     # mask sites
-    clip = config.getint('loss', 'clip', fallback=None)
-    if clip:
-        mask = np.array([False if (0 <= i <= n - clip)
+    clip_high = config.getint('loss', 'clip_high', fallback=None)
+    clip_low = config.getint('loss', 'clip_high', fallback=None)
+    if clip_high or clip_low:
+        assert clip_high and clip_low
+        mask = np.array([False if (clip_low <= i <= n - clip_high)
                          else True
                          for i in range(n - 1)])
     else:
