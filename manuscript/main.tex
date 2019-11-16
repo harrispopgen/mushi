@@ -18,10 +18,10 @@
 % one sentence per line for nice git diffs
 % WD: I'm a fan of initialed source comments like this
 
-\title{Coalescent inference of mutation spectrum histories from sample frequency spectra}
+\title{Population genetics with evolving mutation processes: inference of mutation spectrum histories from modern genomic variation}
 
 \author{
-W.S. DeWitt$^{1,4}$, K. Decker Harris$^{2,3}$, and K. Harris$^{1}$\\
+W.S. DeWitt$^{1,4}$, K. Decker Harris$^{2,3}$, and K. Harris$^{1,4}$\\
 {\small
 $^1$Department of Genome Sciences,
 $^2$Paul G.\ Allen School of Computer Science \& Engineering,}\\
@@ -36,10 +36,13 @@ $^2$Paul G.\ Allen School of Computer Science \& Engineering,}\\
 
 \begin{abstract}
 
-Single nucleotide variant (SNV) frequencies partitioned according to local nucleotide context vary among human ancestry groups and among great ape species, indicating variation and divergence of the mutation process.
-The sample frequency spectrum (SFS)---the distribution of derived allele frequencies among sampled haplotypes---is a well-studied population genetic summary statistic that is sensitive to demographic history.
-We extend a coalescent framework for demographic inference from the SFS to accommodate inference of mutation spectrum histories from the sample frequency spectrum resolved by $k$-mer nucleotide context ($k$-SFS).
-We formulate inference of mutation spectrum histories from the $k$-SFS as a linear inverse problem.
+Models in evolutionary genetics typically assume that mutation rate is constant over time and between populations and closely related species.
+However, recent work casts doubt on this assumption in human and ape populations, and reveals that mutation is a complex and dynamic process.
+Whether arising from variation in replication fidelity, life history, or environmental exposures, mutation rate evolution can be accompanied by changes to the \emph{mutation spectrum}: the mutation rate in different local nucleotide contexts.
+We extend theoretical tools based on Kingman's coalescent to accommodate a richly parameterized mutation process, varying in time and in spectrum.
+We infer human mutation spectrum histories from patterns of modern genomic diversity, allowing us to reconstruct trajectories of divergence between populations, track a transient mutation spectrum perturbation through multiple populations, and characterize how mutation spectrum histories are structured by local nucleotide context.
+Mutation rate and effective population size together determine the strength of genetic drift shaping genomic variation.
+We introduce fast non-parametric joint inference of mutation spectrum history and demographic history.
 
 \end{abstract}
 
