@@ -440,7 +440,7 @@ def main():
     clip_low = config.getint('loss', 'clip_low', fallback=None)
     clip_high = config.getint('loss', 'clip_high', fallback=None)
     if clip_high or clip_low:
-        assert clip_high and clip_low
+        assert clip_high is not None and clip_low is not None
         mask = np.array([False if (clip_low <= i <= n - clip_high)
                          else True
                          for i in range(n - 1)])
