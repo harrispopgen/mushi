@@ -97,12 +97,12 @@ class kSFS():
         self.X = poisson.rvs(self.L @ self.μ.Z)
         self.mutation_types = self.μ.mutation_types
 
-    def infer_constant(self, change_points: np.array, μ_0: np.float64 = None,
+    def infer_constant(self, change_points: np.array, μ0: np.float64 = None,
                        mask: np.ndarray = None):
         u"""infer constant η and μ
 
         change_points: epoch change points (times)
-        μ_0: total mutation rate, if self.μ is None
+        μ0: total mutation rate, if self.μ is None
         mask: array of bools, with True indicating exclusion of that frequency
         """
         if self.X is None:
@@ -118,18 +118,18 @@ class kSFS():
             X = self.X
         X_total = X.sum(1, keepdims=True)
         μ_total = histories.μ(change_points,
-                              μ_0 * np.ones((len(change_points) + 1, 1)))
+                              μ0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
         # number of segregating sites
         S = X_total.sum()
         # Harmonic number
         H = (1 / np.arange(1, self.n - 1)).sum()
         # constant MLE
-        y = (S / 2 / H / μ_0) * np.ones(len(z))
+        y = (S / 2 / H / μ0) * np.ones(len(z))
 
         self.η = histories.η(change_points, y)
         self.μ = histories.μ(self.η.change_points,
-                             μ_0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             μ0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
                              mutation_types=self.mutation_types.values)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
@@ -150,6 +150,12 @@ class kSFS():
                    mask: np.ndarray = None) -> np.ndarray:
         u"""perform one iteration of block coordinate descent to fit η and μ
 
+        loss parameters:
+        - fit: loss function, 'prf' for Poisson random field, 'kl' for
+               Kullback-Leibler divergence, 'lsq' for least-squares
+        - mask: array of bools, with True indicating exclusion of that
+                frequency
+
         η(t) regularization parameters:
         - α_tv: fused LASSO regularization strength
         - α_spline: regularization strength for L2 on diff
@@ -162,17 +168,15 @@ class kSFS():
         - β_ridge: regularization strength for Frobenius norm on Z (removes
                    scale ridge for η, μ and t, and promotes strong convexity)
 
-        max_iter: maximum number of proximal gradient descent steps
-        max_line_iter: maximum number of line search steps
-        γ: step size shrinkage rate for line search
-        max_iter: maximum number of proximal gradient descent steps
-        tol: relative tolerance in objective function
-        fit: loss function, 'prf' for Poisson random field, 'kl' for
-             Kullback-Leibler divergence, 'lsq' for least-squares
-        hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
-        mask: array of bools, with True indicating exclusion of that frequency
+        convergence parameters:
+        - max_iter: maximum number of proximal gradient descent steps
+        - max_line_iter: maximum number of line search steps
+        - γ: step size shrinkage rate for line search
+        - max_iter: maximum number of proximal gradient descent steps
+        - tol: relative tolerance in objective function
+        - hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
 
-        returns cost function at final iterate
+        returns cost function
         """
         assert self.X is not None, 'use simulate() to generate data first'
         assert self.η is not None, 'must initialize e.g. with infer_constant()'
@@ -201,21 +205,21 @@ class kSFS():
 
         if α_tv > 0:
             def prox_update_logy(logy, s):
-                """L1 prox operator"""
+                """total variation prox operator"""
                 return ptv.tv1_1d(logy, s * α_tv)
         else:
             def prox_update_logy(logy, s):
                 return logy
 
         if β_tv > 0 and β_rank > 0:
-            raise NotImplementedError('fused LASSO with l1 spectral '
+            raise NotImplementedError('fused LASSO with spectral '
                                       'regularization not available')
         elif β_tv > 0:
             def prox_update_Z(Z, s):
-                """L1 prox operator on row dimension (oddly 1-based indexed in
-                proxtv)
+                """total variation prox operator on row dimension
+                (oddly 1-based indexed in proxtv)
                 """
-                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+                return np.maximum(ptv.tvgen(Z, [s * β_tv], [1], [1]), 0)
         elif β_rank > 0:
             if hard:
                 def prox_update_Z(Z, s):
@@ -233,7 +237,9 @@ class kSFS():
         else:
             def prox_update_Z(Z, s):
                 """project onto positive orthant"""
-                return np.clip(Z, 0, np.inf)
+                #return np.maximum(Z, 0)
+                return Z
+
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
@@ -288,18 +294,17 @@ class kSFS():
                               γ=γ)
 
         print('μ block', flush=True)
-        Z = utils.acc_prox_grad_descent(
-                              Z,
-                              jit(lambda Z: g(logy, Z)),
-                              jit(grad(lambda Z: g(logy, Z))),
-                              jit(lambda Z: h(logy, Z)),
-                              prox_update_Z,
-                              tol=tol,
-                              max_iter=max_iter,
-                              s0=s0,
-                              max_line_iter=max_line_iter,
-                              γ=γ,
-                              nonneg=True)
+        Z = utils.three_op_prox_grad_descent(Z,
+                                             jit(lambda Z: g(logy, Z)),
+                                             jit(grad(lambda Z: g(logy, Z))),
+                                             jit(lambda Z: h(logy, Z)),
+                                             prox_update_Z,
+                                             tol=tol,
+                                             max_iter=max_iter,
+                                             s0=s0,
+                                             max_line_iter=max_line_iter,
+                                             γ=γ,
+                                             ls_tol=0)
 
         y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
@@ -366,18 +371,14 @@ class kSFS():
             plt.legend()
         plt.tight_layout()
 
-    def clustermap(self, linthresh=1, **kwargs):
+    def clustermap(self, fit: bool = False, **kwargs):
         u"""clustermap with mixed linear-log scale color bar
 
-        μ: inferred mutation spectrum history, χ^2 values are shown if not None
-        linthresh: the range within which the plot is linear (when μ = None)
+        fit: if True and self.μ is not None, show χ^2 fit
         kwargs: additional keyword arguments passed to pd.clustermap
         """
-        if self.μ is None:
-            Z = self.X / self.X.sum(axis=1, keepdims=True)
-            Z = Z / Z.mean(0, keepdims=True)
-            cbar_label = 'mutation type\nenrichment'
-        else:
+        if fit:
+            assert self.μ is None
             Ξ = self.L @ self.μ.Z
             Z = (self.X - Ξ) ** 2 / Ξ
             cbar_label = '$\\chi^2$'
@@ -385,10 +386,14 @@ class kSFS():
             p = chi2(np.prod(Z.shape)).sf(χ2_total)
             print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
                   f'p = {p}')
+        else:
+            Z = self.X / self.X.sum(axis=1, keepdims=True)
+            Z = Z / Z.mean(0, keepdims=True)
+            cbar_label = 'mutation type\nenrichment'
         df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
                                                  name='sample frequency'),
                           columns=self.mutation_types)
-        g = sns.clustermap(df, row_cluster=False, metric='correlation',
+        g = sns.clustermap(df, row_cluster=False,
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g
@@ -400,15 +405,13 @@ def main():
     """
     import argparse
     import pickle
+    import configparser
 
     parser = argparse.ArgumentParser(description='write snps with kmer context'
                                                  ' to stdout')
     parser.add_argument('ksfs', type=str, default=None,
                         help='path to k-SFS file')
-    parser.add_argument('masked_size', type=str, default=None,
-                        help='path to file with masked genome size')
-    parser.add_argument('mutation_rate', type=np.float64, default=None,
-                        help='site-wise mutation rate')
+    parser.add_argument('config', type=str, help='path to config file')
     parser.add_argument('outbase', type=str, default=None,
                         help='base name for output files')
 
@@ -421,51 +424,81 @@ def main():
     n = ksfs_df.shape[0] + 1
     ksfs = kSFS(X=ksfs_df.values, mutation_types=mutation_types)
 
-    # genome size and mutation rate estimation
-    masked_size = int(open(args.masked_size).read())
-    μ_0 = args.mutation_rate * masked_size
-    print(f'mutation rate in units of mutations per masked genome per '
-          f'generation: {μ_0:.2f}', flush=True)
+    # parse configuration file if present
+    config = configparser.ConfigParser()
+    config.read(args.config)
 
-    change_points = np.logspace(0, 5.3, 200)
+    # change points for time grid
+    first = config.getfloat('change points', 'first')
+    last = config['change points'].getfloat('last')
+    npts = config['change points'].getint('npts')
+    change_points = np.logspace(np.log10(first),
+                                np.log10(last),
+                                npts)
 
     # mask sites
-    mask = np.array([False if (0 <= i <= n - 20) else True
-                     for i in range(n - 1)])
+    clip_low = config.getint('loss', 'clip_low', fallback=None)
+    clip_high = config.getint('loss', 'clip_high', fallback=None)
+    if clip_high or clip_low:
+        assert clip_high is not None and clip_low is not None
+        mask = np.array([False if (clip_low <= i <= n - clip_high)
+                         else True
+                         for i in range(n - 1)])
+    else:
+        mask = None
+
+    # mutation rate estimate
+    μ0 = config.getfloat('mutation rate', 'μ0', fallback=1)
 
     # Initialize to constant
-    ksfs.infer_constant(change_points=change_points, μ_0=μ_0, mask=mask)
+    ksfs.infer_constant(change_points=change_points,
+                        μ0=μ0,
+                        mask=mask)
 
     f_trajectory = []
 
-    sweeps = 10
-    tol = 1e-10
+    sweeps = config.getint('convergence', 'sweeps', fallback=1)
+    tol = config.getfloat('convergence', 'tol', fallback=None)
+
+    # parameter dict for η regularization
+    η_regularization = {key: config.getfloat('η regularization', key)
+                        for key in config['η regularization']}
+
+    # parameter dict for μ regularization
+    μ_regularization = {key: config.getfloat('μ regularization', key)
+                        for key in config['μ regularization']
+                        if key.startswith('β_')}
+    if 'hard' in config['μ regularization']:
+        μ_regularization['hard'] = config.getboolean('μ regularization',
+                                                     'hard')
+
+    # parameter dict for convergence parameters
+    convergence = {**{key: config.getint('convergence', key)
+                      for key in config['convergence']
+                      if key.endswith('_iter')},
+                   **{key: config.getfloat('convergence', key)
+                      for key in config['convergence']
+                      if not key.endswith('_iter')}}
+    if 'sweeps' in convergence:
+        del convergence['sweeps']
+
+    # parameter dict for loss parameters
+    loss = dict(mask=mask)
+    if 'fit' in config['loss']:
+        loss['fit'] = config.get('loss', 'fit')
+
+    # coordinate descent sweeps
     f_old = None
     for sweep in range(1, 1 + sweeps):
-        print(f'block coordinate descent sweep {sweep:.2g}', flush=True)
-        f = ksfs.coord_desc(# loss function parameters
-                            fit='prf',
-                            mask=mask,
-                            # η(t) regularization parameters
-                            α_tv=0,#1e3,
-                            α_spline=1e3,
-                            α_ridge=1e-10,
-                            # μ(t) regularization parameters
-                            β_rank=3e3,
-                            β_tv=0,
-                            β_spline=2e5,
-                            β_ridge=1e-10,
-                            hard=True,
-                            # convergence parameters
-                            max_iter=10000,
-                            max_line_iter=300,
-                            tol=tol,
-                            γ=0.8)
-        print(f'cost: {f}', flush=True)
+        print(f'block coordinate descent sweep {sweep:.2g}\n', flush=True)
+        f = ksfs.coord_desc(**loss,
+                            **η_regularization,
+                            **μ_regularization,
+                            **convergence)
+        print(f'\ncost: {f}', flush=True)
         if sweep > 1:
             relative_change = np.abs((f - f_old) / f_old)
-            print(f'relative change: {relative_change:.2g}', flush=True)
-        print(flush=True)
+            print(f'relative change: {relative_change:.2g}\n', flush=True)
         f_old = f
         f_trajectory.append(f)
 
@@ -488,7 +521,7 @@ def main():
     plt.subplot(223)
     ksfs.plot(normed=True, alpha=0.5)
     plt.subplot(224)
-    ksfs.μ.plot(normed=True, alpha=0.5)
+    ksfs.μ.plot(normed=False, alpha=0.5)
     plt.savefig(f'{args.outbase}.fit.png')
 
     # pickle the final ksfs (which contains all the inferred history info)
