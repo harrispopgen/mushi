@@ -371,18 +371,14 @@ class kSFS():
             plt.legend()
         plt.tight_layout()
 
-    def clustermap(self, linthresh=1, **kwargs):
+    def clustermap(self, fit: bool = False, **kwargs):
         u"""clustermap with mixed linear-log scale color bar
 
-        μ: inferred mutation spectrum history, χ^2 values are shown if not None
-        linthresh: the range within which the plot is linear (when μ = None)
+        fit: if True and self.μ is not None, show χ^2 fit
         kwargs: additional keyword arguments passed to pd.clustermap
         """
-        if self.μ is None:
-            Z = self.X / self.X.sum(axis=1, keepdims=True)
-            Z = Z / Z.mean(0, keepdims=True)
-            cbar_label = 'mutation type\nenrichment'
-        else:
+        if fit:
+            assert self.μ is None
             Ξ = self.L @ self.μ.Z
             Z = (self.X - Ξ) ** 2 / Ξ
             cbar_label = '$\\chi^2$'
@@ -390,10 +386,14 @@ class kSFS():
             p = chi2(np.prod(Z.shape)).sf(χ2_total)
             print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
                   f'p = {p}')
+        else:
+            Z = self.X / self.X.sum(axis=1, keepdims=True)
+            Z = Z / Z.mean(0, keepdims=True)
+            cbar_label = 'mutation type\nenrichment'
         df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
                                                  name='sample frequency'),
                           columns=self.mutation_types)
-        g = sns.clustermap(df, row_cluster=False, metric='correlation',
+        g = sns.clustermap(df, row_cluster=False,
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g
@@ -521,7 +521,7 @@ def main():
     plt.subplot(223)
     ksfs.plot(normed=True, alpha=0.5)
     plt.subplot(224)
-    ksfs.μ.plot(normed=True, alpha=0.5)
+    ksfs.μ.plot(normed=False, alpha=0.5)
     plt.savefig(f'{args.outbase}.fit.png')
 
     # pickle the final ksfs (which contains all the inferred history info)
