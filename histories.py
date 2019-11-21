@@ -191,13 +191,12 @@ class μ(History):
         kwargs: additional keyword arguments passed to pd.clustermap
         """
         t = np.concatenate((np.array([0]), self.change_points))
-        Z = self.Z / self.Z.sum(1, keepdims=True)
-        Z = Z / Z.mean(0, keepdims=True)
+        Z = self.Z / self.Z[-1, :]
         df = pd.DataFrame(data=Z, index=pd.Index(t, name='$t$'),
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False, center=1,
                            metric='correlation',
-                           cbar_kws={'label': 'relative mutation intensity'},
+                           cbar_kws={'label': 'mutation intensity wrt ancestral rate'},
                            **kwargs)
         # g.ax_heatmap.set_yscale('symlog')
         plt.tight_layout()
