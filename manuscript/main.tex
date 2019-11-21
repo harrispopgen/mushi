@@ -1,7 +1,7 @@
 \documentclass[11pt]{article}
 
 \usepackage{fullpage}
-\usepackage[round,semicolon]{natbib}
+\usepackage[numbers]{natbib}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{bm}
@@ -18,7 +18,9 @@
 % one sentence per line for nice git diffs
 % WD: I'm a fan of initialed source comments like this
 
-\title{Population genetics with evolving mutation processes: inference of mutation spectrum histories from modern genomic variation}
+
+% WD: it's kinda silly to focus on unphased genomes then run on 1KG
+\title{Population genetic reconstruction of mutation spectrum evolution from unphased genomes}
 
 \author{
 W.S. DeWitt$^{1,4}$, K. Decker Harris$^{2,3}$, and K. Harris$^{1,4}$\\
@@ -40,14 +42,112 @@ Models in evolutionary genetics typically assume that mutation rate is constant 
 However, recent work casts doubt on this assumption in human and ape populations, and reveals that mutation is a complex and dynamic process.
 Whether arising from variation in replication fidelity, life history, or environmental exposures, mutation rate evolution can be accompanied by changes to the \emph{mutation spectrum}: the mutation rate in different local nucleotide contexts.
 We extend theoretical tools based on Kingman's coalescent to accommodate a richly parameterized mutation process, varying in time and in spectrum.
-We infer human mutation spectrum histories from patterns of modern genomic diversity, allowing us to reconstruct trajectories of divergence between populations, track a transient mutation spectrum perturbation through multiple populations, and characterize how mutation spectrum histories are structured by local nucleotide context.
+% WD: revise below when we settle on what results will be in the paper
+We infer human mutation spectrum histories from patterns of modern genomic diversity, allowing us to reconstruct trajectories of mutation spectrum divergence between populations, track a transient mutation spectrum perturbation through multiple populations, and characterize how mutation spectrum histories are structured by local nucleotide context.
 Mutation rate and effective population size together determine the strength of genetic drift shaping genomic variation.
-We introduce fast non-parametric joint inference of mutation spectrum history and demographic history.
+We introduce fast nonparametric joint inference of mutation spectrum history and demographic history from unphased genomes.
 
 \end{abstract}
 
 
 \section*{Introduction}\label{sec:intro}
+
+% WD: should this be less humany?
+Population genetics has proved to be a powerful lens on human history\cite{Harris2017-cd}, revealing a complex past of migration\cite{?}, replacement\cite{?}, and admixture among human groups and extinct homonids\cite{?}, and dramatic population size changes during and after range expansions\cite{?}.
+Germline mutation events in the history of a population give rise to variant alleles, and demographic histories are recorded in patterns of segregation within and between current-day populations.
+Genetic drift is shared when populations mix, and it is private during periods of isolation.
+The strength of drift is universally influenced by the population size history, thus population genetic methods for demographic inference---expressed in the framework of Kimura's diffusion or Kingman's coalescent---attempt to recover the effective population size history $N(t)$.
+
+Mutation drives the evolution of populations and species, and mutation rate evolution has a storied history in the theoretical population genetics literature.
+Haldane developed equilibrium theory for alleles in mutation-selection balance, and used this to provided the first principled estimate of the human mutation rate by studying hemophilia incidence\cite{Haldane2004-ov, Nachman2004-gh}.
+Kimura  \cite{Kimura1967-ku}
+
+Storied history of theoretical treatments:
+- Kimura: \cite{Kimura1967-ku}
+- drift barrier hyp of \cite{Lynch2016-ff}
+
+The process of germline mutation is the writing mechanism that records signatures of demographic events in genomes, so its influence on modern genome variation is similar in importance to the demographic histories themselves.
+Demographic inference methods can model complex population splits, migration, and admixture, in addition to modeling $N(t)$ as a piecewise constant (or exponential) function of time into the past.
+Mutation, however, receives a relatively impoverished treatment: usually a single mutation rate parameter $\mu$ is understood to apply at all loci in all individuals at all times, and may be regarded as a nuisance parameter needed for time calibration of models whose natural dimensionless time is measured in generations.
+
+Growing evidence indicates that germline mutation is a dynamic process on both interspecific and population time scales, and a complex function of polymorphic replication machinery, life history, mutagenic exposures, and genomic content.
+Indeed, mutation rates among great apes have declined along the lineage leading to humans---a phenomenon termed the \emph{homonoid slowdown}\cite{Goodman1985-xc, Scally2012-rb}---, showing that mutation rate evolution between species distorts phylogenetic time calibration.
+Children of older parents receive more germline mutations, especially so for older fathers, and this is thought to arise from replicative errors in spermatogenesis.
+This \emph{parental age effect} \cite{} indicates that life history changes can influence the population mutation process.
+% need an example of mutagenic/spontaneous germline mutation
+
+
+\begin{enumerate}
+\item genomic regions (agarwal, and other Molly)
+\item \texttt{C>T} at methylated CpGs due to deamination \cite{?}.
+\item gbGC. We might want to talk about isochores here, but I've yet to find a coherent definition.
+\item mutation spectra and pulse \cite{Harris2015-wi, Harris2017-fw}
+\item Jed on context and regions \cite{Carlson2018-rc}
+\item for some of these, it is unknown if driven by replicative Vs spontaneous mutation \cite{Gao2016-qp}, and that baboon paper touches on this (Molly)
+\end{enumerate}
+
+emerging picture of mutation rate accented by spectra
+
+rare variant spectra \cite{Mathieson2017-rc} (maybe discuss normalization issues with this paper)
+
+1KG cell line artifact \cite{Anderson-Trocme2019-fy} (they also use strict mask)
+
+% this has to come after we into triplet spectra
+Although methods exist for inferring locus-wise mutation rates \cite{Bhaskar2015-bd, Nelson2012-fr}, these require very large study sizes, and do not accommodate evolution of the rate or spectrum of the mutational process per se.
+
+New methods that approximate the ancestral recombination graphs...
+
+We have to be very clear about how what we’re offering is different than what can be done with Relate \cite{Speidel2019-ox}.
+\begin{enumerate}
+\item We can deal with unphased genomes.
+\item Our method allows the total mutation rate to be variable whereas Relate fixes it to a constant, and does posthoc counting.
+\item I do not quite understand how they count mutations in a given epoch, since they are not mapped to specific times, only to branches.
+Unless mu(t) is constant, uniform sampling on the branch is not consistent
+\item How does pulse timing compare?
+\end{enumerate}
+
+deserving more rich descriptions in population genetic models
+
+
+
+
+
+
+% background:
+% review on demographic inference (diff and coal methods), or popgen theory in general (Kimura's diffusion or Kingman's coal), and how they all assume a constant mu
+
+% review on germline rate var: https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.2000744
+
+% Single nucleotide variant (SNV) frequencies partitioned according to local nucleotide context vary among human ancestry groups and among great ape species, indicating variation and divergence of the mutation process.
+
+% moving beyond descriptive comparisons based on standing variation, to put mutation on the same footing as demographic history: "in the light of evolution" Dobzhansky
+
+% models
+
+% there is a family of models, simple panmictic coal, complex diff, psmc
+
+% The sample frequency spectrum (SFS)---the distribution of derived allele frequencies among sampled haplotypes---is a well-studied population genetic summary statistic that is sensitive to demographic history.
+
+% gloom and doom perils about N(t), Meyers, Song, other Song, Gravel, etc., nonlinearity, nonconvexity, then contrast this with our discovery of a more tractable problem
+% This has a truly excellent intro/summary of the issues with the SFS: https://www.sciencedirect.com/science/article/pii/S004058091730148X?via%3Dihub
+
+% "Stairway plot" that Kern recommended, is sort non-parametric: X. Liu, Y.-X. Fu, Exploring population size changes using SNP frequency spectra. Nat. Genet. 47, 555–559 (2015).
+
+% We extend a coalescent framework for demographic inference from the SFS to accommodate inference of mutation spectrum histories from the sample frequency spectrum resolved by $k$-mer nucleotide context ($k$-SFS).
+% We formulate inference of mutation spectrum histories from the $k$-SFS as a linear inverse problem.
+
+% as the first method like this, we implement in the simpler among models in the family, single population. Beginning of fruitful future work to bring model realism to popgen inf, via much more rich descriptions of the mutational process.
+
+% sims with realistic demo hist and various spectrum hists, we can recover
+
+% github
+
+
+
+% TODO
+% - ancient african substructure buzz, bantu VS san, admixture signal?
+% - gbGC and isochores: https://www.annualreviews.org/doi/abs/10.1146/annurev-genom-082908-150001?casa_token=EImkIpqbayAAAAAA:Rxc8y0KLVRbZ6UfBTy3VxBRPdt3IZf7CAdVk57DfBUpvpSvuP4uHpDe9XHHCMHFBbYDxcZyFR8t0tA
+
 
 \cite{Harris2017-fw} showed triplet SNV spectrum differences between human groups and between great apes, and used a coalescent simulation approach to fit the timing of a pulse of \texttt{T\underline{C}C>T\underline{T}C} mutations in Europeans.
 We develop coalescent theory for the dependence of the expected $k$-SFS on both demographic history (effective population size as a function of time into the past) \emph{and} mutation spectrum history (mutation intensities as a function of time into the past for each mutation type).
@@ -56,20 +156,20 @@ This is similar in spirit to Kelley's simulation-based approach (which assumed t
 Some references for nonidentifiability of demographic history from the SFS: \cite{Baharian2018-np, Bhaskar2014-fu, Terhorst2015-xt, Myers2008-jp}.
 It might be good to consider identifiability of mutation intensity history from the SFS conditioned on demographic history.
 
-%WD todo: inverse problem intro, forward Vs inverse problems, and ill-posedness. Point out \eta is nonlinear, but \mu is linear
+% WD: todo: inverse problem intro, forward Vs inverse problems, and ill-posedness. Point out \eta is nonlinear, but \mu is linear
 
-%WD todo: the scope of this paper is \mu inference conditioned on \eta. There are plenty of fancy methods one can use to infer \eta
+% WD: todo: the scope of this paper is \mu inference conditioned on \eta. There are plenty of fancy methods one can use to infer \eta
 
-Humblebrag: the word \emph{spectrum} is triply overloaded in this paper:
-\begin{enumerate}
-\item the traditional sample frequency \emph{spectrum}
-\item mutation \emph{spectrum} as in the nucleotide context of each mutation
-\item \emph{spectral} regularization for encouraging low rank solutions
-\end{enumerate}
+% Humblebrag: the word \emph{spectrum} is triply overloaded in this paper:
+% \begin{enumerate}
+% \item the traditional sample frequency \emph{spectrum}
+% \item mutation \emph{spectrum} as in the nucleotide context of each mutation
+% \item \emph{spectral} regularization for encouraging low rank solutions
+% \end{enumerate}
 
 \section*{Model}\label{sec:model}
 
-The setting for our modeling is Kingman's coalescent \citep{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
+The setting for our modeling is Kingman's coalescent \cite{Kingman1982-ge, Kingman1982-tf, Kingman1982-ys, Kingman2000-jr}, with all the usual niceties: neutrality, infinite sites, linkage equilibrium, and panmixia.
 In Appendix \ref{sec:appendix} we detail our retracing of the derivation by \cite{Griffiths1998-qf} of the frequency distribution of a derived allele conditioned on the demographic history, while generalizing to a time inhomogeneous mutation process.
 We make use of the results of \cite{Polanski2003-kg} and \cite{Polanski2003-ll} to facilitate computation, and build on the notation of \cite{Rosen2018-bb} for a finite-dimensional approximation of our demographic and mutation intensity histories.
 Complete derivation of formulae are found in the Appendix.
@@ -95,7 +195,7 @@ The probability that a differential element $dxdt$ on a given sheet contains a m
 \label{fig:model}
 \end{figure}
 
-In previous work \citep{Kelley, cancer, etc}, mutation spectra have been parameterized by grouping variants into mutation types according to local $k$-mer nucleotide context, and the number of variants called in each mutation type is taken as a proxy integrating an individual's ancestral mutational input in each type.
+In previous work \cite{Kelley, cancer, etc}, mutation spectra have been parameterized by grouping variants into mutation types according to local $k$-mer nucleotide context, and the number of variants called in each mutation type is taken as a proxy integrating an individual's ancestral mutational input in each type.
 With $k$ odd and the variant registered in the central position there are $\kappa_k=2\times3\times4^{k-1}$ mutation types after collapsing by strand symmetry.
 For example, there are $96$ triplet mutation types ($k=3$).
 Here, we use the same $k$-mer mutation type parameterization to promote the $(n-1)$-element expected SFS vector $\xi$ to the $(n-1)\times\kappa_k$ expected $k$-SFS matrix $\Xi$.
@@ -116,16 +216,16 @@ In Appendix \ref{sec:appendix:pcsws} we show the linear transform \eqref{eqn:tra
 \end{equation}
 where the $(n-1)\times m$ matrix $L_{n, \boldsymbol y}$ is fixed given a fixed demographic history $\boldsymbol y$.
 
-In linkage equilibrium the log likelihood function of the mutation spectrum history $Z$ given an observed $k$-SFS matrix $X$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \citep{}
+In linkage equilibrium the log likelihood function of the mutation spectrum history $Z$ given an observed $k$-SFS matrix $X$ and demographic history $\boldsymbol y$ is given by the Poisson random field approximation \cite{?}
 \[
 \ell(Z; X, \boldsymbol y, n) = \Tr(X^\intercal\log(L_{n, \boldsymbol y} Z)) - \|L_{n, \boldsymbol y} Z\|_1,
 \]
 where $\log(\cdot)$ operates elementwise, and we've dropped a constant term wrt $Z$.
 
-%WD more inverse problem intro
+% WD: more inverse problem intro
 The inverse problem \eqref{eqn:transform_discrete} is ill-posed in general,
 so many very different histories can be equally consistent with the data
-\citep{oscillation paper? Yun's other papers?}.
+\cite{oscillation paper? Yun's other papers?}.
 We deal with this problem using regularization, to enforce well-behaved histories.
 Our cost function to minimize, a penalized log-likelihood, is
 \begin{equation}
@@ -251,7 +351,7 @@ Joint inference of $\eta$ and $\mu$.
 \subsection*{Implementation and pipeline}\label{sec:methods:tool}
 
 The \texttt{mushi} software package is available at \url{https://github.com/harrispopgen/mushi}.
-%WD cite whatever packages we use, e.g. proxtv, msprime, stdpopsim, etc.
+% WD: cite whatever packages we use, e.g. jax, proxtv, msprime, stdpopsim, etc.
 
 \section*{Acknowledgements}\label{sec:ack}
 
