@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Projection analysis for specific triplet mutation spectra"""
-
 from __future__ import print_function
 import os
 import glob
@@ -29,13 +27,6 @@ AddOption('--ancs',
           metavar='<path>',
           help='path to directory containing ancestral fasta files')
 ancs_dir = GetOption('ancs')
-AddOption('--mutation_rate',
-          dest='mutation_rate',
-          type='float',
-          default=1.1e-8,
-          metavar='<float>',
-          help='mutation rate (per site per generation)')
-mutation_rate = GetOption('mutation_rate')
 AddOption('--kmer',
           dest='k',
           type='int',
@@ -47,7 +38,7 @@ AddOption('--sample_pops',
           dest='sample_pops',
           type='string',
           metavar='<path>',
-          default=None,
+          default=3,
           help='optional path to file populations for each sample (i.e. '
                'integrated_call_samples_v3.20130502.ALL.panel)')
 sample_pops = GetOption('sample_pops')
@@ -63,6 +54,20 @@ AddOption('--repeats',
           metavar='<path>',
           help='path to gzipped repeats file (i.e. nestedRepeats.txt.gz)')
 repeats = GetOption('repeats')
+AddOption('--track',
+          dest='track',
+          type='string',
+          metavar='<path>',
+          default=None,
+          help='bed file for a genomic track to restrict to')
+track = GetOption('track')
+AddOption('--track_complement',
+          dest='track_complement',
+          action='store_true',
+          metavar='<path>',
+          default=False,
+          help='use complement of track')
+track_complement = GetOption('track_complement')
 AddOption('--outdir',
           type='string',
           metavar="DIR",
@@ -110,8 +115,12 @@ if bcf_dir is not None:
             cmd += '-S ${SOURCES[2]} '
             cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
             cmd += ' ${SOURCES[1]} | '
+            if track is not None:
+                comp_flag = '^' if track_complement else ''
+                cmd += f'bcftools view -T {comp_flag}{track} | '
             cmd += 'bcftools query -f '
-            cmd += ('\'%CHROM\\t%POS\\t%REF\\t%ALT\\t%AC\\t%AN\\n\' > ${TARGET}')
+            cmd += '\'%CHROM\\t%POS\\t%REF\\t%ALT\\t%AC\\t%AN\\n\''
+            cmd += '> ${TARGET}'
             snps = env.Command(tgt, src, cmd)
 
             # get ancestral alignment for this chromosome
@@ -145,12 +154,3 @@ if bcf_dir is not None:
             tgt = os.path.join(outdir, f'masked_size.tsv')
             cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
             masked_size = env.Command(tgt, masked_sizes, cmd)
-
-        # infer η and μ
-        mushi_outbase = os.path.join(pop_outdir, 'mushi')
-        tgt = f'{mushi_outbase}.ksfs.pkl'
-        src = [masked_size, ksfs]
-        cmd = f'mu=$(< ${{SOURCES[0]}})&& mu=$(($mu * {mutation_rate}))&& '
-        cmd += f'python ../mushi.py ${{SOURCES[1]}} $mu ' \
-              f'{mushi_outbase} > {mushi_outbase}.log'
-        mushi = env.Command(tgt, src, cmd)
