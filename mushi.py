@@ -316,6 +316,9 @@ class kSFS():
 
     def plot_total(self):
         """plot the total SFS"""
+        x = self.X.sum(1, keepdims=True)
+        plt.plot(range(1, len(x) + 1), x,
+                 c='C0', ls='', marker='.', alpha=.25, label=r'data')
         if self.η is not None:
             if self.μ is not None:
                 z = self.μ.Z.sum(1)
@@ -329,9 +332,6 @@ class kSFS():
                              ξ_lower, ξ_upper,
                              facecolor='C1', alpha=0.25,
                              label='inner 95%\nquantile')
-        x = self.X.sum(1, keepdims=True)
-        plt.plot(range(1, len(x) + 1), x,
-                 c='C0', ls='', marker='.', alpha=.25, label=r'data')
         plt.xlabel('sample frequency')
         plt.ylabel(r'number of variants')
         plt.xscale('log')
