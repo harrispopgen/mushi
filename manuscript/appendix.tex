@@ -141,9 +141,9 @@ This completes the framing of mutation intensity inference as a linear inverse p
 
 \subsection{Finite-dimensional parameterization of $\eta(t)$ and $\mu(t)$}\label{sec:appendix:pcsws}
 
-%WD Kam describes this discretization as ad hoc, but I'm pretty sure this is your textbook Riemann sum with rectangular partitions. We could do fancier quadrature, but then we'll be less able to lean on previous work (i.e. Rosen et al.)
-
-Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)) let $R_\eta(t) \equiv \int_0^t\frac{dx}{\eta(x)}$, and substitute $\tau \equiv R_\eta(t)$ in \eqref{eqn:d} to give
+% WD: did they borrow this change of variables from Meyers et al.?
+Following \cite{Rosen2018-bb} (appendix proof of Prop.\ (1)), we introduce a change of variables that measures time in expected number of coalescent events since the present.
+Let $R_\eta(t) \equiv \int_0^t\frac{dx}{\eta(x)}$, and substitute $\tau \equiv R_\eta(t)$ in \eqref{eqn:d} to give
 \begin{equation}
 \label{eqn:d2}
 d_j = \int_0^\infty \exp\left[-\binom{j}{2}\tau\right] \tilde\eta(\tau)\tilde\mu(\tau)d\tau,
