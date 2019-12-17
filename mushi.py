@@ -134,21 +134,21 @@ class kSFS():
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
 
-    def coord_desc(self,
-                   α_tv: np.float64 = 0,
-                   α_spline: np.float64 = 0,
-                   α_ridge: np.float64 = 0,
-                   β_tv: np.float64 = 0,
-                   β_spline: np.float64 = 0,
-                   β_rank: np.float64 = 0,
-                   β_ridge: np.float64 = 0,
-                   max_iter: int = 1000,
-                   max_line_iter=100,
-                   γ: np.float64 = 0.8,
-                   tol: np.float64 = 1e-4, fit='prf',
-                   hard=False,
-                   mask: np.ndarray = None) -> np.ndarray:
-        u"""perform one iteration of block coordinate descent to fit η and μ
+    def infer_history(self,
+                      α_tv: np.float64 = 0,
+                      α_spline: np.float64 = 0,
+                      α_ridge: np.float64 = 0,
+                      β_tv: np.float64 = 0,
+                      β_spline: np.float64 = 0,
+                      β_rank: np.float64 = 0,
+                      β_ridge: np.float64 = 0,
+                      max_iter: int = 1000,
+                      max_line_iter=100,
+                      γ: np.float64 = 0.8,
+                      tol: np.float64 = 1e-4, fit='prf',
+                      hard=False,
+                      mask: np.ndarray = None) -> np.ndarray:
+        u"""perform sequential inference to fit η and μ
 
         loss parameters:
         - fit: loss function, 'prf' for Poisson random field, 'kl' for
@@ -244,7 +244,6 @@ class kSFS():
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
-        # We'll do block coordinate descent partitioned by y and Z
 
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
@@ -275,12 +274,10 @@ class kSFS():
         # initial iterate
         logy = np.log(self.η.y)
         Z = self.μ.Z
-        # initial loss as first element of f_trajectory we'll append to
-        f_trajectory = [g(logy, Z) + h(logy, Z)]
         # max step size
         s0 = 1
 
-        print('η block', flush=True)
+        print('inferring η(t)', flush=True)
         logy = utils.acc_prox_grad_descent(
                               logy,
                               jit(lambda logy: g(logy, Z)),
@@ -293,7 +290,7 @@ class kSFS():
                               max_line_iter=max_line_iter,
                               γ=γ)
 
-        print('μ block', flush=True)
+        print('inferring μ(t) conditioned on η(t)', flush=True)
         Z = utils.three_op_prox_grad_descent(Z,
                                              jit(lambda Z: g(logy, Z)),
                                              jit(grad(lambda Z: g(logy, Z))),
@@ -455,9 +452,6 @@ def main():
                         μ0=μ0,
                         mask=mask)
 
-    f_trajectory = []
-
-    sweeps = config.getint('convergence', 'sweeps', fallback=1)
     tol = config.getfloat('convergence', 'tol', fallback=None)
 
     # parameter dict for η regularization
@@ -479,39 +473,15 @@ def main():
                    **{key: config.getfloat('convergence', key)
                       for key in config['convergence']
                       if not key.endswith('_iter')}}
-    if 'sweeps' in convergence:
-        del convergence['sweeps']
 
     # parameter dict for loss parameters
     loss = dict(mask=mask)
     if 'fit' in config['loss']:
         loss['fit'] = config.get('loss', 'fit')
 
-    # coordinate descent sweeps
-    f_old = None
-    for sweep in range(1, 1 + sweeps):
-        print(f'block coordinate descent sweep {sweep:.2g}\n', flush=True)
-        f = ksfs.coord_desc(**loss,
-                            **η_regularization,
-                            **μ_regularization,
-                            **convergence)
-        print(f'\ncost: {f}', flush=True)
-        if sweep > 1:
-            relative_change = np.abs((f - f_old) / f_old)
-            print(f'relative change: {relative_change:.2g}\n', flush=True)
-        f_old = f
-        f_trajectory.append(f)
-
-        if sweep > 1 and relative_change < tol:
-            break
-
-    plt.figure(figsize=(4, 2))
-    plt.plot(f_trajectory)
-    plt.xlabel('iterations')
-    plt.ylabel('cost')
-    # plt.xscale('symlog')
-    plt.tight_layout()
-    plt.savefig(f'{args.outbase}.iterations.pdf')
+    print('sequential inference of η(t) and μ(t)\n', flush=True)
+    f = ksfs.infer_history(**loss, **η_regularization, **μ_regularization,
+                           **convergence)
 
     plt.figure(figsize=(6, 6))
     plt.subplot(221)
@@ -519,10 +489,10 @@ def main():
     plt.subplot(222)
     ksfs.η.plot()
     plt.subplot(223)
-    ksfs.plot(normed=True, alpha=0.5)
+    ksfs.plot(normed=True, alpha=0.5, rasterized=True)
     plt.subplot(224)
-    ksfs.μ.plot(normed=False, alpha=0.5)
-    plt.savefig(f'{args.outbase}.fit.png')
+    ksfs.μ.plot_cumulative(rasterized=True)
+    plt.savefig(f'{args.outbase}.fit.pdf')
 
     # pickle the final ksfs (which contains all the inferred history info)
     with open(f'{args.outbase}.pkl', 'wb') as f:
