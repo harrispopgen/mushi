@@ -42,6 +42,13 @@ AddOption('--sample_pops',
           help='optional path to file populations for each sample (i.e. '
                'integrated_call_samples_v3.20130502.ALL.panel)')
 sample_pops = GetOption('sample_pops')
+AddOption('--pops',
+          dest='pops',
+          type='string',
+          metavar='<pop1,pop2,...>',
+          help='comma-separated list of populations or superpopulations')
+pops = GetOption('pops').split(',')
+print(pops)
 AddOption('--phastcons',
           dest='phastcons',
           type='string',
@@ -90,7 +97,7 @@ if bcf_dir is not None:
            '${TARGETS[0]}')
     mask = env.Command(tgt, src, cmd)
 
-    for idx, pop in enumerate(('AFR', 'AMR', 'EAS', 'EUR', 'SAS')):
+    for idx, pop in enumerate(pops):
         pop_outdir = os.path.join(outdir, pop)
         pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
                                sample_pops,

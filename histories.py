@@ -146,7 +146,7 @@ class μ(History):
     def plot(self, types=None, normed=False,
              **kwargs) -> List[mpl.lines.Line2D]:
         """
-        normed: flag to normalize to relative mutation intensity
+        normed: flag to normalize to total mutation intensity
         """
         lines = super().plot(types=types, **kwargs)
         if normed:
@@ -169,14 +169,18 @@ class μ(History):
         plt.tight_layout()
         return lines
 
-    def plot_total(self, **kwargs):
-        """plot the total mutation rate summing over all types
+    def plot_cumulative(self, normed=False, **kwargs):
+        """plot the cumulative mutation rate, like a Muller plot
 
-        kwargs: key word arguments passed to plt.step
+        normed: flag to normalize to total mutation intensity
+        kwargs: key word arguments passed to plt.fill_between
         """
         t = np.concatenate((np.array([0]), self.change_points))
-        vals = self.vals.sum(1)
-        lines = plt.step(t, vals, where='post', **kwargs)
+        Z = np.cumsum(self.Z, axis=1)
+        if normed:
+            Z = Z / Z.sum(1, keepdims=True)
+        for j in range(1, Z.shape[1]):
+            lines = plt.fill_between(t, Z[:, j - 1], Z[:, j], step='post', **kwargs)
         plt.xlabel('$t$')
         plt.ylabel('$\\mu(t)$')
         plt.xscale('symlog')
@@ -195,9 +199,8 @@ class μ(History):
         df = pd.DataFrame(data=Z, index=pd.Index(t, name='$t$'),
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False, center=1,
-                           metric='correlation',
-                           cbar_kws={'label': 'mutation intensity wrt ancestral rate'},
+                           # metric='correlation',
+                           cbar_kws={'label': 'mutation intensity\nwrt ancestral rate'},
                            **kwargs)
         # g.ax_heatmap.set_yscale('symlog')
-        plt.tight_layout()
         return g
