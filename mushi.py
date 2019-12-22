@@ -236,8 +236,6 @@ class kSFS():
                     return U @ Σ @ Vt
         else:
             def prox_update_Z(Z, s):
-                """project onto positive orthant"""
-                #return np.maximum(Z, 0)
                 return Z
 
 
@@ -408,6 +406,8 @@ def main():
                                                  ' to stdout')
     parser.add_argument('ksfs', type=str, default=None,
                         help='path to k-SFS file')
+    parser.add_argument('masked_genome_size_file', type=str,
+                        help='path to file containing masked genome size in nucleotides')
     parser.add_argument('config', type=str, help='path to config file')
     parser.add_argument('outbase', type=str, default=None,
                         help='base name for output files')
@@ -445,7 +445,9 @@ def main():
         mask = None
 
     # mutation rate estimate
-    μ0 = config.getfloat('mutation rate', 'μ0', fallback=1)
+    with open(args.masked_genome_size_file) as f:
+        masked_genome_size = int(f.read())
+    μ0 = config.getfloat('mutation rate', 'u') * masked_genome_size
 
     # Initialize to constant
     ksfs.infer_constant(change_points=change_points,
@@ -483,15 +485,29 @@ def main():
     f = ksfs.infer_history(**loss, **η_regularization, **μ_regularization,
                            **convergence)
 
-    plt.figure(figsize=(6, 6))
-    plt.subplot(221)
+    plt.figure(figsize=(6, 9))
+    plt.subplot(321)
     ksfs.plot_total()
-    plt.subplot(222)
+    plt.subplot(322)
     ksfs.η.plot()
-    plt.subplot(223)
+    plt.subplot(323)
     ksfs.plot(normed=True, alpha=0.5, rasterized=True)
-    plt.subplot(224)
+    plt.subplot(324)
     ksfs.μ.plot_cumulative(rasterized=True)
+    plt.subplot(325)
+    plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf())
+    plt.xlabel('$t$')
+    plt.ylabel('TMRCA CDF')
+    plt.ylim([0, 1])
+    plt.xscale('symlog')
+    plt.tight_layout()
+    plt.subplot(326)
+    plt.plot(range(1, 1 + min(ksfs.μ.Z.shape)),
+             np.linalg.svd(ksfs.μ.Z, compute_uv=False), '.')
+    plt.xlabel('singular value rank')
+    plt.ylabel('singular value')
+    plt.yscale('log')
+    plt.tight_layout()
     plt.savefig(f'{args.outbase}.fit.pdf')
 
     # pickle the final ksfs (which contains all the inferred history info)

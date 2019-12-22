@@ -19,8 +19,14 @@ AddOption('--bcfs',
           dest='bcfs',
           type='string',
           metavar='<path>',
-          help='path to directory containing bcf files')
+          help='path to directory containing 1KG bcf files')
 bcf_dir = GetOption('bcfs')
+AddOption('--batwa_vcfs',
+          dest='batwa_vcfs',
+          type='string',
+          metavar='<path>',
+          help='path to directory containing Batwa vcf files')
+batwa_vcfs_dir = GetOption('batwa_vcfs')
 AddOption('--ancs',
           dest='ancs',
           type='string',
@@ -48,7 +54,6 @@ AddOption('--pops',
           metavar='<pop1,pop2,...>',
           help='comma-separated list of populations or superpopulations')
 pops = GetOption('pops').split(',')
-print(pops)
 AddOption('--phastcons',
           dest='phastcons',
           type='string',
@@ -61,6 +66,18 @@ AddOption('--repeats',
           metavar='<path>',
           help='path to gzipped repeats file (i.e. nestedRepeats.txt.gz)')
 repeats = GetOption('repeats')
+AddOption('--strict_mask',
+          dest='strict_mask',
+          type='string',
+          metavar='<path>',
+          help='path to strict mask bed file')
+strict_mask = GetOption('strict_mask')
+AddOption('--sizes',
+          dest='sizes',
+          type='string',
+          metavar='<path>',
+          help='path to chromosome sizes (hg19.chrom.sizes.txt)')
+sizes = GetOption('sizes')
 AddOption('--track',
           dest='track',
           type='string',
@@ -82,47 +99,93 @@ AddOption('--outdir',
           help='directory in which to output results will be created if '
                'nonexistant (default "scons_output")')
 outdir = GetOption('outdir')
+AddOption('--mushi_cfg',
+          type='string',
+          metavar="PATH",
+          help='path to mushi config file')
+mushi_cfg = GetOption('mushi_cfg')
 
 # parse the --jobs command line argument
 n_jobs = GetOption('num_jobs')
 
 # need this so scons -h runs without error
 if bcf_dir is not None:
-    # mask for conserved sites and repeats
-    mask_file = os.path.join(outdir, 'mask.gz')
+    # autosome sizes
+    tgt = os.path.join(outdir, 'hg19.autosome.sizes.txt')
+    src = sizes
+    cmd = ('egrep "chr[0-9]*\\t" ${SOURCE} | cut -c4- | sort -n > ${TARGET}')
+    autosome_sizes = env.Command(tgt, src, cmd)
+
+    # mask for repeats (autosomes only)
+    tgt = os.path.join(outdir, 'repeats.bed.gz')
+    src = repeats
+    cmd = ('python tobed.py ${SOURCE} | egrep "[0-9]*\\t" | bgzip > ${TARGET}')
+    repeats = env.Command(tgt, src, cmd)
+
+    # mask for conserved sites (autosomes only)
+    tgt = os.path.join(outdir, 'conserved.bed.gz')
+    src = phastcons
+    cmd = ('python tobed.py ${SOURCE} | egrep "[0-9]*\\t" | bgzip > ${TARGET}')
+    conserved = env.Command(tgt, src, cmd)
+
+    # merge the above and complement (autosomes only)
+    tgt = os.path.join(outdir, 'ncncr.bed.gz')
+    src = [repeats, conserved, autosome_sizes]
+    cmd = ('gzip -cd ${SOURCES[:2]} | sort -k1,1 -k2,2n | bedtools merge -i stdin'
+           '| bedtools complement -i stdin -g ${SOURCES[2]}'
+           '| bgzip > ${TARGET}')
+    ncncr_mask = env.Command(tgt, src, cmd)
+
+    # strict mask (no chr, autosomes only)
+    tgt = os.path.join(outdir, 'strict.bed.gz')
+    src = strict_mask
+    cmd = ('egrep "chr[0-9]*\\t" ${SOURCE} | cut -c4- | cut -f1-3 '
+           '| bgzip > ${TARGET}')
+    strict_mask_nochr = env.Command(tgt, src, cmd)
+
+    # full mask (sites to keep)
+    mask_file = os.path.join(outdir, 'mask.bed.gz')
     tgt = [mask_file, mask_file + '.tbi']
-    src = [phastcons, repeats]
-    cmd = ('python region_mask.py ${SOURCES} | sort -k1V -k2n -k3n'
-           ' | bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 '
-           '${TARGETS[0]}')
+    src = [ncncr_mask, strict_mask_nochr]
+    cmd = ('gzip -cd ${SOURCES} | sort -k1,1 -k2,2n | bedtools merge -i stdin'
+           '| bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 ${TARGETS[0]}')
     mask = env.Command(tgt, src, cmd)
 
-    for idx, pop in enumerate(pops):
+    for idx, pop in enumerate(pops + ['Batwa']):
         pop_outdir = os.path.join(outdir, pop)
-        pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
-                               sample_pops,
-                               f'grep {pop} ${{SOURCE}} | '
-                               f'cut -f1 > ${{TARGET}}')
-
+        if pop is not 'Batwa':
+            pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
+                                   sample_pops,
+                                   f'grep {pop} ${{SOURCE}} | '
+                                   f'cut -f1 > ${{TARGET}}')
         snps_context = []
-        masked_sizes = []
+        # masked chromosome sizes for mutation rate estimation
+        if idx == 0:
+            masked_sizes = []
         # loop over chromosome bcf files
         for chro in (str(chro_int) for chro_int in range(1, 23)):
             # get bcf for this chromosome
             # NOTE assumes chro is indicated by second '.'-delimited field in bcf
             # file name
-            bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
+            if pop is 'Batwa':
+                bcf = glob.glob(f'{batwa_vcfs_dir}/*chr{chro}.vcf.gz')
+            else:
+                bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
             assert len(bcf) == 1
             bcf = bcf[0]
 
             # create snps file with columns CHROM POS REF ALT AC AN
             tgt = os.path.join(pop_outdir, f'snps.{chro}.tsv')
-            src = [mask[0], bcf, pop_list]
-            cmd = 'bcftools view -T ^${SOURCES[0]} '
-            cmd += '-S ${SOURCES[2]} '
-            cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
+            cmd = 'bcftools view -T ${SOURCES[0]} '
+            if pop is 'Batwa':
+                src = [mask[0], bcf]
+            else:
+                src = [mask[0], bcf, pop_list]
+                cmd += '-S ${SOURCES[2]} '
+            cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -U'
             cmd += ' ${SOURCES[1]} | '
             if track is not None:
+                print("WARNING! track mask this isn't accounted for in mask size!")
                 comp_flag = '^' if track_complement else ''
                 cmd += f'bcftools view -T {comp_flag}{track} | '
             cmd += 'bcftools query -f '
@@ -141,12 +204,11 @@ if bcf_dir is not None:
             cmd = f'python ancestor.py ${{SOURCES}} {k} > $TARGET'
             snps_context.append(env.Command(tgt, src, cmd))
 
-            # masked chromosome sizes for mutation rate estimation
             if idx == 0:
                 tgt = os.path.join(outdir, f'masked_size.{chro}.tsv')
                 src = [mask[0], anc_fasta]
                 cmd = f'tabix ${{SOURCES[0]}} {chro}: > ${{TARGET}}.mask.tmp && '
-                cmd += 'python masked_size.py ${SOURCES[1]} ${TARGET}.mask.tmp '
+                cmd += f'python masked_size.py ${{SOURCES[1]}} ${{TARGET}}.mask.tmp --k {k} '
                 cmd += '> ${TARGET} && '
                 cmd += 'rm ${TARGET}.mask.tmp'
                 masked_sizes.append(env.Command(tgt, src, cmd))
@@ -161,3 +223,11 @@ if bcf_dir is not None:
             tgt = os.path.join(outdir, f'masked_size.tsv')
             cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
             masked_size = env.Command(tgt, masked_sizes, cmd)
+
+        # infer MUSH
+        mushi_outbase = os.path.join(pop_outdir, 'mushi')
+        tgt = [mushi_outbase + '.pkl', mushi_outbase + 'fit.pdf']
+        src = [ksfs, masked_size, mushi_cfg]
+        cmd = (f'python ../mushi.py ${{SOURCES}} {mushi_outbase} '
+               f"&> {mushi_outbase + '.log'}")
+        mush = env.Command(tgt, src, cmd)
