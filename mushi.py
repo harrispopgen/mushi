@@ -236,8 +236,6 @@ class kSFS():
                     return U @ Σ @ Vt
         else:
             def prox_update_Z(Z, s):
-                """project onto positive orthant"""
-                #return np.maximum(Z, 0)
                 return Z
 
 
@@ -408,6 +406,8 @@ def main():
                                                  ' to stdout')
     parser.add_argument('ksfs', type=str, default=None,
                         help='path to k-SFS file')
+    parser.add_argument('masked_genome_size_file', type=str,
+                        help='path to file containing masked genome size in nucleotides')
     parser.add_argument('config', type=str, help='path to config file')
     parser.add_argument('outbase', type=str, default=None,
                         help='base name for output files')
@@ -445,7 +445,9 @@ def main():
         mask = None
 
     # mutation rate estimate
-    μ0 = config.getfloat('mutation rate', 'μ0', fallback=1)
+    with open(args.masked_genome_size_file) as f:
+        masked_genome_size = int(f.read())
+    μ0 = config.getfloat('mutation rate', 'u') * masked_genome_size
 
     # Initialize to constant
     ksfs.infer_constant(change_points=change_points,
