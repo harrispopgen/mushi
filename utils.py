@@ -168,6 +168,7 @@ def acc_prox_grad_descent(x: np.ndarray,
 
     return x
 
+
 def three_op_prox_grad_descent(x: np.ndarray,
                                g: Callable[[np.ndarray], np.float64],
                                grad_g: Callable[[np.ndarray], np.float64],

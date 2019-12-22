@@ -10,6 +10,8 @@
 n_jobs=`sysctl -n hw.physicalcpu`
 
 bcfs="../data/phase3_1000genomes/bcfs"
+batwa_vcfs="../data/batwa"
+
 ancs="../data/human_ancestor_GRCh37_e59"
 
 sample_pops="../data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
@@ -18,21 +20,27 @@ sample_pops="../data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.
 # pops="AFR,AMR,EAS,EUR,SAS"
 
 # africans
-pops="YRI,LWK,GWD,MSL,ESN,ASW,ACB"
+# pops="YRI,LWK,GWD,MSL,ESN,ASW,ACB"
+
+# all 1KG
+pops="ACB,ASW,BEB,CDX,CEU,CHB,CHS,CLM,ESN,FIN,GBR,GIH,GWD,IBS,ITU,JPT,KHV,LWK,MSL,MXL,PEL,PJL,PUR,STU,TSI,YRI"
 
 k="3"
 
 phastcons="../data/phastConsElements100way.txt.gz"
 repeats="../data/nestedRepeats.txt.gz"
+strict_mask="../data/phase3_1000genomes/20141020.strict_mask.whole_genome.bed"
+sizes="../data/phase3_1000genomes/hg19.chrom.sizes.txt"
 
-# outdir="scons_output"
-outdir="scons_output_AFR"
+mushi_cfg="3mer.cfg"
+
+outdir="scons_output"
 
 # track='--track=../data/20161129_enhancer_states.txt.4567.bed'
 # comp='--track_complement'
 
 # no_exec="--no-exec"
 
-cmd="scons ${track} ${comp} --pops=${pops} --bcfs=${bcfs} --ancs=${ancs} --kmer=${k} --phastcons=${phastcons} --repeats=${repeats} --jobs=${n_jobs} --outdir=${outdir} ${debug} ${no_exec} --sample_pops=${sample_pops} ${gl}"
+cmd="scons ${track} ${comp} --strict_mask=${strict_mask} --sizes=${sizes} --pops=${pops} --bcfs=${bcfs} --batwa_vcfs=${batwa_vcfs} --ancs=${ancs} --kmer=${k} --phastcons=${phastcons} --repeats=${repeats} --jobs=${n_jobs} --outdir=${outdir} ${debug} ${no_exec} --sample_pops=${sample_pops} --mushi_cfg=${mushi_cfg}"
 echo $cmd
 $cmd
