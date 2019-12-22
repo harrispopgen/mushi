@@ -223,3 +223,11 @@ if bcf_dir is not None:
             tgt = os.path.join(outdir, f'masked_size.tsv')
             cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
             masked_size = env.Command(tgt, masked_sizes, cmd)
+
+        # infer MUSH
+        mushi_outbase = os.path.join(pop_outdir, 'mushi')
+        tgt = [mushi_outbase + '.pkl', mushi_outbase + 'fit.pdf']
+        src = [ksfs, masked_size, mushi_cfg]
+        cmd = (f'python ../mushi.py ${{SOURCES}} {mushi_outbase} '
+               f"&> {mushi_outbase + '.log'}")
+        mush = env.Command(tgt, src, cmd)
