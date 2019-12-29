@@ -138,6 +138,7 @@ class kSFS():
                       α_tv: np.float64 = 0,
                       α_spline: np.float64 = 0,
                       α_ridge: np.float64 = 0,
+                      rank: int = None,
                       β_tv: np.float64 = 0,
                       β_spline: np.float64 = 0,
                       β_spline_total: np.float64 = 0,
@@ -146,7 +147,7 @@ class kSFS():
                       max_iter: int = 1000,
                       max_line_iter=100,
                       γ: np.float64 = 0.8,
-                      hard=False,
+                      tol: np.float64 = 1e-4,
                       loss='prf',
                       mask: np.ndarray = None) -> np.ndarray:
         u"""perform sequential inference to fit η and μ
@@ -163,6 +164,7 @@ class kSFS():
         - α_ridge: L2 for strong convexity
 
         μ(t) regularization parameters:
+        - rank: hard singular value threshold (rank of solution)
         - β_tv: total variation
         - β_spline: L2 on first differences for each mutation type
         - β_spline_total: L2 on first differences of total mutation rate
@@ -175,12 +177,13 @@ class kSFS():
         - γ: step size shrinkage rate for line search
         - max_iter: maximum number of proximal gradient descent steps
         - tol: relative tolerance in objective function
-        - hard: hard Vs soft singular value thresholding (l0 Vs l1 penalty)
 
         returns cost function
         """
         assert self.X is not None, 'use simulate() to generate data first'
         assert self.η is not None, 'must initialize e.g. with infer_constant()'
+        assert not (rank and β_rank), ("can't combine combine soft and hard "
+                                       "singular value thresholding")
 
         if mask is not None:
             X = self.X[~mask, :]
@@ -223,20 +226,19 @@ class kSFS():
                 (oddly 1-based indexed in proxtv)
                 """
                 return np.maximum(ptv.tvgen(Z, [s * β_tv], [1], [1]), 0)
+        elif rank is not None:
+            def prox_update_Z(Z, s):
+                """hard singular value thresholding"""
+                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                σ = index_update(σ, index[rank:], 0)
+                Σ = np.diag(σ)
+                return U @ Σ @ Vt
         elif β_rank > 0:
-            if hard:
-                def prox_update_Z(Z, s):
-                    """l0 norm on singular values (hard-thresholding)"""
-                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                    σ = index_update(σ, index[σ <= s * β_rank], 0)
-                    Σ = np.diag(σ)
-                    return U @ Σ @ Vt
-            else:
-                def prox_update_Z(Z, s):
-                    """l1 norm on singular values (soft-thresholding)"""
-                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                    Σ = np.diag(np.maximum(0, σ - s * β_rank))
-                    return U @ Σ @ Vt
+            def prox_update_Z(Z, s):
+                """l1 norm on singular values (soft-thresholding)"""
+                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                Σ = np.diag(np.maximum(0, σ - s * β_rank))
+                return U @ Σ @ Vt
         else:
             def prox_update_Z(Z, s):
                 return Z
@@ -253,6 +255,10 @@ class kSFS():
         W = index_update(W, index[0, 0], 0)
         D1 = W @ D  # 1st difference matrix
 
+        # initial iterate
+        logy = np.log(self.η.y)
+        Z = self.μ.Z
+
         @jit
         def g(logy, Z):
             """differentiable piece of cost"""
@@ -267,15 +273,10 @@ class kSFS():
         def h(logy, Z):
             """nondifferentiable piece of cost"""
             σ = np.linalg.svd(Z, compute_uv=False)
-            if hard:
-                rank_penalty = np.linalg.norm(σ, 0)
-            else:
-                rank_penalty = np.linalg.norm(σ, 1)
-            return α_tv * np.abs(D1 @ logy).sum() + β_tv * np.abs(D1 @ Z).sum() + β_rank * rank_penalty
+            return (α_tv * np.abs(D1 @ logy).sum()
+                    + β_tv * np.abs(D1 @ Z).sum()
+                    + β_rank * np.linalg.norm(σ, 1))
 
-        # initial iterate
-        logy = np.log(self.η.y)
-        Z = self.μ.Z
         # max step size
         s0 = 1
 
@@ -468,22 +469,18 @@ def main():
     μ_regularization = {key: config.getfloat('μ regularization', key)
                         for key in config['μ regularization']
                         if key.startswith('β_')}
-    if 'hard' in config['μ regularization']:
-        μ_regularization['hard'] = config.getboolean('μ regularization',
-                                                     'hard')
+    if 'rank' in config['μ regularization']:
+        μ_regularization['rank'] = config.getint('μ regularization', 'rank')
 
     # parameter dict for convergence parameters
-    convergence = {**{key: config.getint('convergence', key)
-                      for key in config['convergence']
-                      if key.endswith('_iter')},
-                   **{key: config.getfloat('convergence', key)
-                      for key in config['convergence']
-                      if not key.endswith('_iter')}}
-
+    convergence = {key: config.getint('convergence', key)
+                   if key.endswith('_iter')
+                   else config.getfloat('convergence', key)
+                   for key in config['convergence']}
     # parameter dict for loss parameters
     loss = dict(mask=mask)
-    if 'fit' in config['loss']:
-        loss['fit'] = config.get('loss', 'fit')
+    if 'loss' in config['loss']:
+        loss['loss'] = config.get('loss', 'loss')
 
     print('sequential inference of η(t) and μ(t)\n', flush=True)
     f = ksfs.infer_history(**loss, **η_regularization, **μ_regularization,
