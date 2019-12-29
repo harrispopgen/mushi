@@ -140,12 +140,12 @@ class kSFS():
                       α_ridge: np.float64 = 0,
                       β_tv: np.float64 = 0,
                       β_spline: np.float64 = 0,
+                      β_spline_total: np.float64 = 0,
                       β_rank: np.float64 = 0,
                       β_ridge: np.float64 = 0,
                       max_iter: int = 1000,
                       max_line_iter=100,
                       γ: np.float64 = 0.8,
-                      tol: np.float64 = 1e-4, fit='prf',
                       hard=False,
                       loss='prf',
                       mask: np.ndarray = None) -> np.ndarray:
@@ -158,16 +158,16 @@ class kSFS():
                 frequency
 
         η(t) regularization parameters:
-        - α_tv: fused LASSO regularization strength
-        - α_spline: regularization strength for L2 on diff
-        - α_ridge: L2 penalty for strong convexity
+        - α_tv: total variation
+        - α_spline: L2 on first differences
+        - α_ridge: L2 for strong convexity
 
         μ(t) regularization parameters:
-        - β_tv: fused LASSO regularization strength
-        - β_spline: regularization strength for L2 on diff
-        - β_rank: spectral regularization strength
-        - β_ridge: regularization strength for Frobenius norm on Z (removes
-                   scale ridge for η, μ and t, and promotes strong convexity)
+        - β_tv: total variation
+        - β_spline: L2 on first differences for each mutation type
+        - β_spline_total: L2 on first differences of total mutation rate
+        - β_rank: spectral regularization (soft singular value threshold)
+        - β_ridge: L2 for strong convexity
 
         convergence parameters:
         - max_iter: maximum number of proximal gradient descent steps
@@ -260,6 +260,7 @@ class kSFS():
                 + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
                 + (α_ridge / 2) * (logy ** 2).sum() \
                 + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                + (β_spline_total / 2) * ((D1 @ Z.sum(1, keepdims=True)) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
         @jit
