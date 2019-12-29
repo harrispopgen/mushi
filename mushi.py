@@ -147,11 +147,12 @@ class kSFS():
                       γ: np.float64 = 0.8,
                       tol: np.float64 = 1e-4, fit='prf',
                       hard=False,
+                      loss='prf',
                       mask: np.ndarray = None) -> np.ndarray:
         u"""perform sequential inference to fit η and μ
 
         loss parameters:
-        - fit: loss function, 'prf' for Poisson random field, 'kl' for
+        - loss: loss function, 'prf' for Poisson random field, 'kl' for
                Kullback-Leibler divergence, 'lsq' for least-squares
         - mask: array of bools, with True indicating exclusion of that
                 frequency
@@ -189,19 +190,21 @@ class kSFS():
         t = self.η.arrays()[0]
 
         # badness of fit
+        if loss == 'prf':
+            loss = utils.prf
+        elif loss == 'kl':
+            loss = utils.d_kl
+        elif loss == 'lsq':
+            loss = utils.lsq
+        else:
+            raise ValueError(f'unrecognized loss argument {loss}')
+
         @jit
         def loss_func(logy, Z):
             L = self.C @ utils.M(self.n, t, np.exp(logy))
             if mask is not None:
                 L = L[~mask, :]
-            if fit == 'prf':
-                return -utils.prf(Z, X, L)
-            elif fit == 'kl':
-                return utils.d_kl(Z, X, L)
-            elif fit == 'lsq':
-                return utils.lsq(Z, X, L)
-            else:
-                raise ValueError(f'unrecognized fit argument {fit}')
+            return loss(Z, X, L)
 
         if α_tv > 0:
             def prox_update_logy(logy, s):

@@ -52,7 +52,7 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    u"""Poisson random field log-likelihood of history
+    u"""Poisson random field negative log-likelihood of history
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
@@ -64,18 +64,16 @@ def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
 
 
 def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    u"""Kullback-Liebler divergence between normalized SFS and its
-    expectation under history
+    u"""generalized Kullback-Liebler divergence between normalized SFS and its
+    expectation under history (a Bregman divergence)
     ignores constant term
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
     L: model matrix
     """
-    X_normalized = X / X.sum(axis=0)
     Ξ = L @ Z
-    Ξ_normalized = Ξ / Ξ.sum(axis=1, keepdims=True)
-    d_kl = (-X_normalized * np.log(Ξ_normalized)).sum()
+    d_kl = (X * np.log(X / Ξ) - X + Ξ).sum()
     return d_kl
 
 
