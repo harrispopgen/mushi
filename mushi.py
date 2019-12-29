@@ -265,7 +265,7 @@ class kSFS():
             return loss_func(logy, Z) \
                 + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
                 + (α_ridge / 2) * (logy ** 2).sum() \
-                + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                + (β_spline / 2) * ((D1 @ (Z / (X.sum(0, keepdims=True) / X.sum()))) ** 2).sum() \
                 + (β_spline_total / 2) * ((D1 @ Z.sum(1, keepdims=True)) ** 2).sum() \
                 + (β_ridge / 2) * (Z ** 2).sum()
 
