@@ -64,19 +64,26 @@ class History():
         else:
             return True
 
-    def plot(self, types=None, **kwargs) -> List[mpl.lines.Line2D]:
+    def plot(self, t_gen: np.float = None, types=None,
+             **kwargs) -> List[mpl.lines.Line2D]:
         """plot the history
 
-        kwargs: key word arguments passed to plt.step
+        t_gen: generation time in years (optional)
+        kwargs: key word arguments passed to plt.plot
         """
         t = np.concatenate((np.array([0]), self.change_points))
+        if t_gen:
+            t *= t_gen
+            t_unit = 'years ago'
+        else:
+            t_unit = 'generations ago'
         if types is not None:
             idxs = [self.mutation_types.get_loc(type) for type in types]
             vals = self.vals[:, idxs]
         else:
             vals = self.vals
-        lines = plt.step(t, vals, where='post', **kwargs)
-        plt.xlabel('$t$')
+        lines = plt.plot(t, vals, **kwargs)
+        plt.xlabel(f'$t$ ({t_unit})')
         plt.xscale('symlog')
         if 'label' in kwargs:
             plt.legend()
