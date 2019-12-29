@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from skbio.stats.composition import centralize
 
 class kSFS():
     """The kSFS model described in the text"""
@@ -333,7 +334,7 @@ class kSFS():
                              facecolor='C1', alpha=0.25,
                              label='inner 95%\nquantile')
         plt.xlabel('sample frequency')
-        plt.ylabel(r'number of variants')
+        plt.ylabel(r'variant count')
         plt.xscale('log')
         plt.yscale('symlog')
         plt.tight_layout()
@@ -343,10 +344,10 @@ class kSFS():
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
         if normed:
-            X = self.X / self.X.sum(1, keepdims=True)
+            X = centralize(self.X)
             if self.μ is not None:
-                Ξ = Ξ / Ξ.sum(1, keepdims=True)
-            plt.ylabel('mutation type fraction')
+                Ξ = centralize(Ξ)
+            plt.ylabel('variant count perturbation')
         else:
             X = self.X
             plt.ylabel('number of variants')
@@ -371,29 +372,18 @@ class kSFS():
             plt.legend()
         plt.tight_layout()
 
-    def clustermap(self, fit: bool = False, **kwargs):
-        u"""clustermap with mixed linear-log scale color bar
+    def clustermap(self, **kwargs):
+        u"""clustermap of compositionally centralized k-SFS
 
-        fit: if True and self.μ is not None, show χ^2 fit
         kwargs: additional keyword arguments passed to pd.clustermap
         """
-        if fit:
-            assert self.μ is None
-            Ξ = self.L @ self.μ.Z
-            Z = (self.X - Ξ) ** 2 / Ξ
-            cbar_label = '$\\chi^2$'
-            χ2_total = Z.sum()
-            p = chi2(np.prod(Z.shape)).sf(χ2_total)
-            print(f'χ\N{SUPERSCRIPT TWO} goodness of fit {χ2_total}, '
-                  f'p = {p}')
-        else:
-            Z = self.X / self.X.sum(axis=1, keepdims=True)
-            Z = Z / Z.mean(0, keepdims=True)
-            cbar_label = 'mutation type\nenrichment'
+        Z = centralize(self.X)
+        cbar_label = 'variant count\nperturbation'
         df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
                                                  name='sample frequency'),
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False,
+                           center=1 / Z.shape[1],
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g
@@ -459,8 +449,6 @@ def main():
                         μ0=μ0,
                         mask=mask)
 
-    tol = config.getfloat('convergence', 'tol', fallback=None)
-
     # parameter dict for η regularization
     η_regularization = {key: config.getfloat('η regularization', key)
                         for key in config['η regularization']}
@@ -490,11 +478,15 @@ def main():
     plt.subplot(321)
     ksfs.plot_total()
     plt.subplot(322)
-    ksfs.η.plot()
+    ksfs.η.plot(
+                # ds='steps-post'
+                )
     plt.subplot(323)
     ksfs.plot(normed=True, alpha=0.5, rasterized=True)
     plt.subplot(324)
-    ksfs.μ.plot_cumulative(rasterized=True)
+    ksfs.μ.plot_cumulative(rasterized=True,
+                           # step='post'
+                           )
     plt.subplot(325)
     plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf())
     plt.xlabel('$t$')
