@@ -9,7 +9,7 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
-
+from skbio.stats.composition import centralize
 
 @dataclass
 class History():
@@ -180,7 +180,7 @@ class μ(History):
         if normed:
             Z = Z / Z.sum(1, keepdims=True)
         for j in range(1, Z.shape[1]):
-            lines = plt.fill_between(t, Z[:, j - 1], Z[:, j], step='post', **kwargs)
+            plt.fill_between(t, Z[:, j - 1], Z[:, j], **kwargs)
         plt.xlabel('$t$')
         plt.ylabel('$\\mu(t)$')
         plt.xscale('symlog')
@@ -189,18 +189,19 @@ class μ(History):
         plt.tight_layout()
 
     def clustermap(self, **kwargs):
-        """clustermap of k-SFS
+        """clustermap of compositionally centralized MUSH
 
-        mutation_types: list of column names
         kwargs: additional keyword arguments passed to pd.clustermap
         """
         t = np.concatenate((np.array([0]), self.change_points))
-        Z = self.Z / self.Z[-1, :]
+        Z = centralize(self.Z)
+        label = 'mutation intensity\nperturbation'
         df = pd.DataFrame(data=Z, index=pd.Index(t, name='$t$'),
                           columns=self.mutation_types)
-        g = sns.clustermap(df, row_cluster=False, center=1,
+        g = sns.clustermap(df, row_cluster=False,
+                           # center=1,
                            # metric='correlation',
-                           cbar_kws={'label': 'mutation intensity\nwrt ancestral rate'},
+                           cbar_kws={'label': label},
                            **kwargs)
         # g.ax_heatmap.set_yscale('symlog')
         return g
