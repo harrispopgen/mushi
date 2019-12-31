@@ -52,7 +52,7 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    u"""Poisson random field negative log-likelihood of history
+    u"""Poisson random field log-likelihood of history
 
     Z: mutation spectrum history matrix (μ.Z)
     X: k-SFS data
@@ -170,9 +170,12 @@ def acc_prox_grad_descent(x: np.ndarray,
 def three_op_prox_grad_descent(x: np.ndarray,
                                g: Callable[[np.ndarray], np.float64],
                                grad_g: Callable[[np.ndarray], np.float64],
-                               h: Callable[[np.ndarray], np.float64],
-                               prox: Callable[[np.ndarray, np.float64],
-                                              np.float64],
+                               h1: Callable[[np.ndarray], np.float64],
+                               h2: Callable[[np.ndarray], np.float64],
+                               prox1: Callable[[np.ndarray, np.float64],
+                                               np.float64],
+                               prox2: Callable[[np.ndarray, np.float64],
+                                               np.float64],
                                tol: np.float64 = 1e-10,
                                max_iter: int = 100,
                                s0: np.float64 = 1,
@@ -186,18 +189,18 @@ def three_op_prox_grad_descent(x: np.ndarray,
 
     The optimization problem solved is:
 
-      min_x g(x) + h(x)
-      s.t. x >= 0
+      min_x g(x) + h1(x) + h2(x)
 
-    where g is differentiable, and prox_h is available.
-    In this problem, we use prox_h as well as the projection onto
-    the nonnegative orthant, for the constraint, as our prox operators.
+    where g is differentiable, and the proximal operators for h1 and h2 are
+    available.
 
     x: initial point
     g: differential term in objective function
     grad_g: gradient of g
-    h: non-differentiable term in objective function
-    prox: proximal operator corresponding to h
+    h1: 1st non-differentiable term in objective function
+    h2: 2nd non-differentiable term in objective function
+    prox1: proximal operator corresponding to h1
+    prox2: proximal operator corresponding to h2
     tol: relative tolerance in objective function for convergence
     max_iter: maximum number of proximal gradient steps
     s0: step size
@@ -205,13 +208,12 @@ def three_op_prox_grad_descent(x: np.ndarray,
     γ: step size shrinkage rate for line search
     ls_tol: line search tolerance
     """
-    assert np.all(x >= 0), 'initial x must be in nonnegative orthant'
 
     # initial objective value
     s = s0
     z = x
     u = np.zeros_like(z)
-    f = g(x) + h(x)
+    f = g(x) + h1(x) + h2(x)
     print(f'initial cost {f:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
@@ -225,7 +227,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # Armijo line search
         for line_iter in range(max_line_iter):
             # new point via prox-gradient of momentum point
-            x = prox(z - s * (u + grad_g1), s)
+            x = prox1(z - s * (u + grad_g1), s)
             # quadratic approximation of cost
             Q = (g1 + (grad_g1 * (x - z)).sum()
                   + ((x - z) ** 2).sum() / (2 * s))
@@ -239,7 +241,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
             print('warning: line search failed', flush=True)
 
         # update z variables: threshold to zero
-        z = np.maximum(x + s * u, 0)
+        z = prox2(x + s * u, s)
         # update u variables: dual variables
         u = u + (x - z) / s
         # grow step size
@@ -251,7 +253,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # terminate if objective function is constant within tolerance
         f_old = f
         # DIFFERENCE FROM PAPER: use z as next iterate
-        f = g(z) + h(z)
+        f = g(z) + h1(z) + h2(z)
         print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
