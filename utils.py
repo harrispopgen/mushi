@@ -240,7 +240,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         if line_iter == max_line_iter - 1:
             print('warning: line search failed', flush=True)
 
-        # update z variables: threshold to zero
+        # update z variables with 2nd prox
         z = prox2(x + s * u, s)
         # update u variables: dual variables
         u = u + (x - z) / s
