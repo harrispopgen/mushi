@@ -131,7 +131,8 @@ if bcf_dir is not None:
     # merge the above and complement (autosomes only)
     tgt = os.path.join(outdir, 'ncncr.bed.gz')
     src = [repeats, conserved, autosome_sizes]
-    cmd = ('gzip -cd ${SOURCES[:2]} | sort -k1,1 -k2,2n | bedtools merge -i stdin'
+    cmd = ('gzip -cd ${SOURCES[:2]} | sort -k1,1 -k2,2n '
+           '| bedtools merge -i stdin'
            '| bedtools complement -i stdin -g ${SOURCES[2]}'
            '| bgzip > ${TARGET}')
     ncncr_mask = env.Command(tgt, src, cmd)
@@ -153,7 +154,7 @@ if bcf_dir is not None:
 
     for idx, pop in enumerate(pops + ['Batwa']):
         pop_outdir = os.path.join(outdir, pop)
-        if pop is not 'Batwa':
+        if pop != 'Batwa':
             pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
                                    sample_pops,
                                    f'grep {pop} ${{SOURCE}} | '
@@ -165,9 +166,9 @@ if bcf_dir is not None:
         # loop over chromosome bcf files
         for chro in (str(chro_int) for chro_int in range(1, 23)):
             # get bcf for this chromosome
-            # NOTE assumes chro is indicated by second '.'-delimited field in bcf
+            # NOTE assumes chro is indicated by 2nd '.'-delimited field in bcf
             # file name
-            if pop is 'Batwa':
+            if pop == 'Batwa':
                 bcf = glob.glob(f'{batwa_vcfs_dir}/*chr{chro}.vcf.gz')
             else:
                 bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
@@ -177,7 +178,7 @@ if bcf_dir is not None:
             # create snps file with columns CHROM POS REF ALT AC AN
             tgt = os.path.join(pop_outdir, f'snps.{chro}.tsv')
             cmd = 'bcftools view -T ${SOURCES[0]} '
-            if pop is 'Batwa':
+            if pop == 'Batwa':
                 src = [mask[0], bcf]
             else:
                 src = [mask[0], bcf, pop_list]
@@ -185,7 +186,7 @@ if bcf_dir is not None:
             cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -U'
             cmd += ' ${SOURCES[1]} | '
             if track is not None:
-                print("WARNING! track mask this isn't accounted for in mask size!")
+                print("WARNING! track mask isn't accounted for in mask size!")
                 comp_flag = '^' if track_complement else ''
                 cmd += f'bcftools view -T {comp_flag}{track} | '
             cmd += 'bcftools query -f '
