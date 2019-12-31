@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from skbio.stats.composition import centralize
+import composition as cmp
 
 class kSFS():
     """The kSFS model described in the text"""
@@ -339,15 +339,16 @@ class kSFS():
         plt.yscale('symlog')
         plt.tight_layout()
 
-    def plot(self, type=None, normed: bool = False, **kwargs) -> None:
-        """normed: flag to normalize to relative mutation intensity"""
+    def plot(self, type=None, clr: bool = False, **kwargs) -> None:
+        """clr: flag to normalize to total mutation intensity and display as
+                centered log ratio transform"""
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
-        if normed:
-            X = centralize(self.X)
+        if clr:
+            X = cmp.clr(self.X)
             if self.μ is not None:
-                Ξ = centralize(Ξ)
-            plt.ylabel('variant count perturbation')
+                Ξ = cmp.clr(Ξ)
+            plt.ylabel('CLR composition of variants')
         else:
             X = self.X
             plt.ylabel('number of variants')
@@ -377,7 +378,7 @@ class kSFS():
 
         kwargs: additional keyword arguments passed to pd.clustermap
         """
-        Z = centralize(self.X)
+        Z = cmp.centralize(self.X)
         cbar_label = 'variant count\nperturbation'
         df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
                                                  name='sample frequency'),
@@ -482,7 +483,7 @@ def main():
                 # ds='steps-post'
                 )
     plt.subplot(323)
-    ksfs.plot(normed=True, alpha=0.5, rasterized=True)
+    ksfs.plot(clr=True, alpha=0.5, rasterized=True)
     plt.subplot(324)
     ksfs.μ.plot_cumulative(rasterized=True,
                            # step='post'
@@ -495,8 +496,9 @@ def main():
     plt.xscale('symlog')
     plt.tight_layout()
     plt.subplot(326)
-    plt.plot(range(1, 1 + min(ksfs.μ.Z.shape)),
-             np.linalg.svd(ksfs.μ.Z, compute_uv=False), '.')
+    Z = cmp.ilr(ksfs.μ.Z)
+    plt.plot(range(1, 1 + min(Z.shape)),
+             np.linalg.svd(Z, compute_uv=False), '.')
     plt.xlabel('singular value rank')
     plt.ylabel('singular value')
     plt.yscale('log')
