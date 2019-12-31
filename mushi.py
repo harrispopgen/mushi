@@ -136,22 +136,27 @@ class kSFS():
         self.L = self.C @ self.M
 
     def infer_history(self,
+                      change_points: np.array,
+                      μ0: np.float64,
                       α_tv: np.float64 = 0,
                       α_spline: np.float64 = 0,
                       α_ridge: np.float64 = 0,
-                      rank: int = None,
                       β_tv: np.float64 = 0,
                       β_spline: np.float64 = 0,
-                      β_spline_total: np.float64 = 0,
                       β_rank: np.float64 = 0,
+                      hard: bool = False,
                       β_ridge: np.float64 = 0,
                       max_iter: int = 1000,
+                      s0: int = 1,
                       max_line_iter=100,
                       γ: np.float64 = 0.8,
                       tol: np.float64 = 1e-4,
                       loss='prf',
-                      mask: np.ndarray = None) -> np.ndarray:
+                      mask: np.ndarray = None) -> None:
         u"""perform sequential inference to fit η and μ
+
+        change_points: epoch change points (times)
+        μ0: total mutation rate, if self.μ is None
 
         loss parameters:
         - loss: loss function, 'prf' for Poisson random field, 'kl' for
@@ -165,37 +170,57 @@ class kSFS():
         - α_ridge: L2 for strong convexity
 
         μ(t) regularization parameters:
-        - rank: hard singular value threshold (rank of solution)
+        - hard: hard singular value thresholding (non-convex)
         - β_tv: total variation
         - β_spline: L2 on first differences for each mutation type
-        - β_spline_total: L2 on first differences of total mutation rate
         - β_rank: spectral regularization (soft singular value threshold)
         - β_ridge: L2 for strong convexity
 
         convergence parameters:
         - max_iter: maximum number of proximal gradient descent steps
+        - tol: relative tolerance in objective function
+        - s0: max step size
         - max_line_iter: maximum number of line search steps
         - γ: step size shrinkage rate for line search
-        - max_iter: maximum number of proximal gradient descent steps
-        - tol: relative tolerance in objective function
 
         returns cost function
         """
         assert self.X is not None, 'use simulate() to generate data first'
-        assert self.η is not None, 'must initialize e.g. with infer_constant()'
-        assert not (rank and β_rank), ("can't combine combine soft and hard "
-                                       "singular value thresholding")
+        if self.X is None:
+            raise ValueError('use simulate() to generate data first')
+        if mask is not None:
+            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
 
+        # ininitialize with MLE constant η and μ
         if mask is not None:
             X = self.X[~mask, :]
         else:
             X = self.X
+        X_total = X.sum(1, keepdims=True)
+        μ_total = histories.μ(change_points,
+                              μ0 * np.ones((len(change_points) + 1, 1)))
+        t, z = μ_total.arrays()
+        # number of segregating sites
+        S = X_total.sum()
+        # Harmonic number
+        H = (1 / np.arange(1, self.n - 1)).sum()
+        # constant MLE
+        y = (S / 2 / H / μ0) * np.ones(len(z))
 
-        t = self.η.arrays()[0]
+        self.η = histories.η(change_points, y)
+        self.μ = histories.μ(self.η.change_points,
+                             μ0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             mutation_types=self.mutation_types.values)
+        self.M = utils.M(self.n, t, y)
+        self.L = self.C @ self.M
+
+        # relative number of segregating variants in each mutation type
+        S_twiggle = X.sum(0, keepdims=True) / X.sum()
 
         # badness of fit
         if loss == 'prf':
-            loss = utils.prf
+            def loss(*args, **kwargs):
+                return -utils.prf(*args, **kwargs)
         elif loss == 'kl':
             loss = utils.d_kl
         elif loss == 'lsq':
@@ -207,43 +232,8 @@ class kSFS():
         def loss_func(logy, Z):
             L = self.C @ utils.M(self.n, t, np.exp(logy))
             if mask is not None:
-                L = L[~mask, :]
+                return loss(Z, X, L[~mask, :])
             return loss(Z, X, L)
-
-        if α_tv > 0:
-            def prox_update_logy(logy, s):
-                """total variation prox operator"""
-                return ptv.tv1_1d(logy, s * α_tv)
-        else:
-            def prox_update_logy(logy, s):
-                return logy
-
-        if β_tv > 0 and β_rank > 0:
-            raise NotImplementedError('fused LASSO with spectral '
-                                      'regularization not available')
-        elif β_tv > 0:
-            def prox_update_Z(Z, s):
-                """total variation prox operator on row dimension
-                (oddly 1-based indexed in proxtv)
-                """
-                return np.maximum(ptv.tvgen(Z, [s * β_tv], [1], [1]), 0)
-        elif rank is not None:
-            def prox_update_Z(Z, s):
-                """hard singular value thresholding"""
-                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                σ = index_update(σ, index[rank:], 0)
-                Σ = np.diag(σ)
-                return U @ Σ @ Vt
-        elif β_rank > 0:
-            def prox_update_Z(Z, s):
-                """l1 norm on singular values (soft-thresholding)"""
-                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                Σ = np.diag(np.maximum(0, σ - s * β_rank))
-                return U @ Σ @ Vt
-        else:
-            def prox_update_Z(Z, s):
-                return Z
-
 
         # Accelerated proximal gradient descent: our cost function decomposes
         # as f = g + h, where g is differentiable and h is not.
@@ -255,65 +245,146 @@ class kSFS():
         W = np.eye(self.η.m)
         W = index_update(W, index[0, 0], 0)
         D1 = W @ D  # 1st difference matrix
+        # D2 = D1.T @ D1  # 2nd difference matrix
+
+        print('inferring η(t)', flush=True)
+
+        @jit
+        def g(logy):
+            """differentiable piece of cost in η problem"""
+            return loss_func(logy, self.μ.Z) \
+                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                + (α_ridge / 2) * (logy ** 2).sum() \
+
+        if α_tv > 0:
+            @jit
+            def h(logy):
+                """nondifferentiable piece of cost in η problem"""
+                return α_tv * np.abs(D1 @ logy).sum()
+            def prox(logy, s):
+                """total variation prox operator"""
+                return ptv.tv1_1d(logy, s * α_tv)
+        else:
+            @jit
+            def h(logy):
+                return 0
+
+            def prox(logy, s):
+                return logy
 
         # initial iterate
         logy = np.log(self.η.y)
-        Z = self.μ.Z
 
-        @jit
-        def g(logy, Z):
-            """differentiable piece of cost"""
-            return loss_func(logy, Z) \
-                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
-                + (α_ridge / 2) * (logy ** 2).sum() \
-                + (β_spline / 2) * ((D1 @ (Z / (X.sum(0, keepdims=True) / X.sum()))) ** 2).sum() \
-                + (β_spline_total / 2) * ((D1 @ Z.sum(1, keepdims=True)) ** 2).sum() \
-                + (β_ridge / 2) * (Z ** 2).sum()
-
-        @jit
-        def h(logy, Z):
-            """nondifferentiable piece of cost"""
-            σ = np.linalg.svd(Z, compute_uv=False)
-            return (α_tv * np.abs(D1 @ logy).sum()
-                    + β_tv * np.abs(D1 @ Z).sum()
-                    + β_rank * np.linalg.norm(σ, 1))
-
-        # max step size
-        s0 = 1
-
-        print('inferring η(t)', flush=True)
-        logy = utils.acc_prox_grad_descent(
-                              logy,
-                              jit(lambda logy: g(logy, Z)),
-                              jit(grad(lambda logy: g(logy, Z))),
-                              jit(lambda logy: h(logy, Z)),
-                              prox_update_logy,
-                              tol=tol,
-                              max_iter=max_iter,
-                              s0=s0,
-                              max_line_iter=max_line_iter,
-                              γ=γ)
-
-        print('inferring μ(t) conditioned on η(t)', flush=True)
-        Z = utils.three_op_prox_grad_descent(Z,
-                                             jit(lambda Z: g(logy, Z)),
-                                             jit(grad(lambda Z: g(logy, Z))),
-                                             jit(lambda Z: h(logy, Z)),
-                                             prox_update_Z,
-                                             tol=tol,
-                                             max_iter=max_iter,
-                                             s0=s0,
-                                             max_line_iter=max_line_iter,
-                                             γ=γ,
-                                             ls_tol=0)
+        logy = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
+                                           prox,
+                                           tol=tol,
+                                           max_iter=max_iter,
+                                           s0=s0,
+                                           max_line_iter=max_line_iter,
+                                           γ=γ)
 
         y = np.exp(logy)
         self.η = histories.η(self.η.change_points, y)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
-        self.μ = histories.μ(self.η.change_points, Z,
+
+        print('inferring μ(t) conditioned on η(t)', flush=True)
+
+        # orthonormal basis for Aitchison simplex
+        basis = cmp.clr_inv(cmp._gram_schmidt_basis(self.μ.Z.shape[1]))
+        # initial iterate
+        Z = cmp.ilr(self.μ.Z, basis)
+
+        @jit
+        def g(Z):
+            """differentiable piece of cost in μ problem"""
+            return loss_func(logy, μ0 * cmp.ilr_inv(Z, basis=basis)) \
+                + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                + (β_ridge / 2) * (Z ** 2).sum()
+
+        if β_tv and β_rank:
+            @jit
+            def h1(Z):
+                """1st nondifferentiable piece of cost in μ problem"""
+                return β_tv * np.abs(D1 @ Z).sum()
+
+            def prox1(Z, s):
+                """total variation prox operator on row dimension
+                (oddly 1-based indexed in proxtv)
+                """
+                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+
+            @jit
+            def h2(Z):
+                """2nd nondifferentiable piece of cost in μ problem"""
+                σ = np.linalg.svd(Z, compute_uv=False)
+                return β_tv * np.abs(D1 @ Z).sum() + β_rank * np.linalg.norm(σ, 0 if hard else 1)
+
+            def prox2(Z, s):
+                """singular value thresholding"""
+                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                if hard:
+                    σ = index_update(σ, index[σ <= s * β_rank], 0)
+                else:
+                    σ = np.maximum(0, σ - s * β_rank)
+                Σ = np.diag(σ)
+                return U @ Σ @ Vt
+
+            Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, h2,
+                                                 prox1, prox2,
+                                                 tol=tol,
+                                                 max_iter=max_iter,
+                                                 s0=s0,
+                                                 max_line_iter=max_line_iter,
+                                                 γ=γ, ls_tol=0)
+
+        else:
+            if β_tv:
+                @jit
+                def h(Z):
+                    """nondifferentiable piece of cost in μ problem"""
+                    return β_tv * np.abs(D1 @ Z).sum()
+
+                def prox(Z, s):
+                    """total variation prox operator on row dimension
+                    (oddly 1-based indexed in proxtv)
+                    """
+                    return ptv.tvgen(Z, [s * β_tv], [1], [1])
+            elif β_rank:
+                @jit
+                def h(Z):
+                    """nondifferentiable piece of cost in μ problem"""
+                    σ = np.linalg.svd(Z, compute_uv=False)
+                    return β_rank * np.linalg.norm(σ, 0 if hard else 1)
+
+                def prox(Z, s):
+                    """singular value thresholding"""
+                    U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                    if hard:
+                        σ = index_update(σ, index[σ <= s * β_rank], 0)
+                    else:
+                        σ = np.maximum(0, σ - s * β_rank)
+                    Σ = np.diag(σ)
+                    return U @ Σ @ Vt
+            else:
+                @jit
+                def h(Z):
+                    return 0
+
+                @jit
+                def prox(Z, s):
+                    return Z
+
+            Z = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
+                                            tol=tol,
+                                            max_iter=max_iter,
+                                            s0=s0,
+                                            max_line_iter=max_line_iter,
+                                            γ=γ)
+
+        self.μ = histories.μ(self.η.change_points,
+                             μ0 * cmp.ilr_inv(Z, basis=basis),
                              mutation_types=self.mutation_types.values)
-        return g(logy, Z) + h(logy, Z)
 
     def plot_total(self):
         """plot the total SFS"""
@@ -445,11 +516,6 @@ def main():
         masked_genome_size = int(f.read())
     μ0 = config.getfloat('mutation rate', 'u') * masked_genome_size
 
-    # Initialize to constant
-    ksfs.infer_constant(change_points=change_points,
-                        μ0=μ0,
-                        mask=mask)
-
     # parameter dict for η regularization
     η_regularization = {key: config.getfloat('η regularization', key)
                         for key in config['η regularization']}
@@ -458,8 +524,8 @@ def main():
     μ_regularization = {key: config.getfloat('μ regularization', key)
                         for key in config['μ regularization']
                         if key.startswith('β_')}
-    if 'rank' in config['μ regularization']:
-        μ_regularization['rank'] = config.getint('μ regularization', 'rank')
+    if 'hard' in config['μ regularization']:
+        μ_regularization['hard'] = config.getboolean('μ regularization', 'hard')
 
     # parameter dict for convergence parameters
     convergence = {key: config.getint('convergence', key)
@@ -472,8 +538,8 @@ def main():
         loss['loss'] = config.get('loss', 'loss')
 
     print('sequential inference of η(t) and μ(t)\n', flush=True)
-    f = ksfs.infer_history(**loss, **η_regularization, **μ_regularization,
-                           **convergence)
+    ksfs.infer_history(change_points, μ0, **loss, **η_regularization,
+                       **μ_regularization, **convergence)
 
     plt.figure(figsize=(6, 9))
     plt.subplot(321)
