@@ -189,8 +189,8 @@ class μ(History):
         Z = np.cumsum(self.Z, axis=1)
         if clr:
             Z = cmp.clr(Z)
-        for j in range(1, Z.shape[1]):
-            plt.fill_between(t, Z[:, j - 1], Z[:, j], **kwargs)
+        for j in range(Z.shape[1]):
+            plt.fill_between(t, Z[:, j - 1] if j else 0, Z[:, j], **kwargs)
         plt.xlabel('$t$')
         plt.ylabel('$\\mu(t)$')
         plt.xscale('symlog')
