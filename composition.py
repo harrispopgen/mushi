@@ -552,10 +552,10 @@ def ilr(mat, basis=None, check=True):
     """
     mat = closure(mat)
     if basis is None:
-        basis = clr_inv(_gram_schmidt_basis(mat.shape[-1]))
+        basis = _gram_schmidt_basis(mat.shape[-1])
     elif check:
-        _check_orthogonality(basis)
-    return inner(mat, basis)
+        _check_orthogonality(clr_inv(basis))
+    return inner(mat, clr_inv(basis))
 
 
 @experimental(as_of="0.4.0")
