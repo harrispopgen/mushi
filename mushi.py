@@ -318,7 +318,7 @@ class kSFS():
             def h2(Z):
                 """2nd nondifferentiable piece of cost in μ problem"""
                 σ = np.linalg.svd(Z, compute_uv=False)
-                return β_tv * np.abs(D1 @ Z).sum() + β_rank * np.linalg.norm(σ, 0 if hard else 1)
+                return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
             def prox2(Z, s):
                 """singular value thresholding"""
