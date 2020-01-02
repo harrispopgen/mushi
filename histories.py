@@ -85,7 +85,7 @@ class History():
             vals = self.vals
         lines = plt.plot(t, vals, **kwargs)
         plt.xlabel(f'$t$ ({t_unit})')
-        plt.xscale('symlog')
+        plt.xscale('log')
         if 'label' in kwargs:
             plt.legend()
         plt.tight_layout()
@@ -172,28 +172,34 @@ class μ(History):
             # update ax.viewLim using the new dataLim
             ax.autoscale_view()
             # plt.ylabel('relative mutation intensity')
-            plt.ylabel('CLR composition of mutation intensity')
+            plt.ylabel('mutation intensity composition\n(CLR transformed)')
         else:
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
         return lines
 
-    def plot_cumulative(self, clr=False, **kwargs):
+    def plot_cumulative(self, t_gen=None, clr=False, **kwargs):
         """plot the cumulative mutation rate, like a Muller plot
 
+        t_gen: generation time in years (optional)
         clr: flag to normalize to total mutation intensity and display as
              centered log ratio transform
         kwargs: key word arguments passed to plt.fill_between
         """
         t = np.concatenate((np.array([0]), self.change_points))
+        if t_gen:
+            t *= t_gen
+            t_unit = 'years ago'
+        else:
+            t_unit = 'generations ago'
         Z = np.cumsum(self.Z, axis=1)
         if clr:
             Z = cmp.clr(Z)
         for j in range(Z.shape[1]):
             plt.fill_between(t, Z[:, j - 1] if j else 0, Z[:, j], **kwargs)
-        plt.xlabel('$t$')
+        plt.xlabel(f'$t$ ({t_unit})')
         plt.ylabel('$\\mu(t)$')
-        plt.xscale('symlog')
+        plt.xscale('log')
         if 'label' in kwargs:
             plt.legend()
         plt.tight_layout()
@@ -215,8 +221,6 @@ class μ(History):
         df = pd.DataFrame(data=Z, index=pd.Index(t, name=f'$t$ ({t_unit})'),
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False,
-                           # center=1,
-                           # metric='correlation',
                            cbar_kws={'label': label},
                            **kwargs)
         # g.ax_heatmap.set_yscale('symlog')

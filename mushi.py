@@ -79,8 +79,8 @@ class kSFS():
 
         return 1 - (A2[onp.newaxis, :]
                     @ onp.cumprod(u[onp.newaxis, 1:-1],
-                                 axis=1) ** binom(onp.arange(2, self.n + 1), 2
-                                                  )[:, onp.newaxis]).T
+                                  axis=1) ** binom(onp.arange(2, self.n + 1), 2
+                                                   )[:, onp.newaxis]).T
 
     def simulate(self, seed: int = None) -> None:
         """simulate a SFS under the Poisson random field model (no linkage)
@@ -97,43 +97,6 @@ class kSFS():
         onp.random.seed(seed)
         self.X = poisson.rvs(self.L @ self.μ.Z)
         self.mutation_types = self.μ.mutation_types
-
-    def infer_constant(self, change_points: np.array, μ0: np.float64 = None,
-                       mask: np.ndarray = None):
-        u"""infer constant η and μ
-
-        change_points: epoch change points (times)
-        μ0: total mutation rate, if self.μ is None
-        mask: array of bools, with True indicating exclusion of that frequency
-        """
-        if self.X is None:
-            raise ValueError('use simulate() to generate data first')
-        if mask is not None:
-            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
-        # badness of fit
-        if mask is not None:
-            C = self.C[~mask, :]
-            X = self.X[~mask, :]
-        else:
-            C = self.C
-            X = self.X
-        X_total = X.sum(1, keepdims=True)
-        μ_total = histories.μ(change_points,
-                              μ0 * np.ones((len(change_points) + 1, 1)))
-        t, z = μ_total.arrays()
-        # number of segregating sites
-        S = X_total.sum()
-        # Harmonic number
-        H = (1 / np.arange(1, self.n - 1)).sum()
-        # constant MLE
-        y = (S / 2 / H / μ0) * np.ones(len(z))
-
-        self.η = histories.η(change_points, y)
-        self.μ = histories.μ(self.η.change_points,
-                             μ0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
-                             mutation_types=self.mutation_types.values)
-        self.M = utils.M(self.n, t, y)
-        self.L = self.C @ self.M
 
     def infer_history(self,
                       change_points: np.array,
@@ -156,12 +119,12 @@ class kSFS():
         u"""perform sequential inference to fit η and μ
 
         change_points: epoch change points (times)
-        μ0: total mutation rate, if self.μ is None
+        μ0: total mutation rate (per genome per generation)
 
         loss parameters:
         - loss: loss function, 'prf' for Poisson random field, 'kl' for
                Kullback-Leibler divergence, 'lsq' for least-squares
-        - mask: array of bools, with True indicating exclusion of that
+        - mask: array of bools, with False indicating exclusion of that
                 frequency
 
         η(t) regularization parameters:
@@ -182,8 +145,6 @@ class kSFS():
         - s0: max step size
         - max_line_iter: maximum number of line search steps
         - γ: step size shrinkage rate for line search
-
-        returns cost function
         """
         assert self.X is not None, 'use simulate() to generate data first'
         if self.X is None:
@@ -192,30 +153,27 @@ class kSFS():
             assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
 
         # ininitialize with MLE constant η and μ
-        if mask is not None:
-            X = self.X[~mask, :]
-        else:
-            X = self.X
-        X_total = X.sum(1, keepdims=True)
+        self.X
+        x = self.X.sum(1, keepdims=True)
         μ_total = histories.μ(change_points,
                               μ0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
-        # number of segregating sites
-        S = X_total.sum()
+        # number of segregating variants in each mutation type
+        S = self.X.sum(0, keepdims=True)
         # Harmonic number
         H = (1 / np.arange(1, self.n - 1)).sum()
         # constant MLE
-        y = (S / 2 / H / μ0) * np.ones(len(z))
+        y = (S.sum() / 2 / H / μ0) * np.ones(len(z))
 
         self.η = histories.η(change_points, y)
+        # NOTE: scaling by S is a hack, should use relative triplet
+        #       content of masked genome
         self.μ = histories.μ(self.η.change_points,
-                             μ0 * (X.sum(axis=0, keepdims=True) / X.sum()) * np.ones((self.η.m, X.shape[1])),
+                             μ0 * (S / S.sum()) * np.ones((self.η.m,
+                                                           self.X.shape[1])),
                              mutation_types=self.mutation_types.values)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
-
-        # relative number of segregating variants in each mutation type
-        S_twiggle = X.sum(0, keepdims=True) / X.sum()
 
         # badness of fit
         if loss == 'prf':
@@ -228,17 +186,6 @@ class kSFS():
         else:
             raise ValueError(f'unrecognized loss argument {loss}')
 
-        @jit
-        def loss_func(logy, Z):
-            L = self.C @ utils.M(self.n, t, np.exp(logy))
-            if mask is not None:
-                return loss(Z, X, L[~mask, :])
-            return loss(Z, X, L)
-
-        # Accelerated proximal gradient descent: our cost function decomposes
-        # as f = g + h, where g is differentiable and h is not.
-        # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
-
         # some matrices we'll need for the first difference penalties
         D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
         # W matrix deals with boundary condition
@@ -249,18 +196,27 @@ class kSFS():
 
         print('inferring η(t)', flush=True)
 
+        # Accelerated proximal gradient descent: our cost function decomposes
+        # as f = g + h, where g is differentiable and h is not.
+        # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+
         @jit
         def g(logy):
             """differentiable piece of cost in η problem"""
-            return loss_func(logy, self.μ.Z) \
-                + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
-                + (α_ridge / 2) * (logy ** 2).sum() \
+            L = self.C @ utils.M(self.n, t, np.exp(logy))
+            if mask is not None:
+                loss_term = loss(z, x[mask, :], L[mask, :])
+            else:
+                loss_term = loss(z, x, L)
+            return loss_term + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                             + (α_ridge / 2) * (logy ** 2).sum()
 
         if α_tv > 0:
             @jit
             def h(logy):
                 """nondifferentiable piece of cost in η problem"""
                 return α_tv * np.abs(D1 @ logy).sum()
+
             def prox(logy, s):
                 """total variation prox operator"""
                 return ptv.tv1_1d(logy, s * α_tv)
@@ -284,6 +240,16 @@ class kSFS():
                                            γ=γ)
 
         y = np.exp(logy)
+
+        # import msprime
+        # import stdpopsim
+        # species = stdpopsim.get_species("HomSap")
+        # model = species.get_demographic_model("OutOfAfrica_2T12")
+        # dd = msprime.DemographyDebugger(population_configurations=model.population_configurations,
+        #                                 demographic_events=model.demographic_events,
+        #                                 migration_matrix=model.migration_matrix)
+        # y = 2 * dd.population_size_trajectory(t[:-1])[:, 1]
+
         self.η = histories.η(self.η.change_points, y)
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
@@ -291,16 +257,22 @@ class kSFS():
         print('inferring μ(t) conditioned on η(t)', flush=True)
 
         # orthonormal basis for Aitchison simplex
-        basis = cmp.clr_inv(cmp._gram_schmidt_basis(self.μ.Z.shape[1]))
-        # initial iterate
+        # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
+        #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
+        basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
+        # initial iterate in inverse log-ratio transform
         Z = cmp.ilr(self.μ.Z, basis)
 
         @jit
         def g(Z):
             """differentiable piece of cost in μ problem"""
-            return loss_func(logy, μ0 * cmp.ilr_inv(Z, basis=basis)) \
-                + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
-                + (β_ridge / 2) * (Z ** 2).sum()
+            if mask is not None:
+                loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
+                                 self.L[mask, :])
+            else:
+                loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X, self.L)
+            return loss_term + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                             + (β_ridge / 2) * (Z ** 2).sum()
 
         if β_tv and β_rank:
             @jit
@@ -330,8 +302,8 @@ class kSFS():
                 Σ = np.diag(σ)
                 return U @ Σ @ Vt
 
-            Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, h2,
-                                                 prox1, prox2,
+            Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
+                                                 h2, prox2,
                                                  tol=tol,
                                                  max_iter=max_iter,
                                                  s0=s0,
@@ -383,7 +355,7 @@ class kSFS():
                                             γ=γ)
 
         self.μ = histories.μ(self.η.change_points,
-                             μ0 * cmp.ilr_inv(Z, basis=basis),
+                             μ0 * cmp.ilr_inv(Z, basis),
                              mutation_types=self.mutation_types.values)
 
     def plot_total(self):
@@ -419,7 +391,7 @@ class kSFS():
             X = cmp.clr(self.X)
             if self.μ is not None:
                 Ξ = cmp.clr(Ξ)
-            plt.ylabel('CLR composition of variants')
+            plt.ylabel('variant count composition\n(CLR transformed)')
         else:
             X = self.X
             plt.ylabel('number of variants')
@@ -430,7 +402,8 @@ class kSFS():
                 Ξ = Ξ[:, i]
 
         if self.μ is not None:
-            plt.plot(range(1, self.n), X, ls='', marker='.', **kwargs)
+            plt.plot(range(1, self.n), X, ls='', marker='.', rasterized=True,
+                     **kwargs)
             line_kwargs = kwargs
             if 'label' in line_kwargs:
                 del line_kwargs['label']
@@ -439,7 +412,7 @@ class kSFS():
         else:
             plt.plot(range(1, self.n), X, **kwargs)
         plt.xlabel('sample frequency')
-        plt.xscale('symlog')
+        plt.xscale('log')
         if 'label' in kwargs:
             plt.legend()
         plt.tight_layout()
@@ -505,8 +478,8 @@ def main():
     clip_high = config.getint('loss', 'clip_high', fallback=None)
     if clip_high or clip_low:
         assert clip_high is not None and clip_low is not None
-        mask = np.array([False if (clip_low <= i <= n - clip_high)
-                         else True
+        mask = np.array([True if (clip_low <= i < n - clip_high - 1)
+                         else False
                          for i in range(n - 1)])
     else:
         mask = None
@@ -514,7 +487,10 @@ def main():
     # mutation rate estimate
     with open(args.masked_genome_size_file) as f:
         masked_genome_size = int(f.read())
-    μ0 = config.getfloat('mutation rate', 'u') * masked_genome_size
+    μ0 = config.getfloat('population', 'u') * masked_genome_size
+
+    # generation time
+    t_gen = config.getfloat('population', 't_gen', fallback=None)
 
     # parameter dict for η regularization
     η_regularization = {key: config.getfloat('η regularization', key)
@@ -541,31 +517,35 @@ def main():
     ksfs.infer_history(change_points, μ0, **loss, **η_regularization,
                        **μ_regularization, **convergence)
 
-    plt.figure(figsize=(6, 9))
+    plt.figure(figsize=(7, 9))
     plt.subplot(321)
     ksfs.plot_total()
     plt.subplot(322)
-    ksfs.η.plot(
+    ksfs.η.plot(t_gen=t_gen,
                 # ds='steps-post'
                 )
     plt.subplot(323)
-    ksfs.plot(clr=True, alpha=0.5, rasterized=True)
+    ksfs.plot(clr=True, alpha=0.5)
     plt.subplot(324)
-    ksfs.μ.plot_cumulative(rasterized=True,
-                           # step='post'
-                           )
+    ksfs.μ.plot(t_gen=t_gen, clr=True, alpha=0.5)
     plt.subplot(325)
-    plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf())
-    plt.xlabel('$t$')
+    if t_gen:
+        plt.plot(t_gen * ksfs.η.change_points, ksfs.tmrca_cdf())
+        plt.xlabel('$t$ (years ago)')
+    else:
+        plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf())
+        plt.xlabel('$t$ (generations ago)')
     plt.ylabel('TMRCA CDF')
     plt.ylim([0, 1])
-    plt.xscale('symlog')
+    plt.xscale('log')
+    plt.tick_params(axis='x', which='minor')
     plt.tight_layout()
     plt.subplot(326)
-    Z = cmp.ilr(ksfs.μ.Z)
+    Z = cmp.clr(ksfs.μ.Z)
     plt.plot(range(1, 1 + min(Z.shape)),
              np.linalg.svd(Z, compute_uv=False), '.')
     plt.xlabel('singular value rank')
+    plt.xscale('log')
     plt.ylabel('singular value')
     plt.yscale('log')
     plt.tight_layout()
