@@ -86,8 +86,6 @@ class History():
         lines = plt.plot(t, vals, **kwargs)
         plt.xlabel(f'$t$ ({t_unit})')
         plt.xscale('log')
-        if 'label' in kwargs:
-            plt.legend()
         plt.tight_layout()
         return lines
 
@@ -200,8 +198,6 @@ class μ(History):
         plt.xlabel(f'$t$ ({t_unit})')
         plt.ylabel('$\\mu(t)$')
         plt.xscale('log')
-        if 'label' in kwargs:
-            plt.legend()
         plt.tight_layout()
 
     def clustermap(self, t_gen: np.float = None, **kwargs):

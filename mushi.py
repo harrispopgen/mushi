@@ -196,13 +196,13 @@ class kSFS():
 
         print('inferring η(t)', flush=True)
 
-        # Accelerated proximal gradient descent: our cost function decomposes
-        # as f = g + h, where g is differentiable and h is not.
+        # Accelerated proximal gradient descent: our objective function
+        # decomposes as f = g + h, where g is differentiable and h is not.
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
         @jit
         def g(logy):
-            """differentiable piece of cost in η problem"""
+            """differentiable piece of objective in η problem"""
             L = self.C @ utils.M(self.n, t, np.exp(logy))
             if mask is not None:
                 loss_term = loss(z, x[mask, :], L[mask, :])
@@ -214,7 +214,7 @@ class kSFS():
         if α_tv > 0:
             @jit
             def h(logy):
-                """nondifferentiable piece of cost in η problem"""
+                """nondifferentiable piece of objective in η problem"""
                 return α_tv * np.abs(D1 @ logy).sum()
 
             def prox(logy, s):
@@ -265,7 +265,7 @@ class kSFS():
 
         @jit
         def g(Z):
-            """differentiable piece of cost in μ problem"""
+            """differentiable piece of objective in μ problem"""
             if mask is not None:
                 loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
                                  self.L[mask, :])
@@ -277,7 +277,7 @@ class kSFS():
         if β_tv and β_rank:
             @jit
             def h1(Z):
-                """1st nondifferentiable piece of cost in μ problem"""
+                """1st nondifferentiable piece of objective in μ problem"""
                 return β_tv * np.abs(D1 @ Z).sum()
 
             def prox1(Z, s):
@@ -288,7 +288,7 @@ class kSFS():
 
             @jit
             def h2(Z):
-                """2nd nondifferentiable piece of cost in μ problem"""
+                """2nd nondifferentiable piece of objective in μ problem"""
                 σ = np.linalg.svd(Z, compute_uv=False)
                 return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
@@ -314,7 +314,7 @@ class kSFS():
             if β_tv:
                 @jit
                 def h(Z):
-                    """nondifferentiable piece of cost in μ problem"""
+                    """nondifferentiable piece of objective in μ problem"""
                     return β_tv * np.abs(D1 @ Z).sum()
 
                 def prox(Z, s):
@@ -325,7 +325,7 @@ class kSFS():
             elif β_rank:
                 @jit
                 def h(Z):
-                    """nondifferentiable piece of cost in μ problem"""
+                    """nondifferentiable piece of objective in μ problem"""
                     σ = np.linalg.svd(Z, compute_uv=False)
                     return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
