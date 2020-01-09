@@ -101,6 +101,9 @@ class kSFS():
     def infer_history(self,
                       change_points: np.array,
                       μ0: np.float64,
+                      η: histories.η = None,
+                      infer_η: bool = True,
+                      infer_μ: bool = True,
                       α_tv: np.float64 = 0,
                       α_spline: np.float64 = 0,
                       α_ridge: np.float64 = 0,
@@ -120,6 +123,10 @@ class kSFS():
 
         change_points: epoch change points (times)
         μ0: total mutation rate (per genome per generation)
+        η: optional demographic history. If None (the default), it will be
+           inferred from the total SFS
+
+        infer_η, infer_μ: flags can be set to False to skip either optimization
 
         loss parameters:
         - loss: loss function, 'prf' for Poisson random field, 'kl' for
@@ -160,19 +167,23 @@ class kSFS():
         t, z = μ_total.arrays()
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
-        # Harmonic number
-        H = (1 / np.arange(1, self.n - 1)).sum()
-        # constant MLE
-        y = (S.sum() / 2 / H / μ0) * np.ones(len(z))
 
-        self.η = histories.η(change_points, y)
+        if η is not None:
+            self.η = η
+        elif self.η is None:
+            # Harmonic number
+            H = (1 / np.arange(1, self.n - 1)).sum()
+            # constant MLE
+            y = (S.sum() / 2 / H / μ0) * np.ones(len(z))
+            self.η = histories.η(change_points, y)
         # NOTE: scaling by S is a hack, should use relative triplet
         #       content of masked genome
-        self.μ = histories.μ(self.η.change_points,
-                             μ0 * (S / S.sum()) * np.ones((self.η.m,
-                                                           self.X.shape[1])),
-                             mutation_types=self.mutation_types.values)
-        self.M = utils.M(self.n, t, y)
+        if self.μ is None:
+            self.μ = histories.μ(self.η.change_points,
+                                 μ0 * (S / S.sum()) * np.ones((self.η.m,
+                                                               self.X.shape[1])),
+                                 mutation_types=self.mutation_types.values)
+        self.M = utils.M(self.n, t, self.η.y)
         self.L = self.C @ self.M
 
         # badness of fit
@@ -194,142 +205,98 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
         # D2 = D1.T @ D1  # 2nd difference matrix
 
-        print('inferring η(t)', flush=True)
+        if η is None and infer_η:
+            print('inferring η(t)', flush=True)
 
-        # Accelerated proximal gradient descent: our objective function
-        # decomposes as f = g + h, where g is differentiable and h is not.
-        # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
-
-        @jit
-        def g(logy):
-            """differentiable piece of objective in η problem"""
-            L = self.C @ utils.M(self.n, t, np.exp(logy))
-            if mask is not None:
-                loss_term = loss(z, x[mask, :], L[mask, :])
-            else:
-                loss_term = loss(z, x, L)
-            return loss_term + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
-                             + (α_ridge / 2) * (logy ** 2).sum()
-
-        if α_tv > 0:
-            @jit
-            def h(logy):
-                """nondifferentiable piece of objective in η problem"""
-                return α_tv * np.abs(D1 @ logy).sum()
-
-            def prox(logy, s):
-                """total variation prox operator"""
-                return ptv.tv1_1d(logy, s * α_tv)
-        else:
-            @jit
-            def h(logy):
-                return 0
-
-            def prox(logy, s):
-                return logy
-
-        # initial iterate
-        logy = np.log(self.η.y)
-
-        logy = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
-                                           prox,
-                                           tol=tol,
-                                           max_iter=max_iter,
-                                           s0=s0,
-                                           max_line_iter=max_line_iter,
-                                           γ=γ)
-
-        y = np.exp(logy)
-
-        # import msprime
-        # import stdpopsim
-        # species = stdpopsim.get_species("HomSap")
-        # model = species.get_demographic_model("OutOfAfrica_2T12")
-        # dd = msprime.DemographyDebugger(population_configurations=model.population_configurations,
-        #                                 demographic_events=model.demographic_events,
-        #                                 migration_matrix=model.migration_matrix)
-        # y = 2 * dd.population_size_trajectory(t[:-1])[:, 1]
-
-        self.η = histories.η(self.η.change_points, y)
-        self.M = utils.M(self.n, t, y)
-        self.L = self.C @ self.M
-
-        print('inferring μ(t) conditioned on η(t)', flush=True)
-
-        # orthonormal basis for Aitchison simplex
-        # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
-        #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
-        basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
-        # initial iterate in inverse log-ratio transform
-        Z = cmp.ilr(self.μ.Z, basis)
-
-        @jit
-        def g(Z):
-            """differentiable piece of objective in μ problem"""
-            if mask is not None:
-                loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
-                                 self.L[mask, :])
-            else:
-                loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X, self.L)
-            return loss_term + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
-                             + (β_ridge / 2) * (Z ** 2).sum()
-
-        if β_tv and β_rank:
-            @jit
-            def h1(Z):
-                """1st nondifferentiable piece of objective in μ problem"""
-                return β_tv * np.abs(D1 @ Z).sum()
-
-            def prox1(Z, s):
-                """total variation prox operator on row dimension
-                (oddly 1-based indexed in proxtv)
-                """
-                return ptv.tvgen(Z, [s * β_tv], [1], [1])
+            # Accelerated proximal gradient descent: our objective function
+            # decomposes as f = g + h, where g is differentiable and h is not.
+            # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
             @jit
-            def h2(Z):
-                """2nd nondifferentiable piece of objective in μ problem"""
-                σ = np.linalg.svd(Z, compute_uv=False)
-                return β_rank * np.linalg.norm(σ, 0 if hard else 1)
-
-            def prox2(Z, s):
-                """singular value thresholding"""
-                U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
-                if hard:
-                    σ = index_update(σ, index[σ <= s * β_rank], 0)
+            def g(logy):
+                """differentiable piece of objective in η problem"""
+                L = self.C @ utils.M(self.n, t, np.exp(logy))
+                if mask is not None:
+                    loss_term = loss(z, x[mask, :], L[mask, :])
                 else:
-                    σ = np.maximum(0, σ - s * β_rank)
-                Σ = np.diag(σ)
-                return U @ Σ @ Vt
+                    loss_term = loss(z, x, L)
+                return loss_term + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
+                                 + (α_ridge / 2) * (logy ** 2).sum()
 
-            Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
-                                                 h2, prox2,
-                                                 tol=tol,
-                                                 max_iter=max_iter,
-                                                 s0=s0,
-                                                 max_line_iter=max_line_iter,
-                                                 γ=γ, ls_tol=0)
-
-        else:
-            if β_tv:
+            if α_tv > 0:
                 @jit
-                def h(Z):
-                    """nondifferentiable piece of objective in μ problem"""
+                def h(logy):
+                    """nondifferentiable piece of objective in η problem"""
+                    return α_tv * np.abs(D1 @ logy).sum()
+
+                def prox(logy, s):
+                    """total variation prox operator"""
+                    return ptv.tv1_1d(logy, s * α_tv)
+            else:
+                @jit
+                def h(logy):
+                    return 0
+
+                def prox(logy, s):
+                    return logy
+
+            # initial iterate
+            logy = np.log(self.η.y)
+
+            logy = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
+                                               prox,
+                                               tol=tol,
+                                               max_iter=max_iter,
+                                               s0=s0,
+                                               max_line_iter=max_line_iter,
+                                               γ=γ)
+
+            y = np.exp(logy)
+
+            self.η = histories.η(self.η.change_points, y)
+            self.M = utils.M(self.n, t, y)
+            self.L = self.C @ self.M
+
+        if infer_μ:
+            print('inferring μ(t) conditioned on η(t)', flush=True)
+
+            # orthonormal basis for Aitchison simplex
+            # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
+            #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
+            basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
+            # initial iterate in inverse log-ratio transform
+            Z = cmp.ilr(self.μ.Z, basis)
+
+            @jit
+            def g(Z):
+                """differentiable piece of objective in μ problem"""
+                if mask is not None:
+                    loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
+                                     self.L[mask, :])
+                else:
+                    loss_term = loss(μ0 * cmp.ilr_inv(Z, basis), self.X, self.L)
+                return loss_term + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
+                                 + (β_ridge / 2) * (Z ** 2).sum()
+
+            if β_tv and β_rank:
+                @jit
+                def h1(Z):
+                    """1st nondifferentiable piece of objective in μ problem"""
                     return β_tv * np.abs(D1 @ Z).sum()
 
-                def prox(Z, s):
+                def prox1(Z, s):
                     """total variation prox operator on row dimension
                     (oddly 1-based indexed in proxtv)
                     """
                     return ptv.tvgen(Z, [s * β_tv], [1], [1])
-            elif β_rank:
+
                 @jit
-                def h(Z):
-                    """nondifferentiable piece of objective in μ problem"""
+                def h2(Z):
+                    """2nd nondifferentiable piece of objective in μ problem"""
                     σ = np.linalg.svd(Z, compute_uv=False)
                     return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
-                def prox(Z, s):
+                def prox2(Z, s):
                     """singular value thresholding"""
                     U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
                     if hard:
@@ -338,44 +305,88 @@ class kSFS():
                         σ = np.maximum(0, σ - s * β_rank)
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
+
+                Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
+                                                     h2, prox2,
+                                                     tol=tol,
+                                                     max_iter=max_iter,
+                                                     s0=s0,
+                                                     max_line_iter=max_line_iter,
+                                                     γ=γ, ls_tol=0)
+
             else:
-                @jit
-                def h(Z):
-                    return 0
+                if β_tv:
+                    @jit
+                    def h(Z):
+                        """nondifferentiable piece of objective in μ problem"""
+                        return β_tv * np.abs(D1 @ Z).sum()
 
-                @jit
-                def prox(Z, s):
-                    return Z
+                    def prox(Z, s):
+                        """total variation prox operator on row dimension
+                        (oddly 1-based indexed in proxtv)
+                        """
+                        return ptv.tvgen(Z, [s * β_tv], [1], [1])
+                elif β_rank:
+                    @jit
+                    def h(Z):
+                        """nondifferentiable piece of objective in μ problem"""
+                        σ = np.linalg.svd(Z, compute_uv=False)
+                        return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
-            Z = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
-                                            tol=tol,
-                                            max_iter=max_iter,
-                                            s0=s0,
-                                            max_line_iter=max_line_iter,
-                                            γ=γ)
+                    def prox(Z, s):
+                        """singular value thresholding"""
+                        U, σ, Vt = np.linalg.svd(Z, full_matrices=False)
+                        if hard:
+                            σ = index_update(σ, index[σ <= s * β_rank], 0)
+                        else:
+                            σ = np.maximum(0, σ - s * β_rank)
+                        Σ = np.diag(σ)
+                        return U @ Σ @ Vt
+                else:
+                    @jit
+                    def h(Z):
+                        return 0
 
-        self.μ = histories.μ(self.η.change_points,
-                             μ0 * cmp.ilr_inv(Z, basis),
-                             mutation_types=self.mutation_types.values)
+                    @jit
+                    def prox(Z, s):
+                        return Z
 
-    def plot_total(self):
-        """plot the total SFS"""
+                Z = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
+                                                tol=tol,
+                                                max_iter=max_iter,
+                                                s0=s0,
+                                                max_line_iter=max_line_iter,
+                                                γ=γ)
+
+            self.μ = histories.μ(self.η.change_points,
+                                 μ0 * cmp.ilr_inv(Z, basis),
+                                 mutation_types=self.mutation_types.values)
+
+    def plot_total(self, **kwargs):
+        """plot the total SFS
+
+        kwargs: key word arguments passed to plt.plot (e.g. color)
+        """
         x = self.X.sum(1, keepdims=True)
-        plt.plot(range(1, len(x) + 1), x,
-                 c='C0', ls='', marker='.', alpha=.25, label=r'data')
+        plt.plot(range(1, len(x) + 1), x, ls='', marker='.', alpha=.25,
+                 **kwargs)
         if self.η is not None:
+            if 'label' in kwargs:
+                del kwargs['label']
             if self.μ is not None:
                 z = self.μ.Z.sum(1)
             else:
                 z = np.ones_like(self.η.y)
             ξ = self.L.dot(z)
-            plt.plot(range(1, self.n), ξ, c='C1', ls='--', label=r'$\xi$')
+            plt.plot(range(1, self.n), ξ, ls='--', **kwargs)
             ξ_lower = poisson.ppf(.025, ξ)
             ξ_upper = poisson.ppf(.975, ξ)
+            if 'c' in kwargs:
+                kwargs['facecolor'] = kwargs.pop('c')
+            if 'color' in kwargs:
+                kwargs['facecolor'] = kwargs.pop('color')
             plt.fill_between(range(1, self.n),
-                             ξ_lower, ξ_upper,
-                             facecolor='C1', alpha=0.25,
-                             label='inner 95%\nquantile')
+                             ξ_lower, ξ_upper, alpha=0.25, **kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
         plt.xscale('log')
@@ -383,8 +394,11 @@ class kSFS():
         plt.tight_layout()
 
     def plot(self, type=None, clr: bool = False, **kwargs) -> None:
-        """clr: flag to normalize to total mutation intensity and display as
-                centered log ratio transform"""
+        """
+        clr: flag to normalize to total mutation intensity and display as
+             centered log ratio transform
+        kwargs: key word arguments passed to plt.plot
+        """
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
         if clr:

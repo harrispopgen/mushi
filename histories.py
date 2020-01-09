@@ -144,7 +144,7 @@ class μ(History):
             self.Z = self.Z[:, np.newaxis]
         assert len(self.Z.shape) == 2, self.Z.shape
         if self.mutation_types is None:
-            self.mutation_types = range(1, self.Z.shape[1] + 1)
+            self.mutation_types = range(self.Z.shape[1])
         assert len(self.mutation_types) == self.Z.shape[1]
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')

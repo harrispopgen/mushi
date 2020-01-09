@@ -119,7 +119,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     q = x
     # initial objective value
     f = g(x) + h(x)
-    print(f'initial cost {f:.6e}', flush=True)
+    print(f'initial objective {f:.6e}', flush=True)
     for k in range(1, max_iter + 1):
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
@@ -153,7 +153,7 @@ def acc_prox_grad_descent(x: np.ndarray,
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
-        print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
+        print(f'iteration {k}, objective {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
             print(f'\nrelative change in objective function {rel_change:.2g} '
@@ -214,7 +214,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
     z = x
     u = np.zeros_like(z)
     f = g(x) + h1(x) + h2(x)
-    print(f'initial cost {f:.6e}', flush=True)
+    print(f'initial objective {f:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
         # evaluate differentiable part of objective
@@ -228,7 +228,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         for line_iter in range(max_line_iter):
             # new point via prox-gradient of momentum point
             x = prox1(z - s * (u + grad_g1), s)
-            # quadratic approximation of cost
+            # quadratic approximation of objective
             Q = (g1 + (grad_g1 * (x - z)).sum()
                   + ((x - z) ** 2).sum() / (2 * s))
             if g(x) - Q <= ls_tol:
@@ -254,7 +254,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         f_old = f
         # DIFFERENCE FROM PAPER: use z as next iterate
         f = g(z) + h1(z) + h2(z)
-        print(f'iteration {k}, cost {f:.6e}', end='        \r', flush=True)
+        print(f'iteration {k}, objective {f:.6e}', end='        \r', flush=True)
         rel_change = np.abs((f - f_old) / f_old)
         if rel_change < tol:
             print(f'\nrelative change in objective function {rel_change:.2g} '
