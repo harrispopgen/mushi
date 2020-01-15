@@ -26,18 +26,14 @@ import composition as cmp
 class kSFS():
     """The kSFS model described in the text"""
 
-    def __init__(self, η: histories.η = None, μ: histories.μ = None,
-                 X: np.ndarray = None, n: int = None,
+    def __init__(self, X: np.ndarray = None, n: int = None,
                  mutation_types: List[str] = None):
         u"""Sample frequency spectrum
 
-        η: demographic history
         X: observed k-SFS matrix (optional)
         n: number of haplotypes (optional)
         mutation_types: names of X columns
         """
-        self.η = η
-        self.μ = μ
         if X is not None:
             self.X = X
             self.n = len(X) + 1
@@ -48,23 +44,23 @@ class kSFS():
                 self.mutation_types = pd.Index(range(1, self.X.shape[1] + 1),
                                                name='mutation type')
         elif not n:
-            raise ValueError('either x or n must be specified')
+            raise ValueError('either X or n must be specified')
         else:
             self.n = n
         self.C = utils.C(self.n)
-        if self.η is None:
-            self.M = None
-            self.L = None
-        else:
-            t, y = self.η.arrays()
-            self.M = utils.M(self.n, t, y)
-            self.L = self.C @ self.M
+        self.η = None
+        self.μ = None
+        self.M = None
+        self.L = None
 
-    def tmrca_cdf(self) -> onp.ndarray:
-        """The CDF of the TMRCA of at each change point"""
-        if self.η is None:
+    def tmrca_cdf(self, η: histories.η) -> onp.ndarray:
+        """The CDF of the TMRCA of at each change point
+
+        η: demographic history
+        """
+        if η is None:
             raise ValueError('η(t) must be defined first')
-        t, y = self.η.arrays()
+        t, y = η.arrays()
         # epoch durations
         s = onp.diff(t)
         u = onp.exp(-s / y)
@@ -82,21 +78,24 @@ class kSFS():
                                   axis=1) ** binom(onp.arange(2, self.n + 1), 2
                                                    )[:, onp.newaxis]).T
 
-    def simulate(self, seed: int = None) -> None:
+    def simulate(self, η: histories.η, μ: histories.μ,
+                 seed: int = None) -> None:
         """simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
 
+        η: demographic history
+        μ: mush
         seed: random seed (optional)
         """
-        if self.η is None:
-            raise ValueError('η(t) must be defined first')
-        if self.μ is None:
-            raise ValueError('μ(t) must be defined first')
-        if not self.η.check_grid(self.μ):
+        if not η.check_grid(μ):
             raise ValueError('η and μ histories must use the same time grid')
         onp.random.seed(seed)
-        self.X = poisson.rvs(self.L @ self.μ.Z)
-        self.mutation_types = self.μ.mutation_types
+        t, y = η.arrays()
+        M = utils.M(self.n, t, y)
+        L = self.C @ M
+
+        self.X = poisson.rvs(L @ μ.Z)
+        self.mutation_types = μ.mutation_types
 
     def infer_history(self,
                       change_points: np.array,
@@ -544,10 +543,10 @@ def main():
     ksfs.μ.plot(t_gen=t_gen, clr=True, alpha=0.5)
     plt.subplot(325)
     if t_gen:
-        plt.plot(t_gen * ksfs.η.change_points, ksfs.tmrca_cdf())
+        plt.plot(t_gen * ksfs.η.change_points, ksfs.tmrca_cdf(ksfs.η))
         plt.xlabel('$t$ (years ago)')
     else:
-        plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf())
+        plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf(ksfs.η))
         plt.xlabel('$t$ (generations ago)')
     plt.ylabel('TMRCA CDF')
     plt.ylim([0, 1])
