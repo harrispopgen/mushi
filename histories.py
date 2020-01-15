@@ -9,7 +9,8 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
-from skbio.stats.composition import centralize
+import composition as cmp
+
 
 @dataclass
 class History():
@@ -84,9 +85,7 @@ class History():
             vals = self.vals
         lines = plt.plot(t, vals, **kwargs)
         plt.xlabel(f'$t$ ({t_unit})')
-        plt.xscale('symlog')
-        if 'label' in kwargs:
-            plt.legend()
+        plt.xscale('log')
         plt.tight_layout()
         return lines
 
@@ -145,19 +144,20 @@ class μ(History):
             self.Z = self.Z[:, np.newaxis]
         assert len(self.Z.shape) == 2, self.Z.shape
         if self.mutation_types is None:
-            self.mutation_types = range(1, self.Z.shape[1] + 1)
+            self.mutation_types = range(self.Z.shape[1])
         assert len(self.mutation_types) == self.Z.shape[1]
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
-    def plot(self, types=None, normed=False,
+    def plot(self, types=None, clr=False,
              **kwargs) -> List[mpl.lines.Line2D]:
         """
-        normed: flag to normalize to total mutation intensity
+        clr: flag to normalize to total mutation intensity and display as
+             centered log ratio transform
         """
         lines = super().plot(types=types, **kwargs)
-        if normed:
-            Z = self.Z / self.Z.sum(1, keepdims=True)
+        if clr:
+            Z = cmp.clr(self.Z)
             if types is None:
                 idxs = range(len(lines))
             else:
@@ -170,44 +170,53 @@ class μ(History):
             # update ax.viewLim using the new dataLim
             ax.autoscale_view()
             # plt.ylabel('relative mutation intensity')
-            plt.ylabel('mutation intensity fraction')
+            plt.ylabel('mutation intensity composition\n(CLR transformed)')
         else:
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
         return lines
 
-    def plot_cumulative(self, normed=False, **kwargs):
+    def plot_cumulative(self, t_gen=None, clr=False, **kwargs):
         """plot the cumulative mutation rate, like a Muller plot
 
-        normed: flag to normalize to total mutation intensity
+        t_gen: generation time in years (optional)
+        clr: flag to normalize to total mutation intensity and display as
+             centered log ratio transform
         kwargs: key word arguments passed to plt.fill_between
         """
         t = np.concatenate((np.array([0]), self.change_points))
+        if t_gen:
+            t *= t_gen
+            t_unit = 'years ago'
+        else:
+            t_unit = 'generations ago'
         Z = np.cumsum(self.Z, axis=1)
-        if normed:
-            Z = Z / Z.sum(1, keepdims=True)
-        for j in range(1, Z.shape[1]):
-            plt.fill_between(t, Z[:, j - 1], Z[:, j], **kwargs)
-        plt.xlabel('$t$')
+        if clr:
+            Z = cmp.clr(Z)
+        for j in range(Z.shape[1]):
+            plt.fill_between(t, Z[:, j - 1] if j else 0, Z[:, j], **kwargs)
+        plt.xlabel(f'$t$ ({t_unit})')
         plt.ylabel('$\\mu(t)$')
-        plt.xscale('symlog')
-        if 'label' in kwargs:
-            plt.legend()
+        plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, **kwargs):
+    def clustermap(self, t_gen: np.float = None, **kwargs):
         """clustermap of compositionally centralized MUSH
 
+        t_gen: generation time in years (optional)
         kwargs: additional keyword arguments passed to pd.clustermap
         """
         t = np.concatenate((np.array([0]), self.change_points))
-        Z = centralize(self.Z)
+        if t_gen:
+            t *= t_gen
+            t_unit = 'years ago'
+        else:
+            t_unit = 'generations ago'
+        Z = cmp.centralize(self.Z)
         label = 'mutation intensity\nperturbation'
-        df = pd.DataFrame(data=Z, index=pd.Index(t, name='$t$'),
+        df = pd.DataFrame(data=Z, index=pd.Index(t, name=f'$t$ ({t_unit})'),
                           columns=self.mutation_types)
         g = sns.clustermap(df, row_cluster=False,
-                           # center=1,
-                           # metric='correlation',
                            cbar_kws={'label': label},
                            **kwargs)
         # g.ax_heatmap.set_yscale('symlog')
