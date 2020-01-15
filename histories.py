@@ -90,7 +90,7 @@ class History():
         return lines
 
 
-class η(History):
+class eta(History):
     """demographic history
 
     change_points: epoch change points (times)
@@ -111,14 +111,14 @@ class η(History):
 
     def plot(self, **kwargs) -> List[mpl.lines.Line2D]:
         lines = super().plot(**kwargs)
-        plt.ylabel('$η(t)$')
+        plt.ylabel('$\\eta(t)$')
         plt.yscale('log')
         plt.tight_layout()
         return lines
 
 
 @dataclass
-class μ(History):
+class mu(History):
     """mutation spectrum history
 
     change_points: epoch change points (times)

@@ -98,7 +98,7 @@ def acc_prox_grad_descent(x: np.ndarray,
                           max_iter: int = 100,
                           s0: np.float64 = 1,
                           max_line_iter: int = 100,
-                          γ: np.float64 = 0.8) -> np.ndarray:
+                          gamma: np.float64 = 0.8) -> np.ndarray:
     u"""Nesterov accelerated proximal gradient descent
     https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
@@ -111,7 +111,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     max_iter: maximum number of proximal gradient steps
     s0: initial step size
     max_line_iter: maximum number of line search steps
-    γ: step size shrinkage rate for line search
+    gamma: step size shrinkage rate for line search
     """
     # initialize step size
     s = s0
@@ -142,7 +142,7 @@ def acc_prox_grad_descent(x: np.ndarray,
                 break
             else:
                 # Armijo not satisfied
-                s *= γ  # shrink step size
+                s *= gamma  # shrink step size
         # update momentum term
         q = x + ((k - 1) / (k + 2)) * (x - x_old)
         if line_iter == max_line_iter - 1:
@@ -181,7 +181,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
                                max_iter: int = 100,
                                s0: np.float64 = 1,
                                max_line_iter: int = 100,
-                               γ: np.float64 = 0.8,
+                               gamma: np.float64 = 0.8,
                                ls_tol: np.float64 = 0) -> np.ndarray:
     u"""Three operator splitting proximal gradient descent
 
@@ -206,7 +206,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
     max_iter: maximum number of proximal gradient steps
     s0: step size
     max_line_iter: maximum number of line search steps
-    γ: step size shrinkage rate for line search
+    gamma: step size shrinkage rate for line search
     ls_tol: line search tolerance
     """
 
@@ -237,7 +237,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
                 break
             else:
                 # sufficient decrease not satisfied
-                s *= γ  # shrink step size
+                s *= gamma  # shrink step size
         if line_iter == max_line_iter - 1:
             print('warning: line search failed', flush=True)
 
@@ -246,7 +246,7 @@ def three_op_prox_grad_descent(x: np.ndarray,
         # update u variables: dual variables
         u = u + (x - z) / s
         # grow step size
-        s = min(s / γ**2, s0)
+        s = min(s / gamma ** 2, s0)
 
         # TODO: convergence based on dual certificate
         if not np.all(np.isfinite(x)):
