@@ -103,7 +103,7 @@ def acc_prox_grad_descent(x: np.ndarray,
     https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
     x: initial point
-    g: differential term in onjective function
+    g: differential term in objective function
     grad_g: gradient of g
     h: non-differentiable term in objective function
     prox: proximal operator corresponding to h
@@ -118,8 +118,8 @@ def acc_prox_grad_descent(x: np.ndarray,
     # initialize momentum iterate
     q = x
     # initial objective value
-    f = g(x) + h(x)
-    print(f'initial objective {f:.6e}', flush=True)
+    f = [g(x) + h(x)]
+    print(f'initial objective {f[-1]:.6e}', flush=True)
     for k in range(1, max_iter + 1):
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
@@ -151,10 +151,11 @@ def acc_prox_grad_descent(x: np.ndarray,
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values', flush=True)
         # terminate if objective function is constant within tolerance
-        f_old = f
-        f = g(x) + h(x)
-        print(f'iteration {k}, objective {f:.6e}', end='        \r', flush=True)
-        rel_change = np.abs((f - f_old) / f_old)
+        f.append(g(x) + h(x))
+        rel_change = np.abs((f[-1] - f[-2]) / f[-2])
+        print(f'iteration {k}, objective {f[-1]:.3e}, '
+              f'relative change {rel_change:.3e}',
+              end='        \r', flush=True)
         if rel_change < tol:
             print(f'\nrelative change in objective function {rel_change:.2g} '
                   f'is within tolerance {tol} after {k} iterations',
@@ -164,7 +165,7 @@ def acc_prox_grad_descent(x: np.ndarray,
             print(f'\nmaximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}', flush=True)
 
-    return x
+    return x, np.array(f)
 
 
 def three_op_prox_grad_descent(x: np.ndarray,
@@ -213,8 +214,8 @@ def three_op_prox_grad_descent(x: np.ndarray,
     s = s0
     z = x
     u = np.zeros_like(z)
-    f = g(x) + h1(x) + h2(x)
-    print(f'initial objective {f:.6e}', flush=True)
+    f = [g(x) + h1(x) + h2(x)]
+    print(f'initial objective {f[-1]:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
         # evaluate differentiable part of objective
@@ -251,11 +252,11 @@ def three_op_prox_grad_descent(x: np.ndarray,
         if not np.all(np.isfinite(x)):
             print(f'warning: x contains invalid values', flush=True)
         # terminate if objective function is constant within tolerance
-        f_old = f
-        # DIFFERENCE FROM PAPER: use z as next iterate
-        f = g(z) + h1(z) + h2(z)
-        print(f'iteration {k}, objective {f:.6e}', end='        \r', flush=True)
-        rel_change = np.abs((f - f_old) / f_old)
+        f.append(g(x) + h1(x) + h2(x))
+        rel_change = np.abs((f[-1] - f[-2]) / f[-2])
+        print(f'iteration {k}, objective {f[-1]:.3e}, '
+              f'relative change {rel_change:.3e}',
+              end='        \r', flush=True)
         if rel_change < tol:
             print(f'\nrelative change in objective function {rel_change:.2g} '
                   f'is within tolerance {tol} after {k} iterations',
@@ -269,4 +270,4 @@ def three_op_prox_grad_descent(x: np.ndarray,
             print(f'\nmaximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}', flush=True)
 
-    return z
+    return x, np.array(f)

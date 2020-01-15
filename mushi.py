@@ -12,7 +12,7 @@ from scipy.special import binom
 from scipy.stats import poisson, chi2
 import prox_tv as ptv
 
-from typing import List
+from typing import List, Dict
 
 import histories
 import utils
@@ -117,7 +117,7 @@ class kSFS():
                       γ: np.float64 = 0.8,
                       tol: np.float64 = 1e-4,
                       loss='prf',
-                      mask: np.ndarray = None) -> None:
+                      mask: np.ndarray = None) -> Dict:
         u"""perform sequential inference to fit η and μ
 
         change_points: epoch change points (times)
@@ -151,7 +151,12 @@ class kSFS():
         - s0: max step size
         - max_line_iter: maximum number of line search steps
         - γ: step size shrinkage rate for line search
+
+        return: a dictionary of inference metadata
         """
+
+        metadata = {}
+
         assert self.X is not None, 'use simulate() to generate data first'
         if self.X is None:
             raise ValueError('use simulate() to generate data first')
@@ -242,13 +247,15 @@ class kSFS():
             # initial iterate
             logy = np.log(self.η.y)
 
-            logy = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
+            logy, convergence = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
                                                prox,
                                                tol=tol,
                                                max_iter=max_iter,
                                                s0=s0,
                                                max_line_iter=max_line_iter,
                                                γ=γ)
+
+            metadata['y_convergence'] = convergence
 
             y = np.exp(logy)
 
@@ -305,13 +312,15 @@ class kSFS():
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
 
-                Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
+                Z, convergence = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
                                                      h2, prox2,
                                                      tol=tol,
                                                      max_iter=max_iter,
                                                      s0=s0,
                                                      max_line_iter=max_line_iter,
                                                      γ=γ, ls_tol=0)
+
+                metadata['Z_convergence'] = convergence
 
             else:
                 if β_tv:
@@ -350,16 +359,20 @@ class kSFS():
                     def prox(Z, s):
                         return Z
 
-                Z = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
+                Z, convergence = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
                                                 tol=tol,
                                                 max_iter=max_iter,
                                                 s0=s0,
                                                 max_line_iter=max_line_iter,
                                                 γ=γ)
 
+                metadata['Z_convergence'] = convergence
+
             self.μ = histories.μ(self.η.change_points,
                                  μ0 * cmp.ilr_inv(Z, basis),
                                  mutation_types=self.mutation_types.values)
+
+        return metadata
 
     def plot_total(self, **kwargs):
         """plot the total SFS
