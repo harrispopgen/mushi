@@ -3,6 +3,7 @@
 
 import numpy as onp
 import jax.numpy as np
+from jax.scipy.stats import poisson
 from typing import Callable
 
 
@@ -59,8 +60,7 @@ def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
     L: model matrix
     """
     Ξ = L @ Z
-    ℓ = (X * np.log(Ξ) - Ξ).sum()
-    return ℓ
+    return poisson.logpmf(X, Ξ).sum()
 
 
 def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
