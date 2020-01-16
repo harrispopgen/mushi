@@ -406,14 +406,17 @@ class kSFS():
 
         return metadata
 
-    def plot_total(self, **kwargs):
+    def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
+                         line_kwargs: Dict = dict(),
+                         fill_kwargs: Dict = dict()):
         """plot the total SFS
 
-        kwargs: key word arguments passed to plt.plot (e.g. color)
+        kwargs: keyword arguments for scatter plot
+        line_kwargs: keyword arguments for expectation line
+        fill_kwargs: keyword arguments for marginal fill
         """
         x = self.X.sum(1, keepdims=True)
-        plt.plot(range(1, len(x) + 1), x, ls='', marker='.', alpha=.25,
-                 **kwargs)
+        plt.plot(range(1, len(x) + 1), x, **kwargs)
         if self.η is not None:
             if 'label' in kwargs:
                 del kwargs['label']
@@ -422,15 +425,11 @@ class kSFS():
             else:
                 z = np.ones_like(self.η.y)
             ξ = self.L.dot(z)
-            plt.plot(range(1, self.n), ξ, ls='--', **kwargs)
+            plt.plot(range(1, self.n), ξ, **line_kwargs)
             ξ_lower = poisson.ppf(.025, ξ)
             ξ_upper = poisson.ppf(.975, ξ)
-            if 'c' in kwargs:
-                kwargs['facecolor'] = kwargs.pop('c')
-            if 'color' in kwargs:
-                kwargs['facecolor'] = kwargs.pop('color')
             plt.fill_between(range(1, self.n),
-                             ξ_lower, ξ_upper, alpha=0.25, **kwargs)
+                             ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
         plt.xscale('log')
