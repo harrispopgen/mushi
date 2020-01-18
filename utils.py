@@ -88,17 +88,17 @@ def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
     return lsq
 
 
-def acc_prox_grad_descent(x: np.ndarray,
-                          g: Callable[[np.ndarray], np.float64],
-                          grad_g: Callable[[np.ndarray], np.float64],
-                          h: Callable[[np.ndarray], np.float64],
-                          prox: Callable[[np.ndarray, np.float64], np.float64],
-                          tol: np.float64 = 1e-10,
-                          max_iter: int = 100,
-                          s0: np.float64 = 1,
-                          max_line_iter: int = 100,
-                          gamma: np.float64 = 0.8) -> np.ndarray:
-    u"""Nesterov accelerated proximal gradient descent
+def acc_prox_grad_method(x: np.ndarray,
+                         g: Callable[[np.ndarray], np.float64],
+                         grad_g: Callable[[np.ndarray], np.float64],
+                         h: Callable[[np.ndarray], np.float64],
+                         prox: Callable[[np.ndarray, np.float64], np.float64],
+                         tol: np.float64 = 1e-10,
+                         max_iter: int = 100,
+                         s0: np.float64 = 1,
+                         max_line_iter: int = 100,
+                         gamma: np.float64 = 0.8) -> np.ndarray:
+    u"""Nesterov accelerated proximal gradient method
     https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
     x: initial point
@@ -168,22 +168,22 @@ def acc_prox_grad_descent(x: np.ndarray,
     return x
 
 
-def three_op_prox_grad_descent(x: np.ndarray,
-                               g: Callable[[np.ndarray], np.float64],
-                               grad_g: Callable[[np.ndarray], np.float64],
-                               h1: Callable[[np.ndarray], np.float64],
-                               prox1: Callable[[np.ndarray, np.float64],
-                                               np.float64],
-                               h2: Callable[[np.ndarray], np.float64],
-                               prox2: Callable[[np.ndarray, np.float64],
-                                               np.float64],
-                               tol: np.float64 = 1e-10,
-                               max_iter: int = 100,
-                               s0: np.float64 = 1,
-                               max_line_iter: int = 100,
-                               gamma: np.float64 = 0.8,
-                               ls_tol: np.float64 = 0) -> np.ndarray:
-    u"""Three operator splitting proximal gradient descent
+def three_op_prox_grad_method(x: np.ndarray,
+                              g: Callable[[np.ndarray], np.float64],
+                              grad_g: Callable[[np.ndarray], np.float64],
+                              h1: Callable[[np.ndarray], np.float64],
+                              prox1: Callable[[np.ndarray, np.float64],
+                                              np.float64],
+                              h2: Callable[[np.ndarray], np.float64],
+                              prox2: Callable[[np.ndarray, np.float64],
+                                              np.float64],
+                              tol: np.float64 = 1e-10,
+                              max_iter: int = 100,
+                              s0: np.float64 = 1,
+                              max_line_iter: int = 100,
+                              gamma: np.float64 = 0.8,
+                              ls_tol: np.float64 = 0) -> np.ndarray:
+    u"""Three operator splitting proximal gradient method
 
     We implement the method of Pedregosa & Gidel (ICML 2018),
     including backtracking line search.

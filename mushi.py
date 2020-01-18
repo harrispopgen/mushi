@@ -168,7 +168,7 @@ class kSFS():
         - beta_ridge: L2 for strong convexity
 
         convergence parameters:
-        - max_iter: maximum number of proximal gradient descent steps
+        - max_iter: maximum number of proximal gradient steps
         - tol: relative tolerance in objective function
         - s0: max step size
         - max_line_iter: maximum number of line search steps
@@ -240,7 +240,7 @@ class kSFS():
         if eta is None and infer_eta:
             print('inferring η(t)', flush=True)
 
-            # Accelerated proximal gradient descent: our objective function
+            # Accelerated proximal gradient method: our objective function
             # decomposes as f = g + h, where g is differentiable and h is not.
             # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
@@ -275,13 +275,13 @@ class kSFS():
             # initial iterate
             logy = np.log(self.η.y)
 
-            logy = utils.acc_prox_grad_descent(logy, g, jit(grad(g)), h,
-                                               prox,
-                                               tol=tol,
-                                               max_iter=max_iter,
-                                               s0=s0,
-                                               max_line_iter=max_line_iter,
-                                               gamma=gamma)
+            logy = utils.acc_prox_grad_method(logy, g, jit(grad(g)), h,
+                                              prox,
+                                              tol=tol,
+                                              max_iter=max_iter,
+                                              s0=s0,
+                                              max_line_iter=max_line_iter,
+                                              gamma=gamma)
 
             y = np.exp(logy)
 
@@ -338,13 +338,13 @@ class kSFS():
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
 
-                Z = utils.three_op_prox_grad_descent(Z, g, jit(grad(g)), h1, prox1,
-                                                     h2, prox2,
-                                                     tol=tol,
-                                                     max_iter=max_iter,
-                                                     s0=s0,
-                                                     max_line_iter=max_line_iter,
-                                                     gamma=gamma, ls_tol=0)
+                Z = utils.three_op_prox_grad_method(Z, g, jit(grad(g)), h1, prox1,
+                                                    h2, prox2,
+                                                    tol=tol,
+                                                    max_iter=max_iter,
+                                                    s0=s0,
+                                                    max_line_iter=max_line_iter,
+                                                    gamma=gamma, ls_tol=0)
 
             else:
                 if β_tv:
@@ -383,12 +383,12 @@ class kSFS():
                     def prox(Z, s):
                         return Z
 
-                Z = utils.acc_prox_grad_descent(Z, g, jit(grad(g)), h, prox,
-                                                tol=tol,
-                                                max_iter=max_iter,
-                                                s0=s0,
-                                                max_line_iter=max_line_iter,
-                                                gamma=gamma)
+                Z = utils.acc_prox_grad_method(Z, g, jit(grad(g)), h, prox,
+                                               tol=tol,
+                                               max_iter=max_iter,
+                                               s0=s0,
+                                               max_line_iter=max_line_iter,
+                                               gamma=gamma)
 
             self.μ = histories.mu(self.η.change_points,
                                  mu0 * cmp.ilr_inv(Z, basis),
@@ -425,11 +425,15 @@ class kSFS():
         plt.yscale('symlog')
         plt.tight_layout()
 
-    def plot(self, type=None, clr: bool = False, **kwargs) -> None:
+    def plot(self, types=None, clr: bool = False,
+             kwargs: Dict = dict(ls='', marker='.', rasterized=True),
+             line_kwargs: Dict = dict()) -> None:
         """
+        types: iterable of mutation type names to restrict plotting to
         clr: flag to normalize to total mutation intensity and display as
              centered log ratio transform
-        kwargs: key word arguments passed to plt.plot
+        kwargs: key word arguments passed to data scatter plot
+        line_kwargs: key word arguments passed to expectation line plot
         """
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
@@ -441,22 +445,16 @@ class kSFS():
         else:
             X = self.X
             plt.ylabel('number of variants')
-        if type is not None:
-            i = self.mutation_types.get_loc(type)
-            X = X[:, i]
+        if types is not None:
+            idxs = [self.mutation_types.get_loc(type) for type in types]
+            X = X[:, idxs]
             if self.μ is not None:
-                Ξ = Ξ[:, i]
+                Ξ = Ξ[:, idxs]
 
+        plt.plot(range(1, self.n), X, **kwargs)
         if self.μ is not None:
-            plt.plot(range(1, self.n), X, ls='', marker='.', rasterized=True,
-                     **kwargs)
-            line_kwargs = kwargs
-            if 'label' in line_kwargs:
-                del line_kwargs['label']
             plt.gca().set_prop_cycle(None)
             plt.plot(range(1, self.n), Ξ, **line_kwargs)
-        else:
-            plt.plot(range(1, self.n), X, **kwargs)
         plt.xlabel('sample frequency')
         plt.xscale('log')
         if 'label' in kwargs:
@@ -571,7 +569,7 @@ def main():
                 # ds='steps-post'
                 )
     plt.subplot(323)
-    ksfs.plot(clr=True, alpha=0.5)
+    ksfs.plot(clr=True)
     plt.subplot(324)
     ksfs.μ.plot(t_gen=t_gen, clr=True, alpha=0.5)
     plt.subplot(325)
