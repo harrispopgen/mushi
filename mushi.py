@@ -316,11 +316,14 @@ class kSFS():
                     """1st nondifferentiable piece of objective in μ problem"""
                     return β_tv * np.abs(D1 @ Z).sum()
 
+                shape = Z.T.shape
+                w = β_tv * onp.ones(shape)
+                w[:, -1] = 0
+                w = w.flatten()[:-1]
                 def prox1(Z, s):
                     """total variation prox operator on row dimension
-                    (oddly 1-based indexed in proxtv)
                     """
-                    return ptv.tvgen(Z, [s * β_tv], [1], [1])
+                    return ptv.tv1w_1d(Z.T, s * w).reshape(shape).T
 
                 @jit
                 def h2(Z):
@@ -353,11 +356,15 @@ class kSFS():
                         """nondifferentiable piece of objective in μ problem"""
                         return β_tv * np.abs(D1 @ Z).sum()
 
+                    shape = Z.T.shape
+                    w = β_tv * onp.ones(shape)
+                    w[:, -1] = 0
+                    w = w.flatten()[:-1]
                     def prox(Z, s):
                         """total variation prox operator on row dimension
-                        (oddly 1-based indexed in proxtv)
                         """
-                        return ptv.tvgen(Z, [s * β_tv], [1], [1])
+                        return ptv.tv1w_1d(Z.T, s * w).reshape(shape).T
+
                 elif β_rank:
                     @jit
                     def h(Z):

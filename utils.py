@@ -102,7 +102,7 @@ def acc_prox_grad_method(x: np.ndarray,
     https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
     x: initial point
-    g: differential term in objective function
+    g: differentiable term in objective function
     grad_g: gradient of g
     h: non-differentiable term in objective function
     prox: proximal operator corresponding to h
@@ -123,13 +123,13 @@ def acc_prox_grad_method(x: np.ndarray,
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
         grad_g1 = grad_g(q)
+        if not np.all(np.isfinite(grad_g1)):
+            raise RuntimeError(f'invalid gradient at iteration {k + 1}: '
+                               f'{grad_g1}')
         # store old iterate
         x_old = x
         # Armijo line search
         for line_iter in range(max_line_iter):
-            if not np.all(np.isfinite(grad_g1)):
-                raise RuntimeError(f'invalid gradient at step {k + 1}, line '
-                                   f'search step {line_iter + 1}: {grad_g1}')
             # new point via prox-gradient of momentum point
             x = prox(q - s * grad_g1, s)
             # G_s(q) as in the notes linked above
@@ -142,8 +142,10 @@ def acc_prox_grad_method(x: np.ndarray,
             else:
                 # Armijo not satisfied
                 s *= gamma  # shrink step size
-        # update momentum term
+
+        # update momentum point
         q = x + ((k - 1) / (k + 2)) * (x - x_old)
+
         if line_iter == max_line_iter - 1:
             print('warning: line search failed', flush=True)
             s = s0
@@ -196,7 +198,7 @@ def three_op_prox_grad_method(x: np.ndarray,
     available.
 
     x: initial point
-    g: differential term in objective function
+    g: differentiable term in objective function
     grad_g: gradient of g
     h1: 1st non-differentiable term in objective function
     h2: 2nd non-differentiable term in objective function
@@ -222,7 +224,8 @@ def three_op_prox_grad_method(x: np.ndarray,
         g1 = g(z)
         grad_g1 = grad_g(z)
         if not np.all(np.isfinite(grad_g1)):
-            raise RuntimeError(f'invalid gradient at step {k + 1}: {grad_g1}')
+            raise RuntimeError(f'invalid gradient at iteration {k + 1}: '
+                               f'{grad_g1}')
         # store old iterate
         # x_old = x
         # Armijo line search
