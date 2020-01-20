@@ -464,8 +464,6 @@ class kSFS():
             plt.plot(range(1, self.n), Ξ, **line_kwargs)
         plt.xlabel('sample frequency')
         plt.xscale('log')
-        if 'label' in kwargs:
-            plt.legend()
         plt.tight_layout()
 
     def clustermap(self, **kwargs):
