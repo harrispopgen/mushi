@@ -109,3 +109,5 @@ venv.bak/
 # tex builds
 manuscript/_build
 scons_output*
+
+.DS_Store
