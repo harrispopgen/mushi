@@ -144,8 +144,8 @@ class kSFS():
 
         change_points: epoch change points (times)
         mu0: total mutation rate (per genome per generation)
-        eta: optional demographic history. If None (the default), it will be
-           inferred from the total SFS
+        eta: optional initial demographic history. If None (the default), a
+             constant MLE is computed
 
         infer_eta, infer_mu: flags can be set to False to skip either optimization
 
@@ -192,7 +192,6 @@ class kSFS():
             assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
 
         # ininitialize with MLE constant η and μ
-        self.X
         x = self.X.sum(1, keepdims=True)
         μ_total = histories.mu(change_points,
                               mu0 * np.ones((len(change_points) + 1, 1)))
@@ -237,7 +236,7 @@ class kSFS():
         D1 = W @ D  # 1st difference matrix
         # D2 = D1.T @ D1  # 2nd difference matrix
 
-        if eta is None and infer_eta:
+        if infer_eta:
             print('inferring η(t)', flush=True)
 
             # Accelerated proximal gradient method: our objective function
@@ -252,8 +251,9 @@ class kSFS():
                     loss_term = loss(z, x[mask, :], L[mask, :])
                 else:
                     loss_term = loss(z, x, L)
-                return loss_term + (α_spline / 2) * ((D1 @ logy) ** 2).sum() \
-                                 + (α_ridge / 2) * (logy ** 2).sum()
+                spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
+                ridge_term = (α_ridge / 2) * ((logy - np.log(self.η.y)) ** 2).sum()
+                return loss_term + spline_term + ridge_term
 
             if α_tv > 0:
                 @jit

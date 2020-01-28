@@ -113,7 +113,7 @@ if bcf_dir is not None:
     # autosome sizes
     tgt = os.path.join(outdir, 'hg19.autosome.sizes.txt')
     src = sizes
-    cmd = ('egrep "chr[0-9]*\\t" ${SOURCE} | cut -c4- | sort -n > ${TARGET}')
+    cmd = ('egrep "chr[0-9]*\\t" ${SOURCE} | cut -c4- | sort > ${TARGET}')
     autosome_sizes = env.Command(tgt, src, cmd)
 
     # mask for repeats (autosomes only)
@@ -129,13 +129,13 @@ if bcf_dir is not None:
     conserved = env.Command(tgt, src, cmd)
 
     # merge the above and complement (autosomes only)
-    tgt = os.path.join(outdir, 'ncncr.bed.gz')
+    tgt = os.path.join(outdir, 'ncnr.bed.gz')
     src = [repeats, conserved, autosome_sizes]
-    cmd = ('gzip -cd ${SOURCES[:2]} | sort -k1,1 -k2,2n '
+    cmd = ('gzip -cd ${SOURCES[:2]} | egrep "^[0-9]*\\t"| sort -k1,1 -k2,2n '
            '| bedtools merge -i stdin'
            '| bedtools complement -i stdin -g ${SOURCES[2]}'
            '| bgzip > ${TARGET}')
-    ncncr_mask = env.Command(tgt, src, cmd)
+    ncnr_mask = env.Command(tgt, src, cmd)
 
     # strict mask (no chr, autosomes only)
     tgt = os.path.join(outdir, 'strict.bed.gz')
@@ -147,7 +147,7 @@ if bcf_dir is not None:
     # full mask (sites to keep)
     mask_file = os.path.join(outdir, 'mask.bed.gz')
     tgt = [mask_file, mask_file + '.tbi']
-    src = [ncncr_mask, strict_mask_nochr]
+    src = [ncnr_mask, strict_mask_nochr]
     cmd = ('gzip -cd ${SOURCES} | sort -k1,1 -k2,2n | bedtools merge -i stdin'
            '| bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 ${TARGETS[0]}')
     mask = env.Command(tgt, src, cmd)
@@ -183,7 +183,7 @@ if bcf_dir is not None:
             else:
                 src = [mask[0], bcf, pop_list]
                 cmd += '-S ${SOURCES[2]} '
-            cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -U'
+            cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
             cmd += ' ${SOURCES[1]} | '
             if track is not None:
                 print("WARNING! track mask isn't accounted for in mask size!")
@@ -222,13 +222,5 @@ if bcf_dir is not None:
         if idx == 0:
             # masked genome size for mutation rate estimation
             tgt = os.path.join(outdir, f'masked_size.tsv')
-            cmd = "cat ${SOURCES} | awk '{sum+=$1} END {print sum}' > $TARGET"
+            cmd = "cat ${SOURCES} | awk '{sum+=$2} END {print sum}' > $TARGET"
             masked_size = env.Command(tgt, masked_sizes, cmd)
-
-        # infer MUSH
-        mushi_outbase = os.path.join(pop_outdir, 'mushi')
-        tgt = [mushi_outbase + '.pkl', mushi_outbase + 'fit.pdf']
-        src = [ksfs, masked_size, mushi_cfg]
-        cmd = (f'python ../mushi.py ${{SOURCES}} {mushi_outbase} '
-               f"&> {mushi_outbase + '.log'}")
-        mush = env.Command(tgt, src, cmd)
