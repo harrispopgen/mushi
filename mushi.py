@@ -8,7 +8,6 @@ import numpy as onp
 import jax.numpy as np
 from jax import jit, grad
 from jax.ops import index, index_update
-from scipy.special import binom
 from scipy.stats import poisson, chi2
 import prox_tv as ptv
 
@@ -83,22 +82,7 @@ class kSFS():
         if eta is None:
             raise ValueError('η(t) must be defined first')
         t, y = eta.arrays()
-        # epoch durations
-        s = onp.diff(t)
-        u = onp.exp(-s / y)
-        u = onp.concatenate((onp.array([1]), u))
-        # the A_2j are the product of this matrix
-        # NOTE: using letter  "l" as a variable name to match text
-        l = onp.arange(2, self.n + 1)[:, onp.newaxis]
-        with onp.errstate(divide='ignore'):
-            A2_terms = l * (l-1) / (l * (l-1) - l.T * (l.T-1))
-        onp.fill_diagonal(A2_terms, 1)
-        A2 = onp.prod(A2_terms, axis=0)
-
-        return 1 - (A2[onp.newaxis, :]
-                    @ onp.cumprod(u[onp.newaxis, 1:-1],
-                                  axis=1) ** binom(onp.arange(2, self.n + 1), 2
-                                                   )[:, onp.newaxis]).T
+        return utils.tmrca_cdf(t, y, self.n)[1:-1]
 
     def simulate(self, eta: histories.eta, mu: histories.mu,
                  seed: int = None) -> None:
@@ -123,6 +107,7 @@ class kSFS():
                       change_points: np.array,
                       mu0: np.float64,
                       eta: histories.eta = None,
+                      eta_anc: histories.eta = None,
                       infer_eta: bool = True,
                       infer_mu: bool = True,
                       alpha_tv: np.float64 = 0,
@@ -139,13 +124,15 @@ class kSFS():
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 1e-4,
                       loss='prf',
-                      mask: np.ndarray = None) -> None:
+                      mask: np.array = None) -> None:
         u"""perform sequential inference to fit η(t) and μ(t)
 
         change_points: epoch change points (times)
         mu0: total mutation rate (per genome per generation)
         eta: optional initial demographic history. If None (the default), a
              constant MLE is computed
+        eta_anc: optional reference demographic history for ridge penalty. If
+                 None (the default), the constant MLE is used
 
         infer_eta, infer_mu: flags can be set to False to skip either optimization
 
@@ -207,6 +194,14 @@ class kSFS():
             # constant MLE
             y = (S.sum() / 2 / H / mu0) * np.ones(len(z))
             self.η = histories.eta(change_points, y)
+
+        if eta_anc is None:
+            eta_anc = self.η
+            Γ = 1
+        else:
+            Γ = - np.log(1 - utils.tmrca_cdf(t, self.η.y, self.n))[:-1]
+        logy_anc = np.log(eta_anc.y)
+
         # NOTE: scaling by S is a hack, should use relative triplet
         #       content of masked genome
         if self.μ is None:
@@ -252,7 +247,7 @@ class kSFS():
                 else:
                     loss_term = loss(z, x, L)
                 spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
-                ridge_term = (α_ridge / 2) * ((logy - np.log(self.η.y)) ** 2).sum()
+                ridge_term = (α_ridge / 2) * ((Γ * (logy - logy_anc)) ** 2).sum()
                 return loss_term + spline_term + ridge_term
 
             if α_tv > 0:

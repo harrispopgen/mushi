@@ -3,6 +3,7 @@
 
 import numpy as onp
 import jax.numpy as np
+from jax.ops import index, index_update
 from typing import Callable
 
 
@@ -42,7 +43,8 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
     u = np.exp(-s[:-1] / y[:-1])
     u = np.concatenate((np.array([1]), u, np.array([0])))
 
-    binom_vec = np.arange(2, n + 1) * (np.arange(2, n + 1) - 1) / 2
+    n_range = np.arange(2, n + 1)
+    binom_vec = n_range * (n_range - 1) / 2
 
     return np.exp(binom_vec[:, np.newaxis]
                   * np.cumsum(np.log(u[np.newaxis, :-1]), axis=1)
@@ -86,6 +88,37 @@ def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
     Ξ = L @ Z
     lsq = (1 / 2) * ((Ξ - X) ** 2).sum()
     return lsq
+
+
+def tmrca_cdf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
+    """The CDF of the TMRCA of at each time point
+
+    t: time grid (including zero and infinity)
+    y: effective population size in each epoch
+    n: number of sampled haplotypes
+    """
+    # epoch durations
+    s = np.diff(t)
+    u = np.exp(-s / y)
+    u = np.concatenate((np.array([1]), u))
+    # the A_2j are the product of this matrix
+    # NOTE: using letter  "l" as a variable name to match text
+    l = np.arange(2, n + 1)[:, np.newaxis]
+    with onp.errstate(divide='ignore'):
+        A2_terms = l * (l - 1) / (l * (l - 1) - l.T * (l.T - 1))
+    onp.fill_diagonal(A2_terms, 1)
+    A2 = np.prod(A2_terms, axis=0)
+
+    binom_vec = l * (l - 1) / 2
+
+    result = np.ones(len(t))
+
+    result = index_update(result, index[:-1],
+                          1 - np.squeeze(A2[np.newaxis, :]
+                               @ np.exp(np.cumsum(np.log(u[np.newaxis, :-1]),
+                                                  axis=1)) ** binom_vec))
+
+    return result
 
 
 def acc_prox_grad_method(x: np.ndarray,
