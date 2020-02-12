@@ -15,6 +15,7 @@ from typing import List, Dict
 
 import histories
 import utils
+import optimization
 
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -40,7 +41,7 @@ class kSFS():
                 self.mutation_types = pd.Index(mutation_types,
                                                name='mutation type')
             else:
-                self.mutation_types = pd.Index(range(1, self.X.shape[1] + 1),
+                self.mutation_types = pd.Index(range(self.X.shape[1]),
                                                name='mutation type')
         elif not n:
             raise ValueError('either X or n must be specified')
@@ -270,13 +271,13 @@ class kSFS():
             # initial iterate
             logy = np.log(self.η.y)
 
-            logy = utils.acc_prox_grad_method(logy, g, jit(grad(g)), h,
-                                              prox,
-                                              tol=tol,
-                                              max_iter=max_iter,
-                                              s0=s0,
-                                              max_line_iter=max_line_iter,
-                                              gamma=gamma)
+            logy = optimization.acc_prox_grad_method(logy, g, jit(grad(g)), h,
+                                                     prox,
+                                                     tol=tol,
+                                                     max_iter=max_iter,
+                                                     s0=s0,
+                                                     max_line_iter=max_line_iter,
+                                                     gamma=gamma)
 
             y = np.exp(logy)
 
@@ -336,13 +337,14 @@ class kSFS():
                     Σ = np.diag(σ)
                     return U @ Σ @ Vt
 
-                Z = utils.three_op_prox_grad_method(Z, g, jit(grad(g)), h1, prox1,
-                                                    h2, prox2,
-                                                    tol=tol,
-                                                    max_iter=max_iter,
-                                                    s0=s0,
-                                                    max_line_iter=max_line_iter,
-                                                    gamma=gamma, ls_tol=0)
+                Z = optimization.three_op_prox_grad_method(Z, g, jit(grad(g)),
+                                                           h1, prox1,
+                                                           h2, prox2,
+                                                           tol=tol,
+                                                           max_iter=max_iter,
+                                                           s0=s0,
+                                                           max_line_iter=max_line_iter,
+                                                           gamma=gamma, ls_tol=0)
 
             else:
                 if β_tv:
@@ -385,12 +387,13 @@ class kSFS():
                     def prox(Z, s):
                         return Z
 
-                Z = utils.acc_prox_grad_method(Z, g, jit(grad(g)), h, prox,
-                                               tol=tol,
-                                               max_iter=max_iter,
-                                               s0=s0,
-                                               max_line_iter=max_line_iter,
-                                               gamma=gamma)
+                Z = optimization.acc_prox_grad_method(Z, g, jit(grad(g)), h,
+                                                      prox,
+                                                      tol=tol,
+                                                      max_iter=max_iter,
+                                                      s0=s0,
+                                                      max_line_iter=max_line_iter,
+                                                      gamma=gamma)
 
             self.μ = histories.mu(self.η.change_points,
                                  mu0 * cmp.ilr_inv(Z, basis),
