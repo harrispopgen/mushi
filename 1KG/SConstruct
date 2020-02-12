@@ -183,7 +183,7 @@ if bcf_dir is not None:
             else:
                 src = [mask[0], bcf, pop_list]
                 cmd += '-S ${SOURCES[2]} '
-            cmd += ' -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
+            cmd += '-g ^miss -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
             cmd += ' ${SOURCES[1]} | '
             if track is not None:
                 print("WARNING! track mask isn't accounted for in mask size!")
