@@ -12,8 +12,8 @@ class TestMushi(unittest.TestCase):
         u"""test expected SFS under constant demography and mutation rate
         against the analytic formula from Fu (1995)
         """
-        n = 10
-        η0 = 1e4
+        n = 198
+        η0 = 3e4
         μ0 = 40
         change_points = np.array([])
         η = histories.eta(change_points, np.array([η0]))

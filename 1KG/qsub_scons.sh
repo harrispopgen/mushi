@@ -10,7 +10,6 @@
 n_jobs=`sysctl -n hw.physicalcpu`
 
 bcfs="../data/phase3_1000genomes/bcfs"
-batwa_vcfs="../data/batwa"
 
 ancs="../data/human_ancestor_GRCh37_e59"
 
@@ -29,7 +28,7 @@ k="3"
 
 phastcons="../data/phastConsElements100way.txt.gz"
 repeats="../data/nestedRepeats.txt.gz"
-strict_mask="../data/phase3_1000genomes/20141020.strict_mask.whole_genome.bed"
+access_mask="../data/phase3_1000genomes/20140520.strict_mask.autosomes.bed"
 sizes="../data/phase3_1000genomes/hg19.chrom.sizes.txt"
 
 mushi_cfg="3mer.cfg"
@@ -41,6 +40,6 @@ outdir="scons_output"
 
 # no_exec="--no-exec"
 
-cmd="scons ${track} ${comp} --strict_mask=${strict_mask} --sizes=${sizes} --pops=${pops} --bcfs=${bcfs} --batwa_vcfs=${batwa_vcfs} --ancs=${ancs} --kmer=${k} --phastcons=${phastcons} --repeats=${repeats} --jobs=${n_jobs} --outdir=${outdir} ${debug} ${no_exec} --sample_pops=${sample_pops} --mushi_cfg=${mushi_cfg}"
+cmd="scons ${track} ${comp} --access_mask=${access_mask} --sizes=${sizes} --pops=${pops} --bcfs=${bcfs} --ancs=${ancs} --kmer=${k} --phastcons=${phastcons} --repeats=${repeats} --jobs=${n_jobs} --outdir=${outdir} ${debug} ${no_exec} --sample_pops=${sample_pops} --mushi_cfg=${mushi_cfg}"
 echo $cmd
 $cmd

@@ -21,12 +21,6 @@ AddOption('--bcfs',
           metavar='<path>',
           help='path to directory containing 1KG bcf files')
 bcf_dir = GetOption('bcfs')
-AddOption('--batwa_vcfs',
-          dest='batwa_vcfs',
-          type='string',
-          metavar='<path>',
-          help='path to directory containing Batwa vcf files')
-batwa_vcfs_dir = GetOption('batwa_vcfs')
 AddOption('--ancs',
           dest='ancs',
           type='string',
@@ -66,12 +60,12 @@ AddOption('--repeats',
           metavar='<path>',
           help='path to gzipped repeats file (i.e. nestedRepeats.txt.gz)')
 repeats = GetOption('repeats')
-AddOption('--strict_mask',
-          dest='strict_mask',
+AddOption('--access_mask',
+          dest='access_mask',
           type='string',
           metavar='<path>',
-          help='path to strict mask bed file')
-strict_mask = GetOption('strict_mask')
+          help='path to pilot/strict accessibility mask bed file')
+access_mask = GetOption('access_mask')
 AddOption('--sizes',
           dest='sizes',
           type='string',
@@ -137,28 +131,27 @@ if bcf_dir is not None:
            '| bgzip > ${TARGET}')
     ncnr_mask = env.Command(tgt, src, cmd)
 
-    # strict mask (no chr, autosomes only)
-    tgt = os.path.join(outdir, 'strict.bed.gz')
-    src = strict_mask
+    # accessibility mask (no chr, autosomes only)
+    tgt = os.path.join(outdir, 'access.bed.gz')
+    src = access_mask
     cmd = ('egrep "chr[0-9]*\\t" ${SOURCE} | cut -c4- | cut -f1-3 '
            '| bgzip > ${TARGET}')
-    strict_mask_nochr = env.Command(tgt, src, cmd)
+    access_mask_nochr = env.Command(tgt, src, cmd)
 
     # full mask (sites to keep)
     mask_file = os.path.join(outdir, 'mask.bed.gz')
     tgt = [mask_file, mask_file + '.tbi']
-    src = [ncnr_mask, strict_mask_nochr]
+    src = [ncnr_mask, access_mask_nochr]
     cmd = ('gzip -cd ${SOURCES} | sort -k1,1 -k2,2n | bedtools merge -i stdin'
            '| bgzip > ${TARGETS[0]} && tabix -s 1 -b 2 -e 3 ${TARGETS[0]}')
     mask = env.Command(tgt, src, cmd)
 
-    for idx, pop in enumerate(pops + ['Batwa']):
+    for idx, pop in enumerate(pops):
         pop_outdir = os.path.join(outdir, pop)
-        if pop != 'Batwa':
-            pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
-                                   sample_pops,
-                                   f'grep {pop} ${{SOURCE}} | '
-                                   f'cut -f1 > ${{TARGET}}')
+        pop_list = env.Command([os.path.join(pop_outdir, pop + '.list')],
+                               sample_pops,
+                               f'grep {pop} ${{SOURCE}} | '
+                               f'cut -f1 > ${{TARGET}}')
         snps_context = []
         # masked chromosome sizes for mutation rate estimation
         if idx == 0:
@@ -168,22 +161,16 @@ if bcf_dir is not None:
             # get bcf for this chromosome
             # NOTE assumes chro is indicated by 2nd '.'-delimited field in bcf
             # file name
-            if pop == 'Batwa':
-                bcf = glob.glob(f'{batwa_vcfs_dir}/*chr{chro}.vcf.gz')
-            else:
-                bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
+            bcf = glob.glob(f'{bcf_dir}/*chr{chro}.*.bcf')
             assert len(bcf) == 1
             bcf = bcf[0]
 
             # create snps file with columns CHROM POS REF ALT AC AN
             tgt = os.path.join(pop_outdir, f'snps.{chro}.tsv')
             cmd = 'bcftools view -T ${SOURCES[0]} '
-            if pop == 'Batwa':
-                src = [mask[0], bcf]
-            else:
-                src = [mask[0], bcf, pop_list]
-                cmd += '-S ${SOURCES[2]} '
-            cmd += '-g ^miss -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
+            src = [mask[0], bcf, pop_list]
+            cmd += '-S ${SOURCES[2]} '
+            cmd += '-m2 -M2 -v snps -c 1:minor -Ou -f PASS -U'
             cmd += ' ${SOURCES[1]} | '
             if track is not None:
                 print("WARNING! track mask isn't accounted for in mask size!")
