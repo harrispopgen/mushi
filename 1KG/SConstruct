@@ -100,7 +100,7 @@ if bcf_dir is not None:
         tgt = os.path.join(outdir, f'masked_size.{chro}.tsv')
         src = [mask[0], anc_fasta]
         cmd = f'tabix -p bed ${{SOURCES[0]}} {chro}: '
-        cmd += f'| python masked_size.py ${{SOURCES[1]}} --k {k} '
+        cmd += f'| python ../mutyper/masked_size.py ${{SOURCES[1]}} --k {k} '
         cmd += '> ${TARGET}'
         masked_sizes.append(env.Command(tgt, src, cmd))
 
@@ -115,7 +115,7 @@ if bcf_dir is not None:
         tgt = os.path.join(outdir, f'mutation_types.{chro}.bcf')
         src = [mask[0], bcf, anc_fasta]
         cmd = f'bcftools view -T ${{SOURCES[0]}} -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U ${{SOURCES[1]}} '
-        cmd += f'| python ancestor.py ${{SOURCES[2]}} --k {k} '
+        cmd += f'| python ../mutyper/ancestor.py ${{SOURCES[2]}} --k {k} '
         cmd += '| bcftools convert -Ob > $TARGET'
         vcf_mutation_types.append(env.Command(tgt, src, cmd))
 
@@ -136,7 +136,7 @@ if bcf_dir is not None:
             cmd = 'bcftools concat -Ou $SOURCE '
             cmd += f'| bcftools view -s {",".join(superpops[superpop][pop])} -c 1:minor -Ou '
             cmd += '| bcftools query -f \'%CHROM\\t%POS\\t%REF\\t%ALT\\t%AC\\t%AN\\t%INFO/mutation_type\\n\' '
-            cmd += '| python ksfs.py > $TARGET'
+            cmd += '| python ../mutyper/ksfs.py > $TARGET'
             freqs = env.Command(tgt, vcf_mutation_types, cmd)
 
     # masked genome size for mutation rate estimation
