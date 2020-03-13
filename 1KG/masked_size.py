@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from ancestor import Ancestor
+import pyfaidx
 from collections import Counter
-from Bio.Seq import reverse_complement
+import sys
+import re
+from ancestor import Ancestor
 
 
 def main():
@@ -14,43 +16,46 @@ def main():
 
     parser = argparse.ArgumentParser(description='print masked chromosome '
                                                  'size')
-    parser.add_argument('anc_aln_file', type=str, default=None,
+    parser.add_argument('anc_fasta_file', type=str, default=None,
                         help='path to ancestral alignment fasta (one '
                              'chromosome)')
-    parser.add_argument('mask_file', type=str, default=None,
-                        help='path to bed file mask')
+    parser.add_argument('--mask_file', type=str, default=sys.stdin,
+                        help='path to bed file mask (default stdin)')
     parser.add_argument('--k', type=int, default=3,
                         help='kmer context')
+    parser.add_argument('--target', type=int, default=None,
+                        help='0-based mutation target position in kmer (default middle)')
+    parser.add_argument('--sep', type=str, default=':',
+                        help='field delimiter in fasta headers (default ":")')
+    parser.add_argument('--chrom_pos', type=int, default=2,
+                        help='0-based chromosome field position in fasta headers (default 2)')
+    parser.add_argument('--strand_file', type=str, default=None,
+                        help='path to bed file with regions where reverse '
+                             'strand defines mutation context, e.g. direction '
+                             'of replication or transcription (default collapse '
+                             'reverse complements)')
     args = parser.parse_args()
 
-    ancestor = Ancestor(args.anc_aln_file)
-    nucs = set('ACGT')
-    offset = args.k//2
+    ancestor = Ancestor(args.anc_fasta_file, args.k, args.target, args.strand_file)
 
-    def line_gen():
-        for line in open(args.mask_file, 'r'):
-            chr, start, end = line.rstrip().split('\t')
-            assert chr == ancestor.chr, f'bed/fasta chromosome mismatch: {chr} and {ancestor.chr}'
-            yield start, end
+    # parse chromosome names from fasta headers
+    chrom_map = {name.split(args.sep)[args.chrom_pos]:
+                 name for name in ancestor.fasta.keys()}
 
-    sizes = Counter(str(ancestor.anc_aln[(i - offset):(i + offset + 1)].seq)
-                    for start, end in line_gen()
-                    for i in range(max(int(start), offset),
-                                   min(int(end), len(ancestor.anc_aln) - offset))
-                    )
+    if args.mask_file is not sys.stdin:
+        args.mask_file = open(args.mask_file, 'r')
 
-    # collapse reverse complements and remove ambiguous triplets
-    for kmer in list(sizes.keys()):
-        if not all(x in nucs for x in kmer):
-            del sizes[kmer]
-        elif kmer[offset] not in 'AC':
-            sizes[reverse_complement(kmer)] += sizes[kmer]
-            del sizes[kmer]
-
-    assert len(sizes) == 2 * (args.k - 1) ** 4
+    sizes = Counter()
+    for line in args.mask_file:
+        chrom, start, end = line.rstrip().split('\t')
+        context_gen = (ancestor.stranded_context(chrom_map[chrom], pos)
+                       for pos in range(int(start), int(end)))
+        sizes.update(context for context in context_gen if context is not None)
 
     for kmer in sorted(sizes):
-        print(f'{kmer}\t{sizes[kmer]}')
+        # print if unambiguous
+        if re.match('^[ACGT]+$', kmer):
+            print(f'{kmer}\t{sizes[kmer]}')
 
 
 if __name__ == '__main__':

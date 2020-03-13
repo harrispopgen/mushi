@@ -13,25 +13,17 @@ def main():
 
     parser = argparse.ArgumentParser(description='compute ksfs from snps.kmer '
                                                  'files')
-    parser.add_argument('snps_files', type=str, nargs='+',
-                        help='snps.kmer files')
+    parser.add_argument('--variants_file', type=str, default=sys.stdin,
+                        help='variant tsv file with columns CHRO, POS, REF, ALT, AC, AN, mutation_type')
 
     args = parser.parse_args()
 
-    for i, snps_file in enumerate(args.snps_files):
-        snps = pd.read_csv(snps_file, sep='\t', index_col=0)
-        if i == 0:
-            n = snps.n.iloc[0]
-        assert all(snps.n == n), f'SNPs file {snps_file} contains inconsistent n'
-        this_ksfs = snps.groupby(['sample frequency',
-                                  'mutation type']).size().unstack('mutation type',
-                                                                   fill_value=0)
-        if i == 0:
-            ksfs = this_ksfs
-        else:
-            ksfs = ksfs.add(this_ksfs, fill_value=0)
-
-    assert all(ksfs.index == range(1, n)), f'index is missing values:\n{ksfs.index}'
+    variants = pd.read_csv(args.variants_file, sep='\t',
+                       names=('CHRO', 'POS', 'REF', 'ALT', 'AC', 'AN', 'mutation type'))
+    n = variants.AN.iloc[0]
+    assert all(variants.AN == n), f'variant file {args.variants_file} contains inconsistent n'
+    ksfs = variants.groupby(['AC', 'mutation type']).size().unstack('mutation type',
+                                                                    fill_value=0)
 
     ksfs.to_csv(sys.stdout, sep='\t')
 

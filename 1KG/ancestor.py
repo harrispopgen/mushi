@@ -1,177 +1,97 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Bio import SeqIO
-from Bio.Seq import reverse_complement
-from typing import Tuple
-import numpy as np
+import cyvcf2
+import pyfaidx
 import re
-import sys
-import pandas as pd
-from pandas.api.types import CategoricalDtype
-
+from Bio.Seq import reverse_complement
 
 class Ancestor():
     nts = ('A', 'C', 'G', 'T')
 
-    def __init__(self, anc_aln_file: str):
-        '''ancestral state of a chromosome
+    def __init__(self, anc_fasta_file: str, k: int = 3, target: int = None,
+                 strand_file: str = None):
+        """ancestral state of a chromosome
 
-        anc_aln_file: path to ancestral sequence fasta
-        '''
-
-        # parse fasta to Bio.SeqRecord
-        self.anc_aln = SeqIO.read(anc_aln_file, 'fasta')
-        self.chr = self.anc_aln.id.split(':')[2]
-        if int(self.chr) not in range(1, 23):
-            raise ValueError(f'chromosome {self.chr} not in 1-22')
-        self.anc_aln_len = len(self.anc_aln)
-
-    def get_state(self, pos: int) -> str:
-        '''return ancestral state at site pos (1-based)'''
-        if pos > self.anc_aln_len:
-            print(f'position {pos} is beyond chromosome length '
-                  f'{self.anc_aln_len}')
-            return None
-        return self.anc_aln.seq[pos - 1]
-
-    def write(self, file=sys.stdout):
-        '''print fasta record to file (default stdout)'''
-        SeqIO.write(self.anc_aln, file, 'fasta')
-
-    def motif_sites(self, motif: str = 'TCC', target: int = None) -> pd.Index:
-        '''return pandas frame of all sites that have a given motif context
-
-        motif: sequence, can be regex, (default "TCC")
-        target: which position of the site within the motif (default middle)
-        '''
+        anc_fasta_file: path to ancestral sequence fasta
+        k: the size of the context window (default 3)
+        target: which position for the site within the kmer (default middle)
+        strand_file: path to bed file with regions where reverse strand defines
+                     mutation context, e.g. direction of replication or
+                     transcription (default collapse reverse complements)
+        """
+        self.fasta = pyfaidx.Fasta(anc_fasta_file, read_ahead=10000,
+                                   as_raw=True)
         if target is None:
-            assert len(motif) % 2 == 1
-            target = len(motif) // 2
+            assert k % 2 == 1, f'k = {k} must be odd for default middle target'
+            target = k // 2
+        assert 0 <= target < k
+        self.target = target
+        self.k = k
+        if strand_file is None:
+            self.strandedness = None
+            assert self.target == self.k // 2, f'non-central {self.target} target requires strand_file'
         else:
-            target = target
-        if motif[target] not in 'ACGT':
-            raise ValueError(f'motif {motif} at target position {target} must'
-                             ' be a nucleotide')
-        # add the reverse complement of the motif to make a regular expression
-        motif_complement = reverse_complement(motif)
-        motif_regex = re.compile(motif + '|' + motif_complement)
-        sites = []
-        for match in motif_regex.finditer(str(self.anc_aln.seq)):
-            # if it's revcomp match, adjust target accordingly
-            if match.group(0) == motif:
-                this_target = target
-            elif match.group(0) == motif_complement:
-                this_target = len(motif) - target - 1
-            else:
-                raise
-            # NOTE: ANGSD uses 1-based indexing
-            sites.append((self.chr,
-                          match.start(0) + this_target + 1))
-        return pd.Index(sites)
+            raise NotImplementedError('strand_file argument must be None')
 
-    def site_motif(self, pos: int, der: str, k: int = 3,
-                   target: int = None) -> str:
-        '''return context of a given site
+    def stranded_context(self, id: str, pos: int) -> str:
+        """ancestral context of sequence id and pos, oriented or collapsed by
+        strand (returns None if ancestral state at target not in capital ACGT)
 
-        pos: integer position NOTE: 1-based
-        der: derived allele (A, C, G, or T)
-        k: the size of the context window
-        target: which position of the site within the motif (default middle)
-        '''
-        # this only makes sense if middle base is targeted
-        assert k % 2 == 1
-        target = k // 2
-
-        focal_site_idx = pos - 1
-        start = focal_site_idx - target
+        id: fasta record identifier
+        pos: position (0-based)
+        """
+        start = pos - self.target
         assert start >= 0
-        end = focal_site_idx + k - target
-        assert end <= len(self.anc_aln.seq)
+        end = pos + self.k - self.target
+        assert start <= end
+        context = self.fasta[id][start:end]
+        if self.strandedness is None:
+            if context[self.target] in 'AC':
+                return context
+            elif context[self.target] in 'TG':
+                return reverse_complement(context)
+            else:
+                return None
+        else:
+            raise NotImplementedError('self.strandedness must be None')
+
+    def mutation_type(self, id: str, pos: int, ref: str, alt: str) -> str:
+        """mutation type of a given snp, oriented or collapsed by strand
+        returns a tuple of ancestral and derived kmers, or None
+
+        id: fasta record identifier
+        pos: position (0-based)
+        ref: reference allele (A, C, G, or T)
+        alt: alternative allele (A, C, G, or T)
+        """
+        # ancestral state
+        anc = self.fasta[id][pos]
+        # derived state
+        if anc == ref:
+            der = alt
+        elif anc == alt:
+            der = ref
+        else:
+            der = '?'
+        start = pos - self.target
+        assert start >= 0
+        end = pos + self.k - self.target
         assert start <= end
 
-        # return the context or revcomp, whichever has an A or C at the target
-        # base
-        motif = str(self.anc_aln.seq[start:end])
-        if motif[target] not in 'AC':
-            motif = reverse_complement(motif)
-            der = reverse_complement(der)
-            target = k - target - 1
-        return motif + '>' + motif[:target] + der + motif[(target + 1):]
+        # NOTE: don't wanted stranded_context method here
+        context = self.fasta[id][start:end]
+        anc_kmer = f'{context[:self.target]}{anc}{context[(self.target + 1):]}'
+        der_kmer = f'{context[:self.target]}{der}{context[(self.target + 1):]}'
 
-    @staticmethod
-    def kmers(k: int) -> Tuple[str]:
-        '''all kmers of length k'''
-        if k == 1:
-            return Ancestor.nts
-        else:
-            return tuple(prefix + nt for prefix in Ancestor.kmers(k - 1)
-                         for nt in Ancestor.nts)
 
-    def context(self, snps_file: str, k: int = 3) -> pd.DataFrame:
-        '''return snps with k-mer context info
-
-        snps_file: path to SNPs file with columns
-                   CHROM POS REF ALT AC AN
-        k: kmer context size (default 3)
-        '''
-        # categorical dtype for nucleotides
-        nuc_dtype = CategoricalDtype(list('ACGTN'))
-        snps = pd.read_csv(snps_file, sep='\t', header=None,
-                           names=('chr', 'pos', 'ref', 'alt', 'ac', 'an'),
-                           dtype={'chr': np.uint8, 'pos': np.uint32,
-                                  'ref': nuc_dtype, 'alt': nuc_dtype,
-                                  'ac': np.uint16, 'an': np.uint16},
-                           na_filter=False, engine='c').set_index(['chr',
-                                                                   'pos'])
-        # Weirdly, `bcftools view` can sometimes produce repeated output
-        # positions, despite passing the `-m2` and `-M2` options. We exclude
-        # these.
-        snps = snps.loc[~snps.index.duplicated(keep=False)]
-
-        # number of haplotypes
-        n = snps.an[0]
-        assert snps.an.unique() == [n]
-        snps.rename(columns={'an': 'n'}, inplace=True)
-
-        # update ac column name
-        snps.rename(columns={'ac': 'sample frequency'}, inplace=True)
-
-        # exclude fixed sites
-        snps = snps[(0 < snps['sample frequency'])
-                    & (snps['sample frequency'] < n)]
-
-        # ensure that snps are from same chromosome as self
-        assert all(str(chro) == self.chr for chro, pos in snps.index)
-
-        snps['ancestral'] = [self.get_state(pos) for _, pos in snps.index]
-        # keep sites that are biallelic and have defined ancestral state
-        keep = ((snps.ancestral == snps.ref) | (snps.ancestral == snps.alt))
-        snps = snps.loc[keep, :]
-
-        # derived state
-        snps.loc[snps.ancestral == snps.ref, 'derived'] = snps.alt
-        snps.loc[snps.ancestral == snps.alt, 'derived'] = snps.ref
-
-        # drop alt/ref columns now that we have ancestral/derived
-        snps.drop(['ref', 'alt'], axis=1, inplace=True)
-
-        # local nucleotide context of each snp
-        snps['mutation type'] = [self.site_motif(pos,
-                                                 snps.derived[(snps_chr, pos)],
-                                                 k=k)
-                                 for snps_chr, pos in snps.index]
-
-        # drop ancestral and derived columns, now that we have mutation type
-        snps.drop(['ancestral', 'derived'], axis=1, inplace=True)
-
-        # keep snps with ancestral states in kmer context (indicated by
-        # capital ACGT for high confidence, lowercase for low confidence)
-        snps = snps[snps['mutation type'].str.match('^[ACGT]+>[ACGT]+$')]
-        snps['mutation type'] = snps['mutation type'].str.upper()
-
-        return snps
-
+        if self.strandedness is None:
+            if anc in 'AC':
+                return anc_kmer, der_kmer
+            elif anc in 'TG':
+                return reverse_complement(anc_kmer), reverse_complement(der_kmer)
+            else:
+                return None, None
 
 def main():
     """
@@ -179,22 +99,57 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description='write snps with kmer context'
-                                                 ' to stdout')
-    parser.add_argument('anc_aln_file', type=str, default=None,
+    parser = argparse.ArgumentParser(description='add kmer context to vcf/bcf'
+                                                 'INFO and stream to stdout')
+    parser.add_argument('anc_fasta_file', type=str, default=None,
                         help='path to ancestral alignment fasta (one '
                              'chromosome)')
-    parser.add_argument('snps_file', type=str, default=None,
-                        help='path to SNPs file with columns '
-                             'CHROM POS REF ALT AC AN')
-    parser.add_argument('k', type=int, default=3,
+    parser.add_argument('--vcf_file', type=str, default='-',
+                        help='VCF file (default stdin)')
+    parser.add_argument('--k', type=int, default=3,
                         help='k-mer context size (default 3)')
+    parser.add_argument('--target', type=int, default=None,
+                        help='0-based mutation target position in kmer (default middle)')
+    parser.add_argument('--sep', type=str, default=':',
+                        help='field delimiter in fasta headers (default ":")')
+    parser.add_argument('--chrom_pos', type=int, default=2,
+                        help='0-based chromosome field position in fasta headers (default 2)')
+    parser.add_argument('--strand_file', type=str, default=None,
+                        help='path to bed file with regions where reverse '
+                             'strand defines mutation context, e.g. direction '
+                             'of replication or transcription (default collapse '
+                             'reverse complements)')
+
 
     args = parser.parse_args()
 
-    ancestor = Ancestor(args.anc_aln_file)
-    snps_context = ancestor.context(args.snps_file, k=args.k)
-    snps_context.to_csv(sys.stdout, sep='\t')
+    ancestor = Ancestor(args.anc_fasta_file, args.k, args.target, args.strand_file)
+
+    # parse chromosome names from fasta headers
+    chrom_map = {name.split(args.sep)[args.chrom_pos]:
+                 name for name in ancestor.fasta.keys()}
+
+    vcf = cyvcf2.VCF(args.vcf_file)
+    vcf.add_info_to_header({'ID': 'mutation_type',
+                            'Description': f'ancestral {args.k}mer mutation type',
+                            'Type': 'Character', 'Number': '1'})
+    vcf_writer = cyvcf2.Writer('-', vcf)
+    vcf_writer.write_header()
+    for variant in vcf:
+        # biallelic snps only
+        if not (variant.is_snp and len(variant.ALT) == 1):
+            continue
+        # mutation type
+        anc_kmer, der_kerm = ancestor.mutation_type(chrom_map[variant.CHROM],
+                                                    variant.start, variant.REF,
+                                                    variant.ALT[0])
+        mutation_type = f'{anc_kmer}>{der_kerm}'
+        # keep snps with ancestral states in kmer context (indicated by
+        # capital ACGT for high confidence, lowercase for low confidence)
+        if re.match('^[ACGT]+>[ACGT]+$', mutation_type) is None:
+            continue
+        variant.INFO['mutation_type'] = mutation_type
+        vcf_writer.write_record(variant)
 
 
 if __name__ == '__main__':
