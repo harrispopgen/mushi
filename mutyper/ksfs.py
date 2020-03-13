@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 import sys
+import cyvcf2
+from collections import defaultdict, Counter
+import pandas as pd
 
 
 def main():
@@ -11,20 +13,30 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description='compute ksfs from snps.kmer '
-                                                 'files')
-    parser.add_argument('--variants_file', type=str, default=sys.stdin,
-                        help='variant tsv file with columns CHRO, POS, REF, ALT, AC, AN, mutation_type')
+    parser = argparse.ArgumentParser(description='compute ksfs from vcf with '
+                                                 'INFO/mutation_type data')
+    parser.add_argument('--vcf_file', type=str, default='-',
+                        help='VCF file (default stdin)')
 
     args = parser.parse_args()
 
-    variants = pd.read_csv(args.variants_file, sep='\t',
-                       names=('CHRO', 'POS', 'REF', 'ALT', 'AC', 'AN', 'mutation type'))
-    n = variants.AN.iloc[0]
-    assert all(variants.AN == n), f'variant file {args.variants_file} contains inconsistent n'
-    ksfs = variants.groupby(['AC', 'mutation type']).size().unstack('mutation type',
-                                                                    fill_value=0)
+    vcf = cyvcf2.VCF(args.vcf_file)
 
+    ksfs_data = defaultdict(lambda: Counter())
+    AN = None
+    for variant in vcf:
+        # AN must be the same for all sites (no missing genotypes)
+        assert variant.INFO['AN'] == AN or AN is None, f'different AN {variant.INFO["AN"]} and {AN} indicate missing genotypes'
+        AN = variant.INFO['AN']
+        # biallelic snps only
+        if (variant.is_snp and len(variant.ALT) == 1):
+            ksfs_data[variant.INFO['mutation_type']][variant.INFO['AC']] += 1
+
+    index = range(1, AN)
+    for mutation_type in sorted(ksfs_data):
+        ksfs_data[mutation_type] = [ksfs_data[mutation_type][ac] for ac in index]
+    ksfs = pd.DataFrame(ksfs_data, index).reindex(sorted(ksfs_data), axis='columns')
+    print(ksfs)
     ksfs.to_csv(sys.stdout, sep='\t')
 
 
