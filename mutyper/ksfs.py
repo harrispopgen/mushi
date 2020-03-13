@@ -36,7 +36,6 @@ def main():
     for mutation_type in sorted(ksfs_data):
         ksfs_data[mutation_type] = [ksfs_data[mutation_type][ac] for ac in index]
     ksfs = pd.DataFrame(ksfs_data, index).reindex(sorted(ksfs_data), axis='columns')
-    print(ksfs)
     ksfs.to_csv(sys.stdout, sep='\t')
 
 

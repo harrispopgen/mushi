@@ -6,6 +6,7 @@ import pyfaidx
 import re
 from Bio.Seq import reverse_complement
 
+
 class Ancestor():
     nts = ('A', 'C', 'G', 'T')
 

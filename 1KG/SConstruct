@@ -85,8 +85,8 @@ if bcf_dir is not None:
     mask = env.Command(tgt, src, cmd)
 
     # loop over chromosome bcf files
-    chromosomes = [22]
-    # chromosomes = range(1, 23)
+    # chromosomes = [22]
+    chromosomes = range(1, 23)
     masked_sizes = []
     vcf_mutation_types = []
     for chro in (str(chro_int) for chro_int in chromosomes):
@@ -135,7 +135,6 @@ if bcf_dir is not None:
             tgt = os.path.join(outdir, f'{k}-SFS.{superpop}.{pop}.tsv')
             cmd = 'bcftools concat -Ou $SOURCE '
             cmd += f'| bcftools view -s {",".join(superpops[superpop][pop])} -c 1:minor -Ou '
-            cmd += '| bcftools query -f \'%CHROM\\t%POS\\t%REF\\t%ALT\\t%AC\\t%AN\\t%INFO/mutation_type\\n\' '
             cmd += '| python ../mutyper/ksfs.py > $TARGET'
             freqs = env.Command(tgt, vcf_mutation_types, cmd)
 

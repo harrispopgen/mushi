@@ -15,7 +15,7 @@ ancs="../data/human_ancestor_GRCh37_e59"
 samples="../data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
 
 # all 1KG
-pops="--pops=GBR,FIN"
+# pops="--pops=GBR,FIN"
 
 k="3"
 
@@ -23,7 +23,7 @@ mask="../data/phase3_1000genomes/20140520.strict_mask.autosomes.bed"
 
 mushi_cfg="3mer.cfg"
 
-outdir="scons_output_test"
+outdir="scons_output"
 
 # no_exec="--no-exec"
 

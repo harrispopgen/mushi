@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import pyfaidx
 from collections import Counter
 import sys
 import re
