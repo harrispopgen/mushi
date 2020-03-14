@@ -103,7 +103,7 @@ def tmrca_cdf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     u = np.concatenate((np.array([1]), u))
     # the A_2j are the product of this matrix
     # NOTE: using letter  "l" as a variable name to match text
-    l = onp.arange(2, n + 1)[:, np.newaxis]
+    l = onp.arange(2, n + 1)[:, onp.newaxis]
     with onp.errstate(divide='ignore'):
         A2_terms = l * (l - 1) / (l * (l - 1) - l.T * (l.T - 1))
     onp.fill_diagonal(A2_terms, 1)
