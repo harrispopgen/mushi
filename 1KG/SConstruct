@@ -140,5 +140,5 @@ if bcf_dir is not None:
 
     # masked genome size for mutation rate estimation
     tgt = os.path.join(outdir, f'masked_size.tsv')
-    cmd = "cat ${SOURCES} | awk '{sum+=$2} END {print sum}' > $TARGET"
+    cmd = 'python masked_size_aggregator.py $SOURCES > $TARGET'
     masked_size = env.Command(tgt, masked_sizes, cmd)
