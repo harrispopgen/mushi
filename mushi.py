@@ -292,17 +292,23 @@ class kSFS():
             # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
             #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
             basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
-            # initial iterate in inverse log-ratio transform
-            Z = cmp.ilr(self.μ.Z, basis)
+            ## initial iterate in inverse log-ratio transform
+            #Z = cmp.ilr(self.μ.Z, basis)
+            Z = np.log(self.μ.Z)
+
+            def softmax_mat(Z):
+                Zexp = np.exp(Z)
+                row_sums = Zexp.sum(axis=1)
+                return Zexp / row_sums[:, np.newaxis]
 
             @jit
             def g(Z):
                 """differentiable piece of objective in μ problem"""
                 if mask is not None:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
+                    loss_term = loss(mu0 * softmax_mat(Z), self.X[mask, :],
                                      self.L[mask, :])
                 else:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X, self.L)
+                    loss_term = loss(mu0 * softmax_mat(Z), self.X, self.L)
                 return loss_term + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
                                  + (β_ridge / 2) * (Z ** 2).sum()
 
@@ -396,7 +402,7 @@ class kSFS():
                                                       gamma=gamma)
 
             self.μ = histories.mu(self.η.change_points,
-                                 mu0 * cmp.ilr_inv(Z, basis),
+                                 mu0 * softmax_mat(Z),
                                  mutation_types=self.mutation_types.values)
 
 
