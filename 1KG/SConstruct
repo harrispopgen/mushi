@@ -7,9 +7,6 @@ import glob
 from SCons.Script import Environment, AddOption, GetOption
 from collections import defaultdict
 
-# this is where we'd define qsub commands
-# sconsutils
-
 # Set up SCons environment
 environ = os.environ.copy()
 env = Environment(ENV=environ)
@@ -99,9 +96,9 @@ if bcf_dir is not None:
         # state identifiability
         tgt = os.path.join(outdir, f'masked_size.{chro}.tsv')
         src = [mask[0], anc_fasta]
-        cmd = f'tabix -p bed ${{SOURCES[0]}} {chro}: '
-        cmd += f'| python ../mutyper/masked_size.py ${{SOURCES[1]}} --k {k} '
-        cmd += '> ${TARGET}'
+        cmd = (f'tabix -p bed ${{SOURCES[0]}} {chro}: '
+               f'| python ../mutyper/masked_size.py ${{SOURCES[1]}} --k {k} '
+               '> ${TARGET}')
         masked_sizes.append(env.Command(tgt, src, cmd))
 
         # get bcf for this chromosome
@@ -114,9 +111,9 @@ if bcf_dir is not None:
         # create vcf for this chromosome with kmer mutation type in INFO field
         tgt = os.path.join(outdir, f'mutation_types.{chro}.bcf')
         src = [mask[0], bcf, anc_fasta]
-        cmd = f'bcftools view -T ${{SOURCES[0]}} -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U ${{SOURCES[1]}} '
-        cmd += f'| python ../mutyper/ancestor.py ${{SOURCES[2]}} --k {k} '
-        cmd += '| bcftools convert -Ob > $TARGET'
+        cmd = ('bcftools view -T ${SOURCES[0]} -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U ${SOURCES[1]} '
+               f'| python ../mutyper/ancestor.py ${{SOURCES[2]}} --k {k} '
+               '| bcftools convert -Ob > $TARGET')
         vcf_mutation_types.append(env.Command(tgt, src, cmd))
 
     # nested dict of superpopulation -> population -> sample list
@@ -133,9 +130,9 @@ if bcf_dir is not None:
         for pop in superpops[superpop]:
             # k-SFS
             tgt = os.path.join(outdir, f'{k}-SFS.{superpop}.{pop}.tsv')
-            cmd = 'bcftools concat -Ou $SOURCE '
-            cmd += f'| bcftools view -s {",".join(superpops[superpop][pop])} -c 1:minor -Ou '
-            cmd += '| python ../mutyper/ksfs.py > $TARGET'
+            cmd = ('bcftools concat -n -Ou $SOURCES '
+                   f'| bcftools view -s {",".join(superpops[superpop][pop])} -c 1:minor -Ou '
+                   '| python ../mutyper/ksfs.py > $TARGET')
             freqs = env.Command(tgt, vcf_mutation_types, cmd)
 
     # masked genome size for mutation rate estimation

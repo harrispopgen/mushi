@@ -8,8 +8,6 @@ from Bio.Seq import reverse_complement
 
 
 class Ancestor():
-    nts = ('A', 'C', 'G', 'T')
-
     def __init__(self, anc_fasta_file: str, k: int = 3, target: int = None,
                  strand_file: str = None):
         """ancestral state of a chromosome
@@ -31,22 +29,26 @@ class Ancestor():
         self.k = k
         if strand_file is None:
             self.strandedness = None
-            assert self.target == self.k // 2, f'non-central {self.target} target requires strand_file'
+            assert self.target == self.k // 2, f'non-central target {self.target} requires strand_file'
         else:
             raise NotImplementedError('strand_file argument must be None')
 
-    def stranded_context(self, id: str, pos: int) -> str:
-        """ancestral context of sequence id and pos, oriented or collapsed by
-        strand (returns None if ancestral state at target not in capital ACGT)
+    def context(self, id: str, pos: int) -> str:
+        """ancestral context of sequence id and pos, oriented according to
+        self.strandedness or collapsed reverse complementation (returns None if
+        ancestral state at target not in capital ACGT)
 
         id: fasta record identifier
         pos: position (0-based)
         """
         start = pos - self.target
-        assert start >= 0
+        if start < 0:
+            raise ValueError(f'position {pos} too close to sequence end to '
+                             'compute context')
         end = pos + self.k - self.target
-        assert start <= end
         context = self.fasta[id][start:end]
+        if not re.match('^[ACGT]+$', context):
+            return None
         if self.strandedness is None:
             if context[self.target] in 'AC':
                 return context
@@ -59,7 +61,7 @@ class Ancestor():
 
     def mutation_type(self, id: str, pos: int, ref: str, alt: str) -> str:
         """mutation type of a given snp, oriented or collapsed by strand
-        returns a tuple of ancestral and derived kmers, or None
+        returns a tuple of ancestral and derived kmers
 
         id: fasta record identifier
         pos: position (0-based)
@@ -74,25 +76,32 @@ class Ancestor():
         elif anc == alt:
             der = ref
         else:
-            der = '?'
+            # infinite sites violation
+            return None, None
         start = pos - self.target
         assert start >= 0
         end = pos + self.k - self.target
         assert start <= end
 
-        # NOTE: don't wanted stranded_context method here
+        # NOTE: don't want the context() method here
         context = self.fasta[id][start:end]
         anc_kmer = f'{context[:self.target]}{anc}{context[(self.target + 1):]}'
         der_kmer = f'{context[:self.target]}{der}{context[(self.target + 1):]}'
 
+        if not re.match('^[ACGT]+$', anc_kmer) or not re.match('^[ACGT]+$', der_kmer):
+            return None, None
 
         if self.strandedness is None:
             if anc in 'AC':
                 return anc_kmer, der_kmer
             elif anc in 'TG':
                 return reverse_complement(anc_kmer), reverse_complement(der_kmer)
-            else:
-                return None, None
+        else:
+            NotImplementedError('self.strandedness must be None')
+
+    def __del__(self):
+        self.fasta.close()
+
 
 def main():
     """
@@ -100,7 +109,7 @@ def main():
     """
     import argparse
 
-    parser = argparse.ArgumentParser(description='add kmer context to vcf/bcf'
+    parser = argparse.ArgumentParser(description='add kmer context to vcf/bcf '
                                                  'INFO and stream to stdout')
     parser.add_argument('anc_fasta_file', type=str, default=None,
                         help='path to ancestral alignment fasta (one '
@@ -141,14 +150,12 @@ def main():
         if not (variant.is_snp and len(variant.ALT) == 1):
             continue
         # mutation type
-        anc_kmer, der_kerm = ancestor.mutation_type(chrom_map[variant.CHROM],
+        anc_kmer, der_kmer = ancestor.mutation_type(chrom_map[variant.CHROM],
                                                     variant.start, variant.REF,
                                                     variant.ALT[0])
-        mutation_type = f'{anc_kmer}>{der_kerm}'
-        # keep snps with ancestral states in kmer context (indicated by
-        # capital ACGT for high confidence, lowercase for low confidence)
-        if re.match('^[ACGT]+>[ACGT]+$', mutation_type) is None:
+        if anc_kmer is None or der_kmer is None:
             continue
+        mutation_type = f'{anc_kmer}>{der_kmer}'
         variant.INFO['mutation_type'] = mutation_type
         vcf_writer.write_record(variant)
 

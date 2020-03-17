@@ -26,11 +26,10 @@ def main():
     AN = None
     for variant in vcf:
         # AN must be the same for all sites (no missing genotypes)
-        assert variant.INFO['AN'] == AN or AN is None, f'different AN {variant.INFO["AN"]} and {AN} indicate missing genotypes'
+        if AN is not None and variant.INFO['AN'] != AN:
+            raise ValueError(f'different AN {variant.INFO["AN"]} and {AN} indicates missing genotypes')
         AN = variant.INFO['AN']
-        # biallelic snps only
-        if (variant.is_snp and len(variant.ALT) == 1):
-            ksfs_data[variant.INFO['mutation_type']][variant.INFO['AC']] += 1
+        ksfs_data[variant.INFO['mutation_type']][variant.INFO['AC']] += 1
 
     index = range(1, AN)
     for mutation_type in sorted(ksfs_data):

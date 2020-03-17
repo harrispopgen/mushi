@@ -47,9 +47,10 @@ def main():
     sizes = Counter()
     for line in args.mask_file:
         chrom, start, end = line.rstrip().split('\t')
-        context_gen = (ancestor.stranded_context(chrom_map[chrom], pos)
-                       for pos in range(int(start), int(end)))
-        sizes.update(context for context in context_gen if context is not None)
+        sizes.update(ancestor.context(chrom_map[chrom], pos)
+                     for pos in range(int(start), int(end)))
+
+    del sizes[None]
 
     for kmer in sorted(sizes):
         # print if unambiguous
