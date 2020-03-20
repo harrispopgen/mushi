@@ -47,15 +47,13 @@ def main():
     sizes = Counter()
     for line in args.mask_file:
         chrom, start, end = line.rstrip().split('\t')
-        sizes.update(ancestor.context(chrom_map[chrom], pos)
-                     for pos in range(int(start), int(end)))
+        sizes.update(ancestor.region_context(chrom_map[chrom],
+                                             int(start), int(end)))
 
     del sizes[None]
 
     for kmer in sorted(sizes):
-        # print if unambiguous
-        if re.match('^[ACGT]+$', kmer):
-            print(f'{kmer}\t{sizes[kmer]}')
+        print(f'{kmer}\t{sizes[kmer]}')
 
 
 if __name__ == '__main__':

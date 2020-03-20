@@ -5,6 +5,7 @@ import cyvcf2
 import pyfaidx
 import re
 from Bio.Seq import reverse_complement
+from typing import Generator
 
 
 class Ancestor():
@@ -19,11 +20,12 @@ class Ancestor():
                      mutation context, e.g. direction of replication or
                      transcription (default collapse reverse complements)
         """
-        self.fasta = pyfaidx.Fasta(anc_fasta_file, read_ahead=10000,
-                                   as_raw=True)
+        self.fasta = pyfaidx.Fasta(anc_fasta_file, read_ahead=10000)
         if target is None:
             assert k % 2 == 1, f'k = {k} must be odd for default middle target'
             target = k // 2
+        else:
+            raise NotImplementedError('target must be None (default)')
         assert 0 <= target < k
         self.target = target
         self.k = k
@@ -33,31 +35,33 @@ class Ancestor():
         else:
             raise NotImplementedError('strand_file argument must be None')
 
-    def context(self, id: str, pos: int) -> str:
-        """ancestral context of sequence id and pos, oriented according to
-        self.strandedness or collapsed reverse complementation (returns None if
-        ancestral state at target not in capital ACGT)
+    def region_context(self, id: str, start: int, end: int) -> Generator[str, None, None]:
+        """ancestral context of each site in a bed file region, oriented
+        according to self.strandedness or collapsed by reverse complementation
+        (returns None if ancestral state at target not in capital ACGT)
 
         id: fasta record identifier
         pos: position (0-based)
         """
-        start = pos - self.target
-        if start < 0:
-            raise ValueError(f'position {pos} too close to sequence end to '
-                             'compute context')
-        end = pos + self.k - self.target
-        context = self.fasta[id][start:end]
-        if not re.match('^[ACGT]+$', context):
-            return None
-        if self.strandedness is None:
-            if context[self.target] in 'AC':
-                return context
-            elif context[self.target] in 'TG':
-                return reverse_complement(context)
+        # NOTE: only valid for central target
+        if start - self.target < 0:
+            raise ValueError(f'position {start - self.target} too close to '
+                             'sequence end to compute context')
+        # we want to access the fasta as few times as possible
+        region_seq = self.fasta[id][(start - self.target):(end + self.k - self.target)]
+        for i in range(end - start):
+            context = str(region_seq[i:(i + self.k)])
+            if not re.match('^[ACGT]+$', context):
+                yield None
+            elif self.strandedness is None:
+                if context[self.target] in 'AC':
+                    yield context
+                elif context[self.target] in 'TG':
+                    yield reverse_complement(context)
+                else:
+                    raise ValueError('there is a bug if you got here')
             else:
-                return None
-        else:
-            raise NotImplementedError('self.strandedness must be None')
+                raise NotImplementedError('self.strandedness must be None')
 
     def mutation_type(self, id: str, pos: int, ref: str, alt: str) -> str:
         """mutation type of a given snp, oriented or collapsed by strand
@@ -83,7 +87,6 @@ class Ancestor():
         end = pos + self.k - self.target
         assert start <= end
 
-        # NOTE: don't want the context() method here
         context = self.fasta[id][start:end]
         anc_kmer = f'{context[:self.target]}{anc}{context[(self.target + 1):]}'
         der_kmer = f'{context[:self.target]}{der}{context[(self.target + 1):]}'
