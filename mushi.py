@@ -83,7 +83,7 @@ class kSFS():
         if eta is None:
             raise ValueError('η(t) must be defined first')
         t, y = eta.arrays()
-        return utils.tmrca_cdf(t, y, self.n)[1:-1]
+        return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
 
     def simulate(self, eta: histories.eta, mu: histories.mu,
                  seed: int = None) -> None:
@@ -182,7 +182,7 @@ class kSFS():
         # ininitialize with MLE constant η and μ
         x = self.X.sum(1, keepdims=True)
         μ_total = histories.mu(change_points,
-                              mu0 * np.ones((len(change_points) + 1, 1)))
+                               mu0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
@@ -200,16 +200,15 @@ class kSFS():
             eta_anc = self.η
             Γ = 1
         else:
-            Γ = - np.log(1 - utils.tmrca_cdf(t, self.η.y, self.n))[:-1]
+            # - log(1 - CDF)
+            Γ = - np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1]
         logy_anc = np.log(eta_anc.y)
 
-        # NOTE: scaling by S is a hack, should use relative triplet
-        #       content of masked genome
         if self.μ is None:
             self.μ = histories.mu(self.η.change_points,
-                                 mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                               self.X.shape[1])),
-                                 mutation_types=self.mutation_types.values)
+                                  mu0 * (S / S.sum()) * np.ones((self.η.m,
+                                                                 self.X.shape[1])),
+                                  mutation_types=self.mutation_types.values)
         self.M = utils.M(self.n, t, self.η.y)
         self.L = self.C @ self.M
 

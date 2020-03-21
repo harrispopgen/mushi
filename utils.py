@@ -90,8 +90,8 @@ def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
     return lsq
 
 
-def tmrca_cdf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
-    """The CDF of the TMRCA of at each time point
+def tmrca_sf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
+    """The survival function of the TMRCA at each time point
 
     t: time grid (including zero and infinity)
     y: effective population size in each epoch
@@ -99,8 +99,8 @@ def tmrca_cdf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     """
     # epoch durations
     s = np.diff(t)
-    u = np.exp(-s / y)
-    u = np.concatenate((np.array([1]), u))
+    logu = -s / y
+    logu = np.concatenate((np.array([0]), logu))
     # the A_2j are the product of this matrix
     # NOTE: using letter  "l" as a variable name to match text
     l = onp.arange(2, n + 1)[:, onp.newaxis]
@@ -111,11 +111,12 @@ def tmrca_cdf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
 
     binom_vec = l * (l - 1) / 2
 
-    result = np.ones(len(t))
-
+    result = np.zeros(len(t))
     result = index_update(result, index[:-1],
-                          1 - np.squeeze(A2[np.newaxis, :]
-                               @ np.exp(np.cumsum(np.log(u[np.newaxis, :-1]),
-                                                  axis=1)) ** binom_vec))
+                          np.squeeze(A2[np.newaxis, :]
+                                     @ np.exp(np.cumsum(logu[np.newaxis, :-1],
+                                                        axis=1)) ** binom_vec))
+
+    assert np.all(np.isfinite(result))
 
     return result
