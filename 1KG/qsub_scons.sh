@@ -11,7 +11,8 @@ n_jobs=`sysctl -n hw.physicalcpu`
 bcfs="../data/phase3_1000genomes/bcfs"
 ancs="../data/human_ancestor_GRCh37_e59"
 samples="../data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
-mask="../data/phase3_1000genomes/20140520.pilot_mask.autosomes.bed"
+# mask="../data/phase3_1000genomes/20140520.pilot_mask.autosomes.bed"
+mask="../data/phase3_1000genomes/20140520.strict_mask.autosomes.bed"
 
 # restrict to pops
 # pops="--pops=GBR,FIN"
@@ -22,7 +23,7 @@ mask="../data/phase3_1000genomes/20140520.pilot_mask.autosomes.bed"
 # kmer
 k="3"
 
-outdir="scons_output_pilot"
+outdir="scons_output"
 
 # no_exec="--no-exec"
 
