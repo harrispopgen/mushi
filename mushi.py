@@ -199,15 +199,6 @@ class kSFS():
             y = (S.sum() / 2 / H / mu0) * np.ones(len(z))
             self.η = histories.eta(change_points, y)
 
-        if eta_ref is None:
-            eta_ref = self.η
-            # Tikhonov matrix
-            Γ = np.diag(np.ones_like(eta_ref.y))
-        else:
-            # - log(1 - CDF)
-            Γ = np.diag(- np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
-        logy_ref = np.log(eta_ref.y)
-
         μ_const = histories.mu(self.η.change_points,
                                mu0 * (S / S.sum()) * np.ones((self.η.m,
                                                               self.X.shape[1])),
@@ -217,9 +208,6 @@ class kSFS():
             self.μ = μ_const
         self.M = utils.M(self.n, t, self.η.y)
         self.L = self.C @ self.M
-
-        if mu_ref is None:
-            mu_ref = μ_const
 
         # badness of fit
         if loss == 'prf':
@@ -246,6 +234,15 @@ class kSFS():
             # Accelerated proximal gradient method: our objective function
             # decomposes as f = g + h, where g is differentiable and h is not.
             # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+
+            if eta_ref is None:
+                eta_ref = self.η
+                # Tikhonov matrix
+                Γ = np.diag(np.ones_like(eta_ref.y))
+            else:
+                # - log(1 - CDF)
+                Γ = np.diag(- np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
+            logy_ref = np.log(eta_ref.y)
 
             @jit
             def g(logy):
@@ -297,6 +294,14 @@ class kSFS():
 
         if infer_mu:
             print('inferring μ(t) conditioned on η(t)', flush=True)
+
+            if mu_ref is None:
+                mu_ref = μ_const
+                # Tikhonov matrix
+                Γ = np.diag(np.ones_like(self.η.y))
+            else:
+                # - log(1 - CDF)
+                Γ = np.diag(- np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
 
             # orthonormal basis for Aitchison simplex
             # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
