@@ -109,6 +109,7 @@ class kSFS():
                       mu0: np.float64,
                       eta: histories.eta = None,
                       eta_ref: histories.eta = None,
+                      mu_ref: histories.mu = None,
                       infer_eta: bool = True,
                       infer_mu: bool = True,
                       alpha_tv: np.float64 = 0,
@@ -134,6 +135,8 @@ class kSFS():
              constant MLE is computed
         eta_ref: optional reference demographic history for ridge penalty. If
                  None (the default), the constant MLE is used
+        mu_ref: optional reference MuSH for ridge penalty. If None (the
+                default), the constant MLE is used
 
         infer_eta, infer_mu: flags can be set to False to skip either optimization
 
@@ -205,13 +208,18 @@ class kSFS():
             Γ = np.diag(- np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
         logy_ref = np.log(eta_ref.y)
 
+        μ_const = histories.mu(self.η.change_points,
+                               mu0 * (S / S.sum()) * np.ones((self.η.m,
+                                                              self.X.shape[1])),
+                               mutation_types=self.mutation_types.values)
+
         if self.μ is None:
-            self.μ = histories.mu(self.η.change_points,
-                                  mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                                 self.X.shape[1])),
-                                  mutation_types=self.mutation_types.values)
+            self.μ = μ_const
         self.M = utils.M(self.n, t, self.η.y)
         self.L = self.C @ self.M
+
+        if mu_ref is None:
+            mu_ref = μ_const
 
         # badness of fit
         if loss == 'prf':
@@ -296,7 +304,8 @@ class kSFS():
             basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
             # initial iterate in inverse log-ratio transform
             Z = cmp.ilr(self.μ.Z, basis)
-            Z_ref = cmp.ilr(self.μ.Z, basis)
+            Z_const = cmp.ilr(μ_const.Z, basis)
+            Z_ref = cmp.ilr(mu_ref.Z, basis)
 
             @jit
             def g(Z):
@@ -306,8 +315,11 @@ class kSFS():
                                      self.L[mask, :])
                 else:
                     loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X, self.L)
-                return loss_term + (β_spline / 2) * ((D1 @ Z) ** 2).sum() \
-                                 + (β_ridge / 2) * ((Z - Z_ref) ** 2).sum()
+                spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
+                # generalized Tikhonov
+                Z_delta = Z - Z_ref
+                ridge_term = (β_ridge / 2) * np.trace(Z_delta.T @ Γ @ Z_delta)
+                return loss_term + spline_term + ridge_term
 
             if β_tv and β_rank:
                 @jit
@@ -327,18 +339,18 @@ class kSFS():
                 @jit
                 def h2(Z):
                     """2nd nondifferentiable piece of objective in μ problem"""
-                    σ = np.linalg.svd(Z - Z_ref, compute_uv=False)
+                    σ = np.linalg.svd(Z - Z_const, compute_uv=False)
                     return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
                 def prox2(Z, s):
                     """singular value thresholding"""
-                    U, σ, Vt = np.linalg.svd(Z - Z_ref, full_matrices=False)
+                    U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
                     if hard:
                         σ = index_update(σ, index[σ <= s * β_rank], 0)
                     else:
                         σ = np.maximum(0, σ - s * β_rank)
                     Σ = np.diag(σ)
-                    return Z_ref + U @ Σ @ Vt
+                    return Z_const + U @ Σ @ Vt
 
                 Z = optimization.three_op_prox_grad_method(Z, g, jit(grad(g)),
                                                            h1, prox1,
@@ -369,18 +381,18 @@ class kSFS():
                     @jit
                     def h(Z):
                         """nondifferentiable piece of objective in μ problem"""
-                        σ = np.linalg.svd(Z - Z_ref, compute_uv=False)
+                        σ = np.linalg.svd(Z - Z_const, compute_uv=False)
                         return β_rank * np.linalg.norm(σ, 0 if hard else 1)
 
                     def prox(Z, s):
                         """singular value thresholding"""
-                        U, σ, Vt = np.linalg.svd(Z - Z_ref, full_matrices=False)
+                        U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
                         if hard:
                             σ = index_update(σ, index[σ <= s * β_rank], 0)
                         else:
                             σ = np.maximum(0, σ - s * β_rank)
                         Σ = np.diag(σ)
-                        return Z_ref + U @ Σ @ Vt
+                        return Z_const + U @ Σ @ Vt
                 else:
                     @jit
                     def h(Z):
