@@ -17,6 +17,8 @@ and activate your new environment with
 $ conda activate mushi
 ```
 
+You will also need the program `dvipng` to create the figures.
+
 Code
 ---
 - [`mushi.py`](mushi.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in [TODO: citation when it exists].
