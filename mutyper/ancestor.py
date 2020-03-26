@@ -50,7 +50,7 @@ class Ancestor():
         # we want to access the fasta as few times as possible
         region_seq = self.fasta[id][(start - self.target):(end + self.k - self.target)]
         for i in range(end - start):
-            context = str(region_seq[i:(i + self.k)])
+            context = region_seq[i:(i + self.k)].seq
             if not re.match('^[ACGT]+$', context):
                 yield None
             elif self.strandedness is None:
@@ -73,7 +73,7 @@ class Ancestor():
         alt: alternative allele (A, C, G, or T)
         """
         # ancestral state
-        anc = self.fasta[id][pos]
+        anc = self.fasta[id][pos].seq
         # derived state
         if anc == ref:
             der = alt
