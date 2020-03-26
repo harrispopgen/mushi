@@ -17,7 +17,11 @@ and activate your new environment with
 $ conda activate mushi
 ```
 
-You will also need the program `dvipng` to create the figures.
+For LaTeX rendering in plotting functions, you may also need to install additional dependencies for the [`matplotlib` `usetex`](https://matplotlib.org/tutorials/text/usetex.html) option:
+>Matplotlib's LaTeX support requires a working [LaTeX](http://www.tug.org/) installation, [dvipng](http://www.nongnu.org/dvipng/)
+(which may be included with your LaTeX installation), and [Ghostscript](https://ghostscript.com/)
+(GPL Ghostscript 9.0 or later is required). The executables for these
+external dependencies must all be located on your [`PATH`](https://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH).
 
 Code
 ---
