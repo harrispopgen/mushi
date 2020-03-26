@@ -10,6 +10,8 @@ import pandas as pd
 def main():
     """
     usage: python ksfs.py -h
+
+    prints the k-SFS, or the mutation spectrum if input contains only one sample
     """
     import argparse
 
@@ -35,8 +37,11 @@ def main():
     for mutation_type in sorted(ksfs_data):
         ksfs_data[mutation_type] = [ksfs_data[mutation_type][ac] for ac in index]
     ksfs = pd.DataFrame(ksfs_data, index).reindex(sorted(ksfs_data), axis='columns')
-    ksfs.to_csv(sys.stdout, sep='\t')
-
+    try:
+        print(ksfs.to_csv(sep='\t', index=True if ksfs.shape[0] > 1 else False,
+              index_label='sample_frequency'))
+    except BrokenPipeError:
+        pass
 
 if __name__ == '__main__':
     main()

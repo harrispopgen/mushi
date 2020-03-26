@@ -52,8 +52,11 @@ def main():
 
     del sizes[None]
 
-    for kmer in sorted(sizes):
-        print(f'{kmer}\t{sizes[kmer]}')
+    try:
+        for kmer in sorted(sizes):
+            print(f'{kmer}\t{sizes[kmer]}')
+    except BrokenPipeError:
+        pass
 
 
 if __name__ == '__main__':
