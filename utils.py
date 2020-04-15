@@ -1,10 +1,8 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import numpy as onp
 import jax.numpy as np
 from jax.ops import index, index_update
-from typing import Callable
 
 
 def C(n: int) -> onp.ndarray:
