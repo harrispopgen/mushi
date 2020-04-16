@@ -76,6 +76,11 @@ class kSFS():
         """read-only alias to μ attribute"""
         return self.μ
 
+    def as_df(self):
+        """return a pandas DataFrame representation"""
+        return pd.DataFrame(self.X, index=range(1, self.n),
+                            columns=self.mutation_types)
+
     def clear_eta(self):
         """clear demographic history attribute η
         """
