@@ -1,41 +1,79 @@
-mushi
-====
+![](logo.png)
 
-[__mu__]tation [__s__]pectrum [__h__]istory [__i__]nference
+A Python package for: [__mu__]tation [__s__]pectrum [__h__]istory [__i__]nference
 
-Dope bible, manga, and hardcore punk things that share this name: https://en.wikipedia.org/wiki/Mushi
+Pairs well with the package [`mutyper`](https://github.com/harrispopgen/mutyper), which assigns mutation types to SNPs in VCF files.
 
-Dependencies
+Installation
 ---
 
-Dependences are listed in [env.yml](). You can set up a [conda](https://docs.conda.io/en/latest/) environment with
+- Basic install with pip
 ```bash
-$ conda env create -f env.yml
-```
-and activate your new environment with
-```bash
-$ conda activate mushi
+$ pip install git+https://github.com/harrispopgen/mushi
 ```
 
-For LaTeX rendering in plotting functions, you may also need to install additional dependencies for the [`matplotlib` `usetex`](https://matplotlib.org/tutorials/text/usetex.html) option:
+- Developer installation: add `-e` for editable (clones repo to `./src/mushi`)
+```bash
+$ pip install -e git+https://github.com/harrispopgen/mushi#egg=mushi
+```
+
+- For LaTeX rendering in `mushi` plotting functions, you may also need to install dependencies for the [`matplotlib` `usetex`](https://matplotlib.org/tutorials/text/usetex.html) option:
 >Matplotlib's LaTeX support requires a working [LaTeX](http://www.tug.org/) installation, [dvipng](http://www.nongnu.org/dvipng/)
 (which may be included with your LaTeX installation), and [Ghostscript](https://ghostscript.com/)
 (GPL Ghostscript 9.0 or later is required). The executables for these
 external dependencies must all be located on your [`PATH`](https://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH).
 
-Code
----
-- [`mushi.py`](mushi.py): Class implementing the coalescent model of the expected sample frequency spectrum, as described in [TODO: citation when it exists].
-- [`tcc-pulse-timing.ipynb`](tcc-pulse-timing.ipynb): Jupyter notebook for inference of European demographies and TCC>TTC pulse, using example data.
-- [`simulation_simple.ipynb`](simulation_simple.ipynb): Jupyter notebook exploring reconstruction on SFS simulated under the mushi forward model.
-- [`simulation.ipynb`](simulation.ipynb): Jupyter notebook exploring reconstruction on SFS simulated with `msprime` and `stdpopsim`.
-- [`L-spectrum.ipynb`](L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
-- [`histories.py`](histories.py): Classes for demographic history and mutation spectrum history objects.
-- [`optimization.py`](optimization.py): proximal gradient algorithms.
-- [`utils.py`](utils.py): utility functions.
+- Additional dependencies are needed to run the [Jupyter notebooks](notebooks) or the [1000 Genomes pipeline](1KG). A complete [Conda](https://docs.conda.io/en/latest/) environment (including `mushi`) can created with
+```bash
+$ conda env create -f env.yml
+```
+and then activated with
+```bash
+$ conda activate mushi
+```
 
-[TODO: document 1KG pipeline, mutyper subpackage]
+
+Citing `mushi`
+---
+
+No preprint yet, so for now:
+```
+@software{mushi2020github,
+  author = {William DeWitt},
+  title = {mushi: mutation spectrum history inference},
+  url = {https://github.com/harrispopgen/mushi},
+  version = {1.0},
+  year = {2020},
+}
+```
+
+Command line interface
+---
+
+TODO
+
+
+Python API
+---
+
+See API documentation at [???]
+
+- [`mushi.py`](mushi/ksfs.py): Class implementing the coalescent model of the expected sample frequency spectrum
+- [`histories.py`](mushi/histories.py): Classes for demographic history and mutation spectrum history objects.
+- [`optimization.py`](mushi/optimization.py): proximal gradient algorithms.
+- [`utils.py`](mushi/utils.py): utility functions.
+
 
 Example data
 ---
 3-SFS data for each 1000 Genomes population are in [`example_data`](example_data), for use with notebooks.
+
+Jupyter [notebooks](notebooks)
+---
+
+- [`demo-mushi.ipynb`](notebooks/demo-mushi.ipynb): Demostration of API usage and interface with `mutyper` output.
+- [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on SFS simulated under the mushi forward model.
+- [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on SFS simulated with `msprime` and `stdpopsim`.
+- [`L-spectrum.ipynb`](notebooks/L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
+
+[TODO: document 1KG pipeline]
