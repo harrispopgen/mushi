@@ -1,39 +1,53 @@
 #! /usr/bin/env python
 
+import mushi.histories as hst
+from mushi import utils
+import mushi.optimization as opt
+import mushi.composition as cmp
+
 from jax.config import config
-config.update('jax_enable_x64', True)
-# config.update('jax_debug_nans', True)
 import numpy as onp
 import jax.numpy as np
 from jax import jit, grad
 from jax.ops import index, index_update
-from scipy.stats import poisson, chi2
+from scipy.stats import poisson
 import prox_tv as ptv
-
 from typing import List, Dict
-
-import histories
-import utils
-import optimization
-
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-import composition as cmp
+config.update('jax_enable_x64', True)
+# config.update('jax_debug_nans', True)
+
 
 class kSFS():
     """The kSFS model described in the text"""
 
-    def __init__(self, X: np.ndarray = None, n: int = None,
-                 mutation_types: List[str] = None):
+    def __init__(self, X: np.ndarray = None, mutation_types: List[str] = None,
+                 file: str = None,
+                 n: int = None):
         u"""Sample frequency spectrum
 
-        X: observed k-SFS matrix (optional)
-        n: number of haplotypes (optional)
-        mutation_types: names of X columns
+        Three constructors:
+
+        ksfs_file: path to k-SFS file, as ouput by `mutyper ksfs`
+
+        X: observed k-SFS matrix
+        mutation_types: names of X columns (optional)
+
+        n: number of haplotypes
         """
-        if X is not None:
+        if file is not None:
+            df = pd.read_csv(file, sep='\t', index_col=0)
+            assert np.all(df.values >= 0)
+            n = df.shape[0] + 1
+            self.X = df.values
+            self.n = len(self.X) + 1
+            self.mutation_types = pd.Index(df.columns,
+                                           name='mutation type')
+
+        elif X is not None:
             self.X = X
             self.n = len(X) + 1
             if mutation_types is not None:
@@ -42,7 +56,7 @@ class kSFS():
             else:
                 self.mutation_types = pd.Index(range(self.X.shape[1]),
                                                name='mutation type')
-        elif not n:
+        elif n is None:
             raise ValueError('either X or n must be specified')
         else:
             self.n = n
@@ -74,7 +88,7 @@ class kSFS():
         """
         self.μ = None
 
-    def tmrca_cdf(self, eta: histories.eta) -> onp.ndarray:
+    def tmrca_cdf(self, eta: hst.eta) -> onp.ndarray:
         """The CDF of the TMRCA of at each change point
 
         eta: demographic history η
@@ -84,7 +98,7 @@ class kSFS():
         t, y = eta.arrays()
         return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
 
-    def simulate(self, eta: histories.eta, mu: histories.mu,
+    def simulate(self, eta: hst.eta, mu: hst.mu,
                  seed: int = None) -> None:
         """simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to self.X
@@ -106,9 +120,9 @@ class kSFS():
     def infer_history(self,
                       change_points: np.array,
                       mu0: np.float64,
-                      eta: histories.eta = None,
-                      eta_ref: histories.eta = None,
-                      mu_ref: histories.mu = None,
+                      eta: hst.eta = None,
+                      eta_ref: hst.eta = None,
+                      mu_ref: hst.mu = None,
                       infer_eta: bool = True,
                       infer_mu: bool = True,
                       alpha_tv: np.float64 = 0,
@@ -137,7 +151,8 @@ class kSFS():
         mu_ref: optional reference MuSH for ridge penalty. If None (the
                 default), the constant MLE is used
 
-        infer_eta, infer_mu: flags can be set to False to skip either optimization
+        infer_eta, infer_mu: flags can be set to False to skip either
+                             optimization
 
         loss parameters:
         - loss: loss function, 'prf' for Poisson random field, 'kl' for
@@ -183,8 +198,8 @@ class kSFS():
 
         # ininitialize with MLE constant η and μ
         x = self.X.sum(1, keepdims=True)
-        μ_total = histories.mu(change_points,
-                               mu0 * np.ones((len(change_points) + 1, 1)))
+        μ_total = hst.mu(change_points,
+                         mu0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
@@ -196,9 +211,9 @@ class kSFS():
             H = (1 / np.arange(1, self.n - 1)).sum()
             # constant MLE
             y = (S.sum() / 2 / H / mu0) * np.ones(len(z))
-            self.η = histories.eta(change_points, y)
+            self.η = hst.eta(change_points, y)
 
-        μ_const = histories.mu(self.η.change_points,
+        μ_const = hst.mu(self.η.change_points,
                                mu0 * (S / S.sum()) * np.ones((self.η.m,
                                                               self.X.shape[1])),
                                mutation_types=self.mutation_types.values)
@@ -277,17 +292,17 @@ class kSFS():
             # initial iterate
             logy = np.log(self.η.y)
 
-            logy = optimization.acc_prox_grad_method(logy, g, jit(grad(g)), h,
-                                                     prox,
-                                                     tol=tol,
-                                                     max_iter=max_iter,
-                                                     s0=s0,
-                                                     max_line_iter=max_line_iter,
-                                                     gamma=gamma)
+            logy = opt.acc_prox_grad_method(logy, g, jit(grad(g)), h,
+                                            prox,
+                                            tol=tol,
+                                            max_iter=max_iter,
+                                            s0=s0,
+                                            max_line_iter=max_line_iter,
+                                            gamma=gamma)
 
             y = np.exp(logy)
 
-            self.η = histories.eta(self.η.change_points, y)
+            self.η = hst.eta(self.η.change_points, y)
             self.M = utils.M(self.n, t, y)
             self.L = self.C @ self.M
 
@@ -335,6 +350,7 @@ class kSFS():
                 w = β_tv * onp.ones(shape)
                 w[:, -1] = 0
                 w = w.flatten()[:-1]
+
                 def prox1(Z, s):
                     """total variation prox operator on row dimension
                     """
@@ -356,14 +372,14 @@ class kSFS():
                     Σ = np.diag(σ)
                     return Z_const + U @ Σ @ Vt
 
-                Z = optimization.three_op_prox_grad_method(Z, g, jit(grad(g)),
-                                                           h1, prox1,
-                                                           h2, prox2,
-                                                           tol=tol,
-                                                           max_iter=max_iter,
-                                                           s0=s0,
-                                                           max_line_iter=max_line_iter,
-                                                           gamma=gamma, ls_tol=0)
+                Z = opt.three_op_prox_grad_method(Z, g, jit(grad(g)),
+                                                  h1, prox1,
+                                                  h2, prox2,
+                                                  tol=tol,
+                                                  max_iter=max_iter,
+                                                  s0=s0,
+                                                  max_line_iter=max_line_iter,
+                                                  gamma=gamma, ls_tol=0)
 
             else:
                 if β_tv:
@@ -376,6 +392,7 @@ class kSFS():
                     w = β_tv * onp.ones(shape)
                     w[:, -1] = 0
                     w = w.flatten()[:-1]
+
                     def prox(Z, s):
                         """total variation prox operator on row dimension
                         """
@@ -406,22 +423,21 @@ class kSFS():
                     def prox(Z, s):
                         return Z
 
-                Z = optimization.acc_prox_grad_method(Z, g, jit(grad(g)), h,
-                                                      prox,
-                                                      tol=tol,
-                                                      max_iter=max_iter,
-                                                      s0=s0,
-                                                      max_line_iter=max_line_iter,
-                                                      gamma=gamma)
+                Z = opt.acc_prox_grad_method(Z, g, jit(grad(g)), h,
+                                             prox,
+                                             tol=tol,
+                                             max_iter=max_iter,
+                                             s0=s0,
+                                             max_line_iter=max_line_iter,
+                                             gamma=gamma)
 
-            self.μ = histories.mu(self.η.change_points,
-                                 mu0 * cmp.ilr_inv(Z, basis),
-                                 mutation_types=self.mutation_types.values)
-
+            self.μ = hst.mu(self.η.change_points,
+                            mu0 * cmp.ilr_inv(Z, basis),
+                            mutation_types=self.mutation_types.values)
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
-                         line_kwargs: Dict = dict(),
-                         fill_kwargs: Dict = dict()):
+                   line_kwargs: Dict = dict(),
+                   fill_kwargs: Dict = dict()):
         """plot the total SFS
 
         kwargs: keyword arguments for scatter plot
@@ -498,129 +514,3 @@ class kSFS():
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
         return g
-
-
-def main():
-    """
-    usage: python mushi.py -h
-    """
-    import argparse
-    import pickle
-    import configparser
-
-    parser = argparse.ArgumentParser(description='write snps with kmer context'
-                                                 ' to stdout')
-    parser.add_argument('ksfs', type=str, default=None,
-                        help='path to k-SFS file')
-    parser.add_argument('masked_genome_size_file', type=str,
-                        help='path to file containing masked genome size in nucleotides')
-    parser.add_argument('config', type=str, help='path to config file')
-    parser.add_argument('outbase', type=str, default=None,
-                        help='base name for output files')
-
-    args = parser.parse_args()
-
-    # load k-SFS
-    ksfs_df = pd.read_csv(args.ksfs, sep='\t', index_col=0)
-    assert np.isnan(ksfs_df.values).sum() == 0
-    mutation_types = ksfs_df.columns
-    n = ksfs_df.shape[0] + 1
-    ksfs = kSFS(X=ksfs_df.values, mutation_types=mutation_types)
-
-    # parse configuration file if present
-    config = configparser.ConfigParser()
-    config.read(args.config)
-
-    # change points for time grid
-    first = config.getfloat('change points', 'first')
-    last = config['change points'].getfloat('last')
-    npts = config['change points'].getint('npts')
-    change_points = np.logspace(np.log10(first),
-                                np.log10(last),
-                                npts)
-
-    # mask sites
-    clip_low = config.getint('loss', 'clip_low', fallback=None)
-    clip_high = config.getint('loss', 'clip_high', fallback=None)
-    if clip_high or clip_low:
-        assert clip_high is not None and clip_low is not None
-        mask = np.array([True if (clip_low <= i < n - clip_high - 1)
-                         else False
-                         for i in range(n - 1)])
-    else:
-        mask = None
-
-    # mutation rate estimate
-    with open(args.masked_genome_size_file) as f:
-        masked_genome_size = int(f.read())
-    μ0 = config.getfloat('population', 'u') * masked_genome_size
-
-    # generation time
-    t_gen = config.getfloat('population', 't_gen', fallback=None)
-
-    # parameter dict for η regularization
-    η_regularization = {key: config.getfloat('eta regularization', key)
-                        for key in config['eta regularization']}
-
-    # parameter dict for μ regularization
-    μ_regularization = {key: config.getfloat('mu regularization', key)
-                        for key in config['mu regularization']
-                        if key.startswith('beta_')}
-    if 'hard' in config['mu regularization']:
-        μ_regularization['hard'] = config.getboolean('mu regularization', 'hard')
-
-    # parameter dict for convergence parameters
-    convergence = {key: config.getint('convergence', key)
-                   if key.endswith('_iter')
-                   else config.getfloat('convergence', key)
-                   for key in config['convergence']}
-    # parameter dict for loss parameters
-    loss = dict(mask=mask)
-    if 'loss' in config['loss']:
-        loss['loss'] = config.get('loss', 'loss')
-
-    print('sequential inference of η(t) and μ(t)\n', flush=True)
-    ksfs.infer_history(change_points, μ0, **loss, **η_regularization,
-                       **μ_regularization, **convergence)
-
-    plt.figure(figsize=(7, 9))
-    plt.subplot(321)
-    ksfs.plot_total()
-    plt.subplot(322)
-    ksfs.η.plot(t_gen=t_gen,
-                # ds='steps-post'
-                )
-    plt.subplot(323)
-    ksfs.plot(clr=True)
-    plt.subplot(324)
-    ksfs.μ.plot(t_gen=t_gen, clr=True, alpha=0.5)
-    plt.subplot(325)
-    if t_gen:
-        plt.plot(t_gen * ksfs.η.change_points, ksfs.tmrca_cdf(ksfs.η))
-        plt.xlabel('$t$ (years ago)')
-    else:
-        plt.plot(ksfs.η.change_points, ksfs.tmrca_cdf(ksfs.η))
-        plt.xlabel('$t$ (generations ago)')
-    plt.ylabel('TMRCA CDF')
-    plt.ylim([0, 1])
-    plt.xscale('log')
-    plt.tick_params(axis='x', which='minor')
-    plt.tight_layout()
-    plt.subplot(326)
-    Z = cmp.clr(ksfs.μ.Z)
-    plt.plot(range(1, 1 + min(Z.shape)),
-             np.linalg.svd(Z, compute_uv=False), '.')
-    plt.xlabel('singular value rank')
-    plt.xscale('log')
-    plt.ylabel('singular value')
-    plt.yscale('log')
-    plt.tight_layout()
-    plt.savefig(f'{args.outbase}.fit.pdf')
-
-    # pickle the final ksfs (which contains all the inferred history info)
-    with open(f'{args.outbase}.pkl', 'wb') as f:
-        pickle.dump(ksfs, f)
-
-
-if __name__ == '__main__':
-    main()

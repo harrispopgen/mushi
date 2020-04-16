@@ -8,7 +8,7 @@ import matplotlib as mpl
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
-import composition as cmp
+import mushi.composition as cmp
 
 
 @dataclass
