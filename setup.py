@@ -22,6 +22,7 @@ setuptools.setup(
     scripts=['bin/mushi'],
     install_requires=[
         'jax',
+        'jaxlib',
         'prox-tv',
         'seaborn',
         'pandas'

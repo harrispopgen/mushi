@@ -2,8 +2,8 @@
 
 import unittest
 import numpy as np
-import histories
-import utils
+from mushi import histories
+from mushi import utils
 
 
 class TestMushi(unittest.TestCase):
