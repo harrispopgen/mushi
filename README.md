@@ -36,15 +36,15 @@ $ conda activate mushi
 Citing `mushi`
 ---
 
-No preprint yet, so for now:
+No preprint yet, so for now check out our [TAGC2020 poster](https://tagc2020.figshare.com/articles/Joint_nonparametric_coalescent_inference_of_mutation_spectrum_history_and_demography/12149790):
 ```
-@software{mushi2020github,
-  author = {William DeWitt},
-  title = {mushi: mutation spectrum history inference},
-  url = {https://github.com/harrispopgen/mushi},
-  version = {1.0},
-  year = {2020},
-}
+@misc{dewitt_decker harris_harris_2020,
+      title={Joint nonparametric coalescent inference of mutation spectrum history and demography},
+      url={https://tagc2020.figshare.com/articles/Joint_nonparametric_coalescent_inference_of_mutation_spectrum_history_and_demography/12149790/1},
+      DOI={10.6084/m9.figshare.12149790.v1},
+      abstractNote={PDF for poster 1232B},
+      publisher={figshare},
+      author={DeWitt, William S. and Decker Harris, Kameron and Harris, Kelley}, year={2020}, month={Apr} }
 ```
 
 Command line interface
