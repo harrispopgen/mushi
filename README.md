@@ -58,7 +58,7 @@ Python API
 
 See API documentation at [???]
 
-- [`mushi.py`](mushi/ksfs.py): Class implementing the coalescent model of the expected sample frequency spectrum
+- [`ksfs.py`](mushi/ksfs.py): Class implementing the coalescent model of the expected sample frequency spectrum
 - [`histories.py`](mushi/histories.py): Classes for demographic history and mutation spectrum history objects.
 - [`optimization.py`](mushi/optimization.py): proximal gradient algorithms.
 - [`utils.py`](mushi/utils.py): utility functions.
@@ -71,9 +71,9 @@ Example data
 Jupyter [notebooks](notebooks)
 ---
 
-- [`demo.ipynb`](notebooks/demo.ipynb): Demostration of API usage and interface with `mutyper` output.
-- [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on SFS simulated under the mushi forward model.
-- [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on SFS simulated with `msprime` and `stdpopsim`.
+- [`demo.ipynb`](notebooks/demo.ipynb): Demonstration of API usage and interface with `mutyper` output.
+- [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated under the coalescent forward model.
+- [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated with `msprime` and `stdpopsim`.
 - [`L-spectrum.ipynb`](notebooks/L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
 
 [TODO: document 1KG pipeline]
