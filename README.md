@@ -71,7 +71,7 @@ Example data
 Jupyter [notebooks](notebooks)
 ---
 
-- [`demo-mushi.ipynb`](notebooks/demo-mushi.ipynb): Demostration of API usage and interface with `mutyper` output.
+- [`demo.ipynb`](notebooks/demo.ipynb): Demostration of API usage and interface with `mutyper` output.
 - [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on SFS simulated under the mushi forward model.
 - [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on SFS simulated with `msprime` and `stdpopsim`.
 - [`L-spectrum.ipynb`](notebooks/L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
