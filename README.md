@@ -38,7 +38,7 @@ Citing `mushi`
 
 No preprint yet, so for now check out our [TAGC2020 poster](https://tagc2020.figshare.com/articles/Joint_nonparametric_coalescent_inference_of_mutation_spectrum_history_and_demography/12149790):
 ```
-@misc{dewitt_decker harris_harris_2020,
+@misc{dewitt_deckerharris_harris_2020,
       title={Joint nonparametric coalescent inference of mutation spectrum history and demography},
       url={https://tagc2020.figshare.com/articles/Joint_nonparametric_coalescent_inference_of_mutation_spectrum_history_and_demography/12149790/1},
       DOI={10.6084/m9.figshare.12149790.v1},
@@ -75,5 +75,6 @@ Jupyter [notebooks](notebooks)
 - [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated under the coalescent forward model.
 - [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated with `msprime` and `stdpopsim`.
 - [`L-spectrum.ipynb`](notebooks/L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
+- [`1KG.ipynb`](notebooks/1KG.ipynb): Inference and analysis of 1000 Genome Project histories ([`example_data`](example_data)).
 
 [TODO: document 1KG pipeline]
