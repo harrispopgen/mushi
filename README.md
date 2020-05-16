@@ -1,4 +1,4 @@
-![](logo.png)
+![](docs/_static/logo.png)
 
 A Python package for: [__mu__]tation [__s__]pectrum [__h__]istory [__i__]nference
 
@@ -6,7 +6,7 @@ Pairs well with the package [`mutyper`](https://github.com/harrispopgen/mutyper)
 
 Installation
 ---
-
+- Python 3.7
 - Basic install with pip
 ```bash
 $ pip install git+https://github.com/harrispopgen/mushi
@@ -23,7 +23,7 @@ $ pip install -e git+https://github.com/harrispopgen/mushi#egg=mushi
 (GPL Ghostscript 9.0 or later is required). The executables for these
 external dependencies must all be located on your [`PATH`](https://matplotlib.org/faq/environment_variables_faq.html#envvar-PATH).
 
-- Additional dependencies are needed to run the [Jupyter notebooks](notebooks) or the [1000 Genomes pipeline](1KG). A complete [Conda](https://docs.conda.io/en/latest/) environment (including `mushi`) can created with
+- Additional dependencies are needed to run the [Jupyter notebooks](docs/notebooks) or the [1000 Genomes pipeline](1KG). A complete [Conda](https://docs.conda.io/en/latest/) environment (including `mushi`) can created with
 ```bash
 $ conda env create -f env.yml
 ```
@@ -64,17 +64,9 @@ See API documentation at [???]
 - [`utils.py`](mushi/utils.py): utility functions.
 
 
-Example data
+Example data and notebooks
 ---
-3-SFS data for each 1000 Genomes population are in [`example_data`](example_data), for use with notebooks.
-
-Jupyter [notebooks](notebooks)
----
-
-- [`demo.ipynb`](notebooks/demo.ipynb): Demonstration of API usage and interface with `mutyper` output.
-- [`simulation_simple.ipynb`](notebooks/simulation_simple.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated under the coalescent forward model.
-- [`simulation.ipynb`](notebooks/simulation.ipynb): Jupyter notebook exploring reconstruction on k-SFS simulated with `msprime` and `stdpopsim`.
-- [`L-spectrum.ipynb`](notebooks/L-spectrum.ipynb): Spectral analysis of the L matrix defined in the text.
-- [`1KG.ipynb`](notebooks/1KG.ipynb): Inference and analysis of 1000 Genome Project histories ([`example_data`](example_data)).
+- [Example 3-SFS data](docs/example_data) for each 1000 Genomes population are in, for use with notebooks.
+- Jupyter [notebooks](docs/notebooks)
 
 [TODO: document 1KG pipeline]

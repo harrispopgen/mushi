@@ -1,0 +1,9 @@
+sphinx
+sphinx_rtd_theme
+ipykernel
+nbsphinx
+sphinx-autodoc-typehints
+
+# packages for notebooks
+stdpopsim
+.
