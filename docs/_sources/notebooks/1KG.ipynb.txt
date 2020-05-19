@@ -1,0 +1,963 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Inferring demography and mutation spectrum history for human populations\n",
+    "==\n",
+    "Run mushi on 3-SFS computed from 1000 Genome Project data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import mushi\n",
+    "\n",
+    "import msprime\n",
+    "import stdpopsim\n",
+    "\n",
+    "import numpy as np\n",
+    "import scipy\n",
+    "\n",
+    "import matplotlib as mpl\n",
+    "from collections import OrderedDict\n",
+    "import matplotlib.pyplot as plt\n",
+    "%matplotlib inline\n",
+    "from mpl_toolkits.mplot3d import Axes3D\n",
+    "\n",
+    "import pandas as pd\n",
+    "import seaborn as sns\n",
+    "import pickle\n",
+    "import copy\n",
+    "import glob\n",
+    "import os\n",
+    "\n",
+    "import sklearn\n",
+    "import umap\n",
+    "import tensorly.tenalg as ta\n",
+    "import tensorly.decomposition as td"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# path to 3-SFS data previously computed with 1KG pipeline\n",
+    "data_dir = '../example_data'\n",
+    "\n",
+    "# enable latex in plots\n",
+    "mpl.rc('text', usetex=True)\n",
+    "mpl.rcParams['text.latex.preamble']=[r\"\\usepackage{amsmath}\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Load data\n",
+    "### Parse population manifest"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pops = {}\n",
+    "for ksfs_file in glob.glob(f'{data_dir}/3-SFS.*.tsv'):\n",
+    "    super_pop, pop = os.path.basename(ksfs_file).split('.')[1:3]\n",
+    "    if super_pop not in pops:\n",
+    "        pops[super_pop] = []        \n",
+    "    if pop not in pops[super_pop]:\n",
+    "        pops[super_pop].append(pop)\n",
+    "\n",
+    "pops = OrderedDict((pop, sorted(pops[pop])) for pop in sorted(pops))\n",
+    "pops"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Load 1KG 3-SFSs"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# we use this ordering for triplet mutation types\n",
+    "sorted_triplets = [f'{a5}{a}{a3}>{a5}{d}{a3}' for a in 'AC' for d in 'ACGT' if d != a for a5 in 'ACGT' for a3 in 'ACGT']\n",
+    "\n",
+    "ksfs_dict = {}\n",
+    "plt.figure(figsize=(3, 3))\n",
+    "for idx, super_pop in enumerate(pops):\n",
+    "    for idx2, pop in enumerate(pops[super_pop]):\n",
+    "        ksfs_dict[pop] = mushi.kSFS(file=f'{data_dir}/3-SFS.{super_pop}.{pop}.tsv')\n",
+    "        ksfs_dict[pop].plot_total(kwargs=dict(ls='', alpha=0.75, marker='o', ms=5, mfc='none',\n",
+    "                                  label=super_pop if idx2 ==0 else None, c=f'C{idx}'))\n",
+    "        plt.xscale('log')\n",
+    "        plt.yscale('log')\n",
+    "        # this sorts the columns of the ksfs according to sorted_triplets\n",
+    "        foo, bar = ksfs_dict[pop].mutation_types.reindex(sorted_triplets)\n",
+    "        ksfs_dict[pop].mutation_types = foo\n",
+    "        ksfs_dict[pop].X = ksfs_dict[pop].X[:, bar]\n",
+    "plt.legend();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Number of segregating variants in each population"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.DataFrame([(super_pop, pop, ksfs_dict[pop].X.sum()) for super_pop in pops for pop in pops[super_pop]], columns=('superpop', 'pop', 'segregating sites'))\n",
+    "plt.figure(figsize=(12, 5))\n",
+    "sns.barplot(x='pop', y='segregating sites', hue='superpop', data=df, dodge=False);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Triplet target sizes\n",
+    "Load masked genome size (also previously computed with 1KG pipeline)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "masked_genome_size = pd.read_csv(f'{data_dir}/masked_size.tsv', sep='\\t', header=None, index_col=0, names=('count',))\n",
+    "\n",
+    "plt.figure(figsize=(6, 3))\n",
+    "sns.barplot(data=masked_genome_size.T)\n",
+    "plt.xticks(rotation=90);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Define a few parameters\n",
+    "\n",
+    "### Frequency masking\n",
+    "clip high frequencies due to ancestral state misidentification"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "clip_low = 0\n",
+    "clip_high = 10\n",
+    "# we need a different mask vector for each population because the number of haplotypes n\n",
+    "# (length of SFS vector) varies\n",
+    "freq_mask = {}\n",
+    "for super_pop in pops:\n",
+    "    for pop in pops[super_pop]:\n",
+    "        freq_mask[pop] = np.array([True if (clip_low <= i < ksfs_dict[pop].n - clip_high - 1) else False\n",
+    "                                   for i in range(ksfs_dict[pop].n - 1)])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Time discretization\n",
+    "time grid of epoch boundaries (measured in generations)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "change_points = np.logspace(np.log10(1), np.log10(200000), 200)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Total mutation rate\n",
+    "Mutation rate per site per generation (Scally, 2016)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "u = 1.25e-8"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Mutation rate per masked genome per generation"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mu0 = u * masked_genome_size['count'].sum()\n",
+    "mu0"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Generation time\n",
+    "Generation time for time calibration (Fenner, 2005)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t_gen = 29"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Infer effective population size history $\\eta(t)\\equiv 2N(t)$\n",
+    "\n",
+    "### Regularization parameters and convergence criteria"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "regularization_eta = dict(alpha_tv=1e2, alpha_spline=3e3)\n",
+    "convergence = dict(tol=1e-12, max_iter=2000)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Loop over populations, inferring history for each\n",
+    "- For the first population (YRI) we set `eta_ref = None` to use the default constant MLE as the reference history.\n",
+    "- For the other populations, we use the YRI history as the reference"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "eta_ref = None\n",
+    "\n",
+    "for idx_super, super_pop in enumerate(sorted(pops)):\n",
+    "    for idx, pop in enumerate(reversed(pops[super_pop])):\n",
+    "        print(super_pop, pop)\n",
+    "        # clear solutions, in case rerunning this cell\n",
+    "        ksfs_dict[pop].clear_eta()\n",
+    "        ksfs_dict[pop].clear_mu()\n",
+    "        if idx_super == idx == 0:\n",
+    "            alpha_ridge = 1e-10\n",
+    "        else:\n",
+    "            alpha_ridge = 1e3\n",
+    "        ksfs_dict[pop].infer_history(change_points, mu0, eta_ref=eta_ref, alpha_ridge=alpha_ridge,\n",
+    "                                     infer_mu=False,\n",
+    "                                     loss='prf', **regularization_eta,\n",
+    "                                     **convergence, mask=freq_mask[pop])\n",
+    "        if idx_super == idx == 0:\n",
+    "            eta_ref = ksfs_dict[pop].eta"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Plot histories\n",
+    "Plot results separately for each superpopulation"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, axes = plt.subplots(len(pops), 2, sharex='col', figsize=(6, 1.7 * len(pops)), squeeze=False)\n",
+    "for idx_super, super_pop in enumerate(pops):\n",
+    "    for idx, pop in enumerate(pops[super_pop]):\n",
+    "        plt.sca(axes[idx_super, 0])\n",
+    "        ksfs_dict[pop].plot_total(kwargs=dict(ls='', alpha=0.5, marker='o', ms=5, mfc='none', c=f'C{idx}', label=pop, rasterized=True),\n",
+    "                                  line_kwargs=dict(c=f'C{idx}', ls=':', marker='.', ms=3, alpha=0.5, lw=1, rasterized=True),\n",
+    "                                  fill_kwargs=dict(color=f'C{idx}', alpha=0))\n",
+    "        plt.xscale('log')\n",
+    "        plt.yscale('log')\n",
+    "        plt.legend(fontsize=6, loc='upper right')\n",
+    "        if idx_super < len(pops) - 1:\n",
+    "            plt.xlabel(None)\n",
+    "        plt.sca(axes[idx_super, 1])\n",
+    "        ksfs_dict[pop].eta.plot(t_gen=t_gen, lw=2, label=pop, alpha=0.75, c=f'C{idx}')\n",
+    "        plt.xlim([1e3, 1e6])\n",
+    "        plt.legend(fontsize=6, loc='upper right')\n",
+    "        if idx_super < len(pops) - 1:\n",
+    "            plt.xlabel(None)\n",
+    "plt.tight_layout();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Plot all demographies on the same axes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "fig = plt.figure(figsize=(6, 1.7 * len(pops)))\n",
+    "for idx_super, super_pop in enumerate(sorted(pops)):\n",
+    "    for idx, pop in enumerate(reversed(pops[super_pop])):\n",
+    "        ksfs_dict[pop].eta.plot(t_gen=t_gen, lw=3, label=super_pop if idx == 0 else None, alpha=0.3, c=f'C{idx_super}')\n",
+    "        plt.xlim([1e3, 1e6])\n",
+    "plt.legend()\n",
+    "plt.tight_layout();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### TMRCA\n",
+    "\n",
+    "As a diagnostic to make sure the time range we used is consistent with the histories we inferred, plot the CDF of the sample TMRCA for each population"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "fig, axes = plt.subplots(len(pops), 1, sharex=True, figsize=(4, 10))\n",
+    "for idx, super_pop in enumerate(pops):\n",
+    "    plt.sca(axes[idx])\n",
+    "    for idx2, pop in enumerate(pops[super_pop]):\n",
+    "        plt.plot(t_gen * ksfs_dict[pop].η.change_points, ksfs_dict[pop].tmrca_cdf(ksfs_dict[pop].eta), label=pop)\n",
+    "    plt.ylabel('TMRCA CDF')\n",
+    "    plt.ylim([0, 1])\n",
+    "    plt.legend(title=super_pop, fontsize=9)\n",
+    "plt.xlabel('$t$')\n",
+    "plt.xscale('log')\n",
+    "plt.tight_layout();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Infer mutation spectrum history $\\boldsymbol\\mu(t)$\n",
+    "\n",
+    "### TCC>TTC pulse in Europeans\n",
+    "First we'll focus on sharply timing the TCC>TTC, and assessing sensitivity to demographic assumptions.\n",
+    "#### Regularization paremeters\n",
+    "total variation regularization to minimize the number of change points."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "regularization_mu = dict(beta_tv=7e1, beta_ridge=1e-10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Loop over EUR populations, inferring history for each under three alternative demographic conditionings\n",
+    "1. The European demography from Tennessen et al. (assumed by Harris and Pritchard to time the TCC>TTC pulse)\n",
+    "2. The demographies for each EUR population reported by Speidel et al. using the Relate method\n",
+    "3. The inferred demographies from above "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "fig, axes = plt.subplots(nrows=3, ncols=4, figsize=(17.4, 7.5))\n",
+    "\n",
+    "species = stdpopsim.get_species(\"HomSap\")\n",
+    "model = species.get_demographic_model(\"OutOfAfrica_2T12\")\n",
+    "ddb = model.get_demography_debugger()\n",
+    "steps = np.concatenate((np.array([0]), change_points))\n",
+    "eta_Tennessen = mushi.eta(change_points,\n",
+    "                        1 / ddb.coalescence_rate_trajectory(steps=steps,\n",
+    "                                                            num_samples=[0, 2],\n",
+    "                                                            double_step_validation=False)[0])\n",
+    "\n",
+    "for idx, pop in enumerate(pops['EUR']):\n",
+    "    print(pop)\n",
+    "    eta_mushi = ksfs_dict[pop].eta\n",
+    "\n",
+    "    with open(f'../Relate_histories/relate_{pop}.coal') as f:\n",
+    "        f.readline()\n",
+    "        t = np.fromstring(f.readline(), sep=' ')\n",
+    "        y = 1 / np.fromstring(f.readline(), sep=' ')[2:]\n",
+    "    t2 = eta_mushi.arrays()[0]\n",
+    "    eta_relate = mushi.eta(t2[1:-1], scipy.interpolate.interp1d(t, y, kind='nearest')(t2[:-1]))\n",
+    "    for row_idx, eta in enumerate((eta_Tennessen, eta_relate, eta_mushi)):\n",
+    "        ksfs_dict[pop].clear_mu()\n",
+    "        ksfs_dict[pop].infer_history(change_points, mu0, eta=eta, infer_eta=False,\n",
+    "                                     loss='prf', **regularization_mu,\n",
+    "                                     **convergence, mask=freq_mask[pop])\n",
+    "        plt.sca(axes[row_idx, 0])\n",
+    "        ksfs_dict[pop].plot_total(kwargs=dict(ls='', alpha=0.5, marker='o', ms=5, mfc='none', c=f'C{idx}', label=pop, rasterized=True),\n",
+    "                                  line_kwargs=dict(c=f'C{idx}', ls=':', marker='.', ms=3, alpha=0.5, lw=1, rasterized=True),\n",
+    "                                  fill_kwargs=dict(color=f'C{idx}', alpha=0))\n",
+    "        plt.xscale('log')\n",
+    "        plt.yscale('log')\n",
+    "        plt.legend(fontsize=6, loc='upper right')\n",
+    "        if idx_super < len(pops) - 1:\n",
+    "            plt.xlabel(None)\n",
+    "\n",
+    "        plt.sca(axes[row_idx, 1])\n",
+    "        ksfs_dict[pop].eta.plot(t_gen=t_gen, lw=2, label=pop, alpha=0.75, c=f'C{idx}')\n",
+    "        plt.xlim([1e3, 1e6])\n",
+    "        plt.legend(fontsize=6, loc='upper right')\n",
+    "        if idx_super < len(pops) - 1:\n",
+    "            plt.xlabel(None)\n",
+    "            \n",
+    "        plt.sca(axes[row_idx, 2])\n",
+    "        ksfs_dict[pop].plot(('TCC>TTC',), clr=True,\n",
+    "                            kwargs=dict(ls='', c=f'C{idx}', marker='o', ms=5, mfc='none', alpha=0.5, label=pop, rasterized=True),\n",
+    "                            line_kwargs=dict(c=f'C{idx}', ls=':', marker='.', ms=3, alpha=0.5, lw=1, rasterized=True))\n",
+    "        plt.ylabel('TCC$\\\\to$TTC component of\\nvariant count composition')\n",
+    "        plt.legend(fontsize=6)\n",
+    "\n",
+    "        plt.sca(axes[row_idx, 3])\n",
+    "        plt.gca().set_prop_cycle(None)\n",
+    "        ksfs_dict[pop].mu.plot(('TCC>TTC',), t_gen=t_gen, clr=False, c=f'C{idx}', alpha=0.75, lw=2, label=pop)\n",
+    "        plt.ylabel(r'TCC$\\to$TTC mutation intensity')\n",
+    "        plt.xlim([1e3, 1e6])\n",
+    "        plt.legend(fontsize=6)\n",
+    "\n",
+    "plt.tight_layout();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Mutation spectrum histories for all populations\n",
+    "Now we'll aim for smooth histories that capture all components well\n",
+    "#### Regularization parameters"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "regularization_mu = dict(hard=True, beta_rank=2e2, beta_tv=0, beta_spline=1e5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Loop over populations, inferring history for each"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "mu_ref = None\n",
+    "for idx_super, super_pop in enumerate(sorted(pops)):    \n",
+    "    for idx, pop in enumerate(reversed(pops[super_pop])):\n",
+    "        print(super_pop, pop)\n",
+    "        ksfs_dict[pop].clear_mu()\n",
+    "        if idx_super == idx == 0:\n",
+    "            beta_ridge = 1e-10\n",
+    "        else:\n",
+    "            beta_ridge = 1e4\n",
+    "        ksfs_dict[pop].infer_history(change_points, mu0, infer_eta=False, mu_ref=mu_ref, beta_ridge=beta_ridge,\n",
+    "                                     loss='prf', **regularization_mu,\n",
+    "                                     **convergence, mask=freq_mask[pop])\n",
+    "        if idx_super == idx == 0:\n",
+    "            mu_ref = ksfs_dict[pop].mu"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Plot histories\n",
+    "plot 3-SFS and inferred mush for each population (this produces many plots)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": true,
+    "slideshow": {
+     "slide_type": "fragment"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "with mpl.rc_context(rc={'text.usetex': False}):\n",
+    "    for idx_super, super_pop in enumerate(sorted(pops)):   \n",
+    "        for idx, pop in enumerate(reversed(pops[super_pop])):\n",
+    "            print(pop)\n",
+    "            \n",
+    "            plt.figure(figsize=(6, 10))\n",
+    "            plt.subplot(121)            \n",
+    "            ksfs_dict[pop].plot(clr=True, kwargs=dict(alpha=0.25, ls='', marker='o',\n",
+    "                                                      ms=3, mfc='none', rasterized=True),\n",
+    "                                line_kwargs=dict(ls=':', marker='.', ms=2, alpha=0.25,\n",
+    "                                                 lw=1, rasterized=True))\n",
+    "            plt.ylabel('variant count composition')\n",
+    "            plt.subplot(122)\n",
+    "            ksfs_dict[pop].μ.plot(t_gen=t_gen, clr=True, alpha=0.5, lw=2)\n",
+    "            plt.xscale('log')\n",
+    "            plt.ylabel('mutation intensity composition')\n",
+    "            plt.xlim([1e3, 1e6])\n",
+    "            plt.show()                       \n",
+    "            \n",
+    "            singlets = [f'{anc}>{der}' for anc, der in zip(ksfs_dict[pop].mutation_types.str[1],\n",
+    "                                                           ksfs_dict[pop].mutation_types.str[5])]\n",
+    "            \n",
+    "            ksfs_dict[pop].mutation_types.str[1].str.cat(ksfs_dict[pop].mutation_types.str[5], sep='>')\n",
+    "\n",
+    "            pal = sns.color_palette('husl', n_colors=6)\n",
+    "            col_map = {'A>C': pal[0], 'A>G': pal[1], 'A>T': pal[2], 'C>A': pal[3], 'C>G': pal[4], 'C>T': pal[5]}\n",
+    "            col_colors = [col_map[singlet] for singlet in singlets]\n",
+    "            \n",
+    "            ksfs_dict[pop].clustermap(figsize=(20, 7), col_cluster=False,\n",
+    "                                      xticklabels=True, rasterized=True,\n",
+    "                                      robust=True, cmap='RdBu_r',\n",
+    "                                      col_colors=col_colors)\n",
+    "            plt.show()\n",
+    "\n",
+    "            ksfs_dict[pop].μ.clustermap(t_gen=t_gen,\n",
+    "                                        figsize=(20, 7), col_cluster=False, xticklabels=True, rasterized=True,\n",
+    "                                        robust=True, cmap='RdBu_r',\n",
+    "                                        col_colors=col_colors)\n",
+    "            plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Tensor decomposition and mutation signature dynamics\n",
+    "#### Non-negative CP decomposition\n",
+    "We stack the MuSHs for each population to form a tensor of order 3, then use a rank 10 CP decomposition to extract factors for each dimension: sample, time, and mutation type"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "targets = np.array([masked_genome_size.loc[triplet.split('>')[0], 'count'] for triplet in sorted_triplets])\n",
+    "\n",
+    "Z = np.concatenate([(ksfs_dict[pop].mu.Z / targets)[np.newaxis, :, :]\n",
+    "                    for super_pop in sorted(pops)\n",
+    "                    for pop in reversed(pops[super_pop])], 0)\n",
+    "\n",
+    "# non-negative parafrac decomposition\n",
+    "core, (factors_sample,\n",
+    "       factors_history,\n",
+    "       factors_signature) = td.parafac(Z, rank=10, non_negative=True,\n",
+    "                                       orthogonalise=False, normalize_factors=False,\n",
+    "                                       tol=1e-10, n_iter_max=10000,\n",
+    "                                       random_state=0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Project the sample dimension factors to two principal components"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "xy = sklearn.decomposition.PCA(n_components=2, whiten=True).fit_transform(factors_sample)\n",
+    "plt.figure(figsize=(4, 4))\n",
+    "sns.scatterplot(*xy.T, hue=[super_pop for super_pop in sorted(pops)\n",
+    "                                      for pop in reversed(pops[super_pop])])\n",
+    "i = 0\n",
+    "for super_pop in sorted(pops):\n",
+    "    for pop in reversed(pops[super_pop]):\n",
+    "        plt.annotate(pop, xy[i], size=6)   \n",
+    "        i += 1\n",
+    "plt.xlabel('PC 1')\n",
+    "plt.ylabel('PC 2')\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Project the time dimension factors to two principal components"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "xy = sklearn.decomposition.PCA(n_components=2, whiten=True).fit_transform(factors_history)\n",
+    "idxs = (1e3 <= t_gen * ksfs_dict[pop].mu.arrays()[0][:-1]) & (t_gen * ksfs_dict[pop].mu.arrays()[0][:-1] <= 1e6)\n",
+    "plt.figure(figsize=(4, 4))\n",
+    "x = np.dstack((xy[idxs][:-1, 0], xy[idxs][1:, 0])).flatten()\n",
+    "y = np.dstack((xy[idxs][:-1, 1], xy[idxs][1:, 1])).flatten()\n",
+    "z = t_gen * np.dstack((ksfs_dict[pop].mu.arrays()[0][:-1][idxs][:-1], ksfs_dict[pop].mu.arrays()[0][:-1][idxs][:-1])).flatten()\n",
+    "norm = mpl.colors.LogNorm(vmin=1e3, vmax=1e6)\n",
+    "points = plt.scatter(x, y, c=z, s=0, norm=norm, cmap='viridis')\n",
+    "sns.lineplot(x, y, z, hue_norm=norm, lw=3, legend=False, palette='viridis')\n",
+    "cbar= plt.colorbar(points)\n",
+    "cbar.set_label('$t$ (years ago)', rotation=90)\n",
+    "plt.xlabel('PC 1')\n",
+    "plt.ylabel('PC 2')\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Project the mutation type dimension factors to two principal components"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with mpl.rc_context(rc={'text.usetex': False}):\n",
+    "    singlets = [f'{anc}>{der}' for anc, der in zip(ksfs_dict[pop].mutation_types.str[1],\n",
+    "                                                   ksfs_dict[pop].mutation_types.str[5])]\n",
+    "    xy = sklearn.decomposition.PCA(n_components=2, whiten=True).fit_transform(factors_signature * targets[:, np.newaxis])\n",
+    "    plt.figure(figsize=(4, 4))\n",
+    "    sns.scatterplot(*xy.T, hue=singlets, palette='husl')\n",
+    "    for i, mutation_type in enumerate(ksfs_dict[pop].mu.mutation_types):\n",
+    "        if np.abs(xy[i]).max() > 1:\n",
+    "            plt.annotate(mutation_type, xy[i], size=6)   \n",
+    "    plt.xlabel('PC 1')\n",
+    "    plt.ylabel('PC 2')\n",
+    "    plt.tight_layout()\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Display mutation type loadings as mutation signatures"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "signature_df = pd.DataFrame(factors_signature,\n",
+    "                            columns=[i for i in range(1, factors_signature.shape[1] + 1)])\n",
+    "signature_df['mutation type'] = ksfs_dict[pop].mu.mutation_types\n",
+    "signature_df['singlet type'] = singlets\n",
+    "\n",
+    "pal = sns.color_palette('husl', n_colors=6)\n",
+    "colors = {'A>C': pal[0], 'A>G': pal[1], 'A>T': pal[2],\n",
+    "          'C>A': pal[3], 'C>G': pal[4], 'C>T': pal[5]}\n",
+    "palette = [colors[singlet] for singlet in signature_df['singlet type']]\n",
+    "signature_df = signature_df.melt(id_vars=['mutation type', 'singlet type'], var_name='signature')\n",
+    "\n",
+    "with mpl.rc_context(rc={'text.usetex': False}):\n",
+    "    g = sns.FacetGrid(signature_df, row='signature', aspect=8, height=1.5,\n",
+    "                      margin_titles=True, sharey=True)\n",
+    "    g = g.map(sns.barplot, 'mutation type', 'value',\n",
+    "              order=ksfs_dict[pop].mu.mutation_types,\n",
+    "              palette=palette)\n",
+    "    g.set_xticklabels(rotation=90, fontsize=8, family='monospace')\n",
+    "    for xtick, color in zip(g.axes.flat[-1].get_xticklabels(), palette):\n",
+    "        xtick.set_color(color)    \n",
+    "    plt.tight_layout()\n",
+    "    plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Mutation signature dynamics in each population\n",
+    "- rows correspond to 10 mutation signatures\n",
+    "- columns correspond to super populations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "factors_signature_normed = factors_signature * targets[:, np.newaxis]\n",
+    "factors_signature_normed /= factors_signature_normed.sum(0, keepdims=True)\n",
+    "\n",
+    "Z_transform = ta.mode_dot(Z * targets[np.newaxis, np.newaxis, :], factors_signature_normed.T, mode=2)\n",
+    "Z_transform_normed = Z_transform / Z_transform.sum(2, keepdims=True)\n",
+    "\n",
+    "fig, axes = plt.subplots(Z_transform.shape[2], len(pops), sharex=True, sharey='row', figsize=(2.1 * len(pops), 1.5 * Z_transform.shape[2]))\n",
+    "for k in range(Z_transform.shape[2]):    \n",
+    "    i = 0\n",
+    "    for idx, super_pop in enumerate(sorted(pops)):\n",
+    "        plt.sca(axes[k, idx])\n",
+    "        for idx2, pop in enumerate(reversed(pops[super_pop])):\n",
+    "            plt.plot(t_gen * ksfs_dict[pop].mu.arrays()[0][:-1], Z_transform_normed[i, :, k],\n",
+    "                     label=pop)\n",
+    "            plt.xscale('log')\n",
+    "            plt.xlim([1e3, 1e6])\n",
+    "            i += 1\n",
+    "        if k == 0:\n",
+    "            plt.title(super_pop)\n",
+    "            plt.legend(fontsize=6, loc='upper right', ncol=2)\n",
+    "plt.xlabel('$t$ (years ago)')\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The same histories overlayed for all populations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fig, axes = plt.subplots(Z_transform.shape[2], 1, sharex=True, sharey='row', figsize=(3, 1.5 * Z_transform.shape[2]))\n",
+    "for k in range(Z_transform.shape[2]):    \n",
+    "    i = 0\n",
+    "    plt.sca(axes[k])\n",
+    "    for idx, super_pop in enumerate(sorted(pops)):        \n",
+    "        for idx2, pop in enumerate(reversed(pops[super_pop])):\n",
+    "            plt.plot(t_gen * ksfs_dict[pop].mu.arrays()[0][:-1], Z_transform_normed[i, :, k],\n",
+    "                     label=(super_pop if idx2 == 0 else None), c=f'C{idx}')\n",
+    "            plt.xscale('log')\n",
+    "            plt.xlim([1e3, 1e6])\n",
+    "            i += 1\n",
+    "    if k == 0:\n",
+    "        plt.legend(fontsize=6, loc='upper right')\n",
+    "plt.xlabel('$t$ (years ago)')\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Global divergence in mutation spectra\n",
+    "#### UMAP embedding of mutation signatures through time for all populations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# truncate to the time range we want to plot\n",
+    "start = 58\n",
+    "end = -30\n",
+    "\n",
+    "time = np.concatenate(([0], ksfs_dict[pop].μ.change_points))[start:end]\n",
+    "\n",
+    "np.random.seed(1)\n",
+    "\n",
+    "embedding_init = sklearn.decomposition.PCA(n_components=2)\n",
+    "embedding_init.fit(factors_history)\n",
+    "\n",
+    "colors = {super_pop: f'C{idx}' for idx, super_pop in enumerate(pops.keys())}\n",
+    "\n",
+    "Z_dict = {}\n",
+    "i = 0\n",
+    "for super_pop in sorted(pops):        \n",
+    "    for pop in reversed(pops[super_pop]):\n",
+    "        Z_dict[pop] = Z_transform[i, :, :]\n",
+    "        i += 1\n",
+    "\n",
+    "Z_stack = np.concatenate([Z_dict[pop] for super_pop in pops for pop in pops[super_pop]])\n",
+    "\n",
+    "embedding = umap.UMAP(n_components=2,\n",
+    "                      init=embedding_init.transform(Z_stack), random_state=1)\n",
+    "embedding.fit(Z_stack)    \n",
+    "\n",
+    "Z_transform_dict = {pop:embedding.transform(Z_dict[pop])[start:end]\n",
+    "                    for super_pop in pops\n",
+    "                    for pop in pops[super_pop]}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### Plot embedding"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "with mpl.rc_context(rc={'text.usetex': False}):\n",
+    "\n",
+    "    plt.figure(figsize=(6, 6))\n",
+    "    # plt.subplot(311)\n",
+    "    for super_pop in pops:\n",
+    "        for idx2, pop in enumerate(pops[super_pop]):\n",
+    "            plt.plot(*Z_transform_dict[pop].T,\n",
+    "                     '-', lw=3, alpha=.5,\n",
+    "                     c=colors[super_pop],\n",
+    "                     label=super_pop if idx2 == 0 else None)\n",
+    "            plt.annotate(pop, Z_transform_dict[pop][0, :],\n",
+    "                         ha='center', va='center', c='w',\n",
+    "                         family='monospace',\n",
+    "                         bbox=dict(boxstyle='circle', fc=colors[super_pop], ec=colors[super_pop], lw=2),\n",
+    "                         size=6)\n",
+    "    plt.xlabel('UMAP 1')\n",
+    "    plt.ylabel('UMAP 2')\n",
+    "    plt.legend()\n",
+    "    plt.tight_layout()\n",
+    "    plt.show()\n",
+    "\n",
+    "    fig = plt.figure(figsize=(6, 6))\n",
+    "    ax = fig.gca(projection='3d')\n",
+    "    ax.view_init(20, 70)\n",
+    "    # plt.subplot(311)\n",
+    "    for super_pop in pops:\n",
+    "        for pop in pops[super_pop]:\n",
+    "            ax.plot(*Z_transform_dict[pop].T, np.log10(t_gen * time),\n",
+    "                    '-', lw=3, alpha=1,\n",
+    "                    c=colors[super_pop],\n",
+    "                    label=super_pop if idx2 == 0 else None)\n",
+    "#             ax.scatter(*Z_transform_dict[pop][None, 0, :].T, np.log10(t_gen * time[1]), s=50,\n",
+    "#                        c=f'C{idx}', alpha=1)\n",
+    "    ax.set_xlabel('UMAP 1')\n",
+    "    ax.set_ylabel('UMAP 2')\n",
+    "    ax.set_zlabel('$\\log_{10}(t)$')\n",
+    "    ax.set_zticks([3, 4, 5, 6])\n",
+    "    ax.set_zlim([3, 6])\n",
+    "    # ax.zaxis._set_scale('log')\n",
+    "    # ax.legend()\n",
+    "    plt.tight_layout()\n",
+    "    plt.show()"
+   ]
+  }
+ ],
+ "metadata": {
+  "celltoolbar": "Slideshow",
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

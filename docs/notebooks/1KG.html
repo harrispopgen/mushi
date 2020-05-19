@@ -1,0 +1,2343 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Inferring demography and mutation spectrum history for human populations &mdash; mushi 0.1-dev documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Observability toward the coalescent horizon" href="observability.html" />
+    <link rel="prev" title="Testing mushi with stdpopsim simulations" href="simulation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1-dev
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">Citing <code class="docutils literal notranslate"><span class="pre">mushi</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inferring demography and mutation spectrum history for human populations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Load-data">Load data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Parse-population-manifest">Parse population manifest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Load-1KG-3-SFSs">Load 1KG 3-SFSs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Number-of-segregating-variants-in-each-population">Number of segregating variants in each population</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Triplet-target-sizes">Triplet target sizes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Define-a-few-parameters">Define a few parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Frequency-masking">Frequency masking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Time-discretization">Time discretization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Total-mutation-rate">Total mutation rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Generation-time">Generation time</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-effective-population-size-history-\eta(t)\equiv-2N(t)">Infer effective population size history <span class="math notranslate nohighlight">\(\eta(t)\equiv 2N(t)\)</span></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Regularization-parameters-and-convergence-criteria">Regularization parameters and convergence criteria</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Loop-over-populations,-inferring-history-for-each">Loop over populations, inferring history for each</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Plot-histories">Plot histories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#TMRCA">TMRCA</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-mutation-spectrum-history-\boldsymbol\mu(t)">Infer mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#TCC&gt;TTC-pulse-in-Europeans">TCC&gt;TTC pulse in Europeans</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Loop-over-EUR-populations,-inferring-history-for-each-under-three-alternative-demographic-conditionings">Loop over EUR populations, inferring history for each under three alternative demographic conditionings</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Mutation-spectrum-histories-for-all-populations">Mutation spectrum histories for all populations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Loop over populations, inferring history for each</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Plot histories</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Tensor-decomposition-and-mutation-signature-dynamics">Tensor decomposition and mutation signature dynamics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Non-negative-CP-decomposition">Non-negative CP decomposition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Project-the-sample-dimension-factors-to-two-principal-components">Project the sample dimension factors to two principal components</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Project-the-time-dimension-factors-to-two-principal-components">Project the time dimension factors to two principal components</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Project-the-mutation-type-dimension-factors-to-two-principal-components">Project the mutation type dimension factors to two principal components</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Display-mutation-type-loadings-as-mutation-signatures">Display mutation type loadings as mutation signatures</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Mutation-signature-dynamics-in-each-population">Mutation signature dynamics in each population</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#Global-divergence-in-mutation-spectra">Global divergence in mutation spectra</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#UMAP-embedding-of-mutation-signatures-through-time-for-all-populations">UMAP embedding of mutation signatures through time for all populations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Plot-embedding">Plot embedding</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="observability.html">Observability toward the coalescent horizon</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html">Update documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#todo-list">Todo list</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mushi</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Inferring demography and mutation spectrum history for human populations</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/notebooks/1KG.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Inferring-demography-and-mutation-spectrum-history-for-human-populations">
+<h1>Inferring demography and mutation spectrum history for human populations<a class="headerlink" href="#Inferring-demography-and-mutation-spectrum-history-for-human-populations" title="Permalink to this headline">¶</a></h1>
+<p>Run mushi on 3-SFS computed from 1000 Genome Project data</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">mushi</span>
+
+<span class="kn">import</span> <span class="nn">msprime</span>
+<span class="kn">import</span> <span class="nn">stdpopsim</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">import</span> <span class="nn">umap</span>
+<span class="kn">import</span> <span class="nn">tensorly.tenalg</span> <span class="k">as</span> <span class="nn">ta</span>
+<span class="kn">import</span> <span class="nn">tensorly.decomposition</span> <span class="k">as</span> <span class="nn">td</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># path to 3-SFS data previously computed with 1KG pipeline</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;../example_data&#39;</span>
+
+<span class="c1"># enable latex in plots</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;text.latex.preamble&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s2">&quot;\usepackage</span><span class="si">{amsmath}</span><span class="s2">&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Load-data">
+<h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Parse-population-manifest">
+<h3>Parse population manifest<a class="headerlink" href="#Parse-population-manifest" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pops</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">ksfs_file</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s1">/3-SFS.*.tsv&#39;</span><span class="p">):</span>
+    <span class="n">super_pop</span><span class="p">,</span> <span class="n">pop</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">ksfs_file</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">super_pop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">:</span>
+        <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">pop</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]:</span>
+        <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pop</span><span class="p">)</span>
+
+<span class="n">pops</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">((</span><span class="n">pop</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">pop</span><span class="p">]))</span> <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">))</span>
+<span class="n">pops</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OrderedDict([(&#39;AFR&#39;, [&#39;ACB&#39;, &#39;ASW&#39;, &#39;ESN&#39;, &#39;GWD&#39;, &#39;LWK&#39;, &#39;MSL&#39;, &#39;YRI&#39;]),
+             (&#39;AMR&#39;, [&#39;CLM&#39;, &#39;MXL&#39;, &#39;PEL&#39;, &#39;PUR&#39;]),
+             (&#39;EAS&#39;, [&#39;CDX&#39;, &#39;CHB&#39;, &#39;CHS&#39;, &#39;JPT&#39;, &#39;KHV&#39;]),
+             (&#39;EUR&#39;, [&#39;CEU&#39;, &#39;FIN&#39;, &#39;GBR&#39;, &#39;IBS&#39;, &#39;TSI&#39;]),
+             (&#39;SAS&#39;, [&#39;BEB&#39;, &#39;GIH&#39;, &#39;ITU&#39;, &#39;PJL&#39;, &#39;STU&#39;])])
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Load-1KG-3-SFSs">
+<h3>Load 1KG 3-SFSs<a class="headerlink" href="#Load-1KG-3-SFSs" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># we use this ordering for triplet mutation types</span>
+<span class="n">sorted_triplets</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">a5</span><span class="si">}{</span><span class="n">a</span><span class="si">}{</span><span class="n">a3</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">a5</span><span class="si">}{</span><span class="n">d</span><span class="si">}{</span><span class="n">a3</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="s1">&#39;AC&#39;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="s1">&#39;ACGT&#39;</span> <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="n">a</span> <span class="k">for</span> <span class="n">a5</span> <span class="ow">in</span> <span class="s1">&#39;ACGT&#39;</span> <span class="k">for</span> <span class="n">a3</span> <span class="ow">in</span> <span class="s1">&#39;ACGT&#39;</span><span class="p">]</span>
+
+<span class="n">ksfs_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s1">/3-SFS.</span><span class="si">{</span><span class="n">super_pop</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">pop</span><span class="si">}</span><span class="s1">.tsv&#39;</span><span class="p">)</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                                  <span class="n">label</span><span class="o">=</span><span class="n">super_pop</span> <span class="k">if</span> <span class="n">idx2</span> <span class="o">==</span><span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="c1"># this sorts the columns of the ksfs according to sorted_triplets</span>
+        <span class="n">foo</span><span class="p">,</span> <span class="n">bar</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">sorted_triplets</span><span class="p">)</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span> <span class="o">=</span> <span class="n">foo</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">X</span><span class="p">[:,</span> <span class="n">bar</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
+  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_6_1.svg" src="../_images/notebooks_1KG_6_1.svg" /></div>
+</div>
+<div class="section" id="Number-of-segregating-variants-in-each-population">
+<h4>Number of segregating variants in each population<a class="headerlink" href="#Number-of-segregating-variants-in-each-population" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([(</span><span class="n">super_pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">,</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span> <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span> <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]],</span> <span class="n">columns</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;superpop&#39;</span><span class="p">,</span> <span class="s1">&#39;pop&#39;</span><span class="p">,</span> <span class="s1">&#39;segregating sites&#39;</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;pop&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;segregating sites&#39;</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="s1">&#39;superpop&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span> <span class="n">dodge</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_8_0.svg" src="../_images/notebooks_1KG_8_0.svg" /></div>
+</div>
+</div>
+</div>
+<div class="section" id="Triplet-target-sizes">
+<h3>Triplet target sizes<a class="headerlink" href="#Triplet-target-sizes" title="Permalink to this headline">¶</a></h3>
+<p>Load masked genome size (also previously computed with 1KG pipeline)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">masked_genome_size</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">data_dir</span><span class="si">}</span><span class="s1">/masked_size.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">masked_genome_size</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_10_0.svg" src="../_images/notebooks_1KG_10_0.svg" /></div>
+</div>
+</div>
+</div>
+<div class="section" id="Define-a-few-parameters">
+<h2>Define a few parameters<a class="headerlink" href="#Define-a-few-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Frequency-masking">
+<h3>Frequency masking<a class="headerlink" href="#Frequency-masking" title="Permalink to this headline">¶</a></h3>
+<p>clip high frequencies due to ancestral state misidentification</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">clip_low</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">clip_high</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="c1"># we need a different mask vector for each population because the number of haplotypes n</span>
+<span class="c1"># (length of SFS vector) varies</span>
+<span class="n">freq_mask</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]:</span>
+        <span class="n">freq_mask</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">True</span> <span class="k">if</span> <span class="p">(</span><span class="n">clip_low</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="n">clip_high</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+                                   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Time-discretization">
+<h3>Time discretization<a class="headerlink" href="#Time-discretization" title="Permalink to this headline">¶</a></h3>
+<p>time grid of epoch boundaries (measured in generations)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">change_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">200000</span><span class="p">),</span> <span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Total-mutation-rate">
+<h3>Total mutation rate<a class="headerlink" href="#Total-mutation-rate" title="Permalink to this headline">¶</a></h3>
+<p>Mutation rate per site per generation (Scally, 2016)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">u</span> <span class="o">=</span> <span class="mf">1.25e-8</span>
+</pre></div>
+</div>
+</div>
+<p>Mutation rate per masked genome per generation</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mu0</span> <span class="o">=</span> <span class="n">u</span> <span class="o">*</span> <span class="n">masked_genome_size</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">mu0</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+25.421035375
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Generation-time">
+<h3>Generation time<a class="headerlink" href="#Generation-time" title="Permalink to this headline">¶</a></h3>
+<p>Generation time for time calibration (Fenner, 2005)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">t_gen</span> <span class="o">=</span> <span class="mi">29</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Infer-effective-population-size-history-\eta(t)\equiv-2N(t)">
+<h2>Infer effective population size history <span class="math notranslate nohighlight">\(\eta(t)\equiv 2N(t)\)</span><a class="headerlink" href="#Infer-effective-population-size-history-\eta(t)\equiv-2N(t)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Regularization-parameters-and-convergence-criteria">
+<h3>Regularization parameters and convergence criteria<a class="headerlink" href="#Regularization-parameters-and-convergence-criteria" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">regularization_eta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">alpha_tv</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">alpha_spline</span><span class="o">=</span><span class="mf">3e3</span><span class="p">)</span>
+<span class="n">convergence</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Loop-over-populations,-inferring-history-for-each">
+<h3>Loop over populations, inferring history for each<a class="headerlink" href="#Loop-over-populations,-inferring-history-for-each" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>For the first population (YRI) we set <code class="docutils literal notranslate"><span class="pre">eta_ref</span> <span class="pre">=</span> <span class="pre">None</span></code> to use the default constant MLE as the reference history.</p></li>
+<li><p>For the other populations, we use the YRI history as the reference</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eta_ref</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">super_pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
+        <span class="c1"># clear solutions, in case rerunning this cell</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_eta</span><span class="p">()</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e-10</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e3</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">eta_ref</span><span class="o">=</span><span class="n">eta_ref</span><span class="p">,</span> <span class="n">alpha_ridge</span><span class="o">=</span><span class="n">alpha_ridge</span><span class="p">,</span>
+                                     <span class="n">infer_mu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                     <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_eta</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">freq_mask</span><span class="p">[</span><span class="n">pop</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">eta_ref</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR YRI
+inferring η(t)
+initial objective -1.682230e+08
+iteration 728, objective -1.685e+08, relative change 5.446e-14
+relative change in objective function 5.4e-14 is within tolerance 1e-12 after 728 iterations
+AFR MSL
+inferring η(t)
+initial objective -1.696926e+08
+iteration 612, objective -1.701e+08, relative change 6.552e-14
+relative change in objective function 6.6e-14 is within tolerance 1e-12 after 612 iterations
+AFR LWK
+inferring η(t)
+initial objective -1.808967e+08
+iteration 651, objective -1.815e+08, relative change 2.414e-14
+relative change in objective function 2.4e-14 is within tolerance 1e-12 after 651 iterations
+AFR GWD
+inferring η(t)
+initial objective -1.773713e+08
+iteration 992, objective -1.779e+08, relative change 9.103e-13
+relative change in objective function 9.1e-13 is within tolerance 1e-12 after 992 iterations
+AFR ESN
+inferring η(t)
+initial objective -1.628517e+08
+iteration 1378, objective -1.048e+08, relative change 3.683e-10
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Plot-histories">
+<h3>Plot histories<a class="headerlink" href="#Plot-histories" title="Permalink to this headline">¶</a></h3>
+<p>Plot results separately for each superpopulation</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="s1">&#39;col&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">1.7</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)),</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">idx_super</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                  <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                  <span class="n">fill_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">idx_super</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_26_0.svg" src="../_images/notebooks_1KG_26_0.svg" /></div>
+</div>
+<p>Plot all demographies on the same axes</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mf">1.7</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)))</span>
+<span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">super_pop</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx_super</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_28_0.svg" src="../_images/notebooks_1KG_28_0.svg" /></div>
+</div>
+</div>
+<div class="section" id="TMRCA">
+<h3>TMRCA<a class="headerlink" href="#TMRCA" title="Permalink to this headline">¶</a></h3>
+<p>As a diagnostic to make sure the time range we used is consistent with the histories we inferred, plot the CDF of the sample TMRCA for each population</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span> <span class="o">*</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">η</span><span class="o">.</span><span class="n">change_points</span><span class="p">,</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">tmrca_cdf</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;TMRCA CDF&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">super_pop</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$t$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_30_0.svg" src="../_images/notebooks_1KG_30_0.svg" /></div>
+</div>
+</div>
+</div>
+<div class="section" id="Infer-mutation-spectrum-history-\boldsymbol\mu(t)">
+<h2>Infer mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-mutation-spectrum-history-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="TCC&gt;TTC-pulse-in-Europeans">
+<h3>TCC&gt;TTC pulse in Europeans<a class="headerlink" href="#TCC>TTC-pulse-in-Europeans" title="Permalink to this headline">¶</a></h3>
+<p>First we’ll focus on sharply timing the TCC&gt;TTC, and assessing sensitivity to demographic assumptions. #### Regularization paremeters total variation regularization to minimize the number of change points.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Loop-over-EUR-populations,-inferring-history-for-each-under-three-alternative-demographic-conditionings">
+<h4>Loop over EUR populations, inferring history for each under three alternative demographic conditionings<a class="headerlink" href="#Loop-over-EUR-populations,-inferring-history-for-each-under-three-alternative-demographic-conditionings" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li><p>The European demography from Tennessen et al. (assumed by Harris and Pritchard to time the TCC&gt;TTC pulse)</p></li>
+<li><p>The demographies for each EUR population reported by Speidel et al. using the Relate method</p></li>
+<li><p>The inferred demographies from above</p></li>
+</ol>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">17.4</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">))</span>
+
+<span class="n">species</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_species</span><span class="p">(</span><span class="s2">&quot;HomSap&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get_demographic_model</span><span class="p">(</span><span class="s2">&quot;OutOfAfrica_2T12&quot;</span><span class="p">)</span>
+<span class="n">ddb</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_demography_debugger</span><span class="p">()</span>
+<span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">change_points</span><span class="p">))</span>
+<span class="n">eta_Tennessen</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span>
+                        <span class="mi">1</span> <span class="o">/</span> <span class="n">ddb</span><span class="o">.</span><span class="n">coalescence_rate_trajectory</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
+                                                            <span class="n">num_samples</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                                                            <span class="n">double_step_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="s1">&#39;EUR&#39;</span><span class="p">]):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">pop</span><span class="p">)</span>
+    <span class="n">eta_mushi</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;../Relate_histories/relate_</span><span class="si">{</span><span class="n">pop</span><span class="si">}</span><span class="s1">.coal&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">(),</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">(),</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">t2</span> <span class="o">=</span> <span class="n">eta_mushi</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">eta_relate</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">t2</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">scipy</span><span class="o">.</span><span class="n">interpolate</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)(</span><span class="n">t2</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">row_idx</span><span class="p">,</span> <span class="n">eta</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="n">eta_Tennessen</span><span class="p">,</span> <span class="n">eta_relate</span><span class="p">,</span> <span class="n">eta_mushi</span><span class="p">)):</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">infer_eta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                     <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_mu</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">freq_mask</span><span class="p">[</span><span class="n">pop</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                  <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                  <span class="n">fill_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                            <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;TCC$</span><span class="se">\\</span><span class="s1">to$TTC component of</span><span class="se">\n</span><span class="s1">variant count composition&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">row_idx</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_prop_cycle</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;TCC$\to$TTC mutation intensity&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CEU
+inferring μ(t) conditioned on η(t)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/ipykernel_launcher.py:19: RuntimeWarning: divide by zero encountered in true_divide
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -5.735423e+07
+iteration 281, objective -5.737e+07, relative change 9.034e-13
+relative change in objective function 9e-13 is within tolerance 1e-12 after 281 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -5.865920e+07
+iteration 260, objective -5.867e+07, relative change 9.614e-13
+relative change in objective function 9.6e-13 is within tolerance 1e-12 after 260 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -5.935291e+07
+iteration 216, objective -5.936e+07, relative change 9.782e-13
+relative change in objective function 9.8e-13 is within tolerance 1e-12 after 216 iterations
+FIN
+inferring μ(t) conditioned on η(t)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/ipykernel_launcher.py:19: RuntimeWarning: divide by zero encountered in true_divide
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -4.733836e+07
+iteration 251, objective -4.735e+07, relative change 4.439e-13
+relative change in objective function 4.4e-13 is within tolerance 1e-12 after 251 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -4.842493e+07
+iteration 247, objective -4.843e+07, relative change 9.888e-13
+relative change in objective function 9.9e-13 is within tolerance 1e-12 after 247 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -4.902163e+07
+iteration 203, objective -4.903e+07, relative change 7.367e-13
+relative change in objective function 7.4e-13 is within tolerance 1e-12 after 203 iterations
+GBR
+inferring μ(t) conditioned on η(t)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/ipykernel_launcher.py:19: RuntimeWarning: divide by zero encountered in true_divide
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -5.314527e+07
+iteration 240, objective -5.316e+07, relative change 9.834e-13
+relative change in objective function 9.8e-13 is within tolerance 1e-12 after 240 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -5.437019e+07
+iteration 278, objective -5.438e+07, relative change 9.634e-13
+relative change in objective function 9.6e-13 is within tolerance 1e-12 after 278 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -5.496231e+07
+iteration 230, objective -5.497e+07, relative change 9.703e-13
+relative change in objective function 9.7e-13 is within tolerance 1e-12 after 230 iterations
+IBS
+inferring μ(t) conditioned on η(t)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/ipykernel_launcher.py:19: RuntimeWarning: divide by zero encountered in true_divide
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -6.588031e+07
+iteration 210, objective -6.589e+07, relative change 7.894e-13
+relative change in objective function 7.9e-13 is within tolerance 1e-12 after 210 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -6.712050e+07
+iteration 313, objective -6.713e+07, relative change 9.270e-13
+relative change in objective function 9.3e-13 is within tolerance 1e-12 after 313 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -6.844192e+07
+iteration 176, objective -6.845e+07, relative change 9.236e-13
+relative change in objective function 9.2e-13 is within tolerance 1e-12 after 176 iterations
+TSI
+inferring μ(t) conditioned on η(t)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/ipykernel_launcher.py:19: RuntimeWarning: divide by zero encountered in true_divide
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -6.324577e+07
+iteration 247, objective -6.326e+07, relative change 8.887e-13
+relative change in objective function 8.9e-13 is within tolerance 1e-12 after 247 iterations
+inferring μ(t) conditioned on η(t)
+initial objective -6.454967e+07
+iteration 266, objective -6.456e+07, relative change 4.136e-12
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Mutation-spectrum-histories-for-all-populations">
+<h3>Mutation spectrum histories for all populations<a class="headerlink" href="#Mutation-spectrum-histories-for-all-populations" title="Permalink to this headline">¶</a></h3>
+<p>Now we’ll aim for smooth histories that capture all components well #### Regularization parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hard</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">beta_rank</span><span class="o">=</span><span class="mf">2e2</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">1e5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h4>Loop over populations, inferring history for each<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">mu_ref</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">super_pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">beta_ridge</span> <span class="o">=</span> <span class="mf">1e-10</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta_ridge</span> <span class="o">=</span> <span class="mf">1e4</span>
+        <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">infer_eta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mu_ref</span><span class="o">=</span><span class="n">mu_ref</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="n">beta_ridge</span><span class="p">,</span>
+                                     <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_mu</span><span class="p">,</span>
+                                     <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">freq_mask</span><span class="p">[</span><span class="n">pop</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">mu_ref</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR YRI
+inferring μ(t) conditioned on η(t)
+initial objective -1.078318e+08
+iteration 735, objective -1.078e+08, relative change 8.202e-13
+relative change in objective function 8.2e-13 is within tolerance 1e-12 after 735 iterations
+AFR MSL
+inferring μ(t) conditioned on η(t)
+initial objective -1.097350e+08
+iteration 548, objective -1.098e+08, relative change 3.480e-13
+relative change in objective function 3.5e-13 is within tolerance 1e-12 after 548 iterations
+AFR LWK
+inferring μ(t) conditioned on η(t)
+initial objective -1.173113e+08
+iteration 789, objective -1.174e+08, relative change 4.908e-13
+relative change in objective function 4.9e-13 is within tolerance 1e-12 after 789 iterations
+AFR GWD
+inferring μ(t) conditioned on η(t)
+initial objective -1.143520e+08
+iteration 754, objective -1.144e+08, relative change 2.607e-13
+relative change in objective function 2.6e-13 is within tolerance 1e-12 after 754 iterations
+AFR ESN
+inferring μ(t) conditioned on η(t)
+initial objective -1.042826e+08
+iteration 518, objective -1.044e+08, relative change 5.404e-13
+relative change in objective function 5.4e-13 is within tolerance 1e-12 after 518 iterations
+AFR ASW
+inferring μ(t) conditioned on η(t)
+initial objective -1.086207e+08
+iteration 130, objective -1.087e+08, relative change 1.470e-08
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h4>Plot histories<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p>plot 3-SFS and inferred mush for each population (this produces many plots)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">mpl</span><span class="o">.</span><span class="n">rc_context</span><span class="p">(</span><span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text.usetex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+    <span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">pop</span><span class="p">)</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+            <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span>
+                                                      <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                                <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                                                 <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;variant count composition&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+            <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;mutation intensity composition&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+            <span class="n">singlets</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">anc</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">der</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">anc</span><span class="p">,</span> <span class="n">der</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                           <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">5</span><span class="p">])]</span>
+
+            <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+
+            <span class="n">pal</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;husl&#39;</span><span class="p">,</span> <span class="n">n_colors</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+            <span class="n">col_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&gt;C&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;A&gt;G&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;A&gt;T&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s1">&#39;C&gt;A&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;C&gt;G&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;C&gt;T&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">5</span><span class="p">]}</span>
+            <span class="n">col_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">col_map</span><span class="p">[</span><span class="n">singlet</span><span class="p">]</span> <span class="k">for</span> <span class="n">singlet</span> <span class="ow">in</span> <span class="n">singlets</span><span class="p">]</span>
+
+            <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clustermap</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">col_cluster</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                      <span class="n">xticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                      <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">,</span>
+                                      <span class="n">col_colors</span><span class="o">=</span><span class="n">col_colors</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+            <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">clustermap</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span>
+                                        <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">col_cluster</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                        <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">,</span>
+                                        <span class="n">col_colors</span><span class="o">=</span><span class="n">col_colors</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+YRI
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_1.svg" src="../_images/notebooks_1KG_40_1.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_2.svg" src="../_images/notebooks_1KG_40_2.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_3.svg" src="../_images/notebooks_1KG_40_3.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+MSL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_5.svg" src="../_images/notebooks_1KG_40_5.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_6.svg" src="../_images/notebooks_1KG_40_6.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_7.svg" src="../_images/notebooks_1KG_40_7.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+LWK
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_9.svg" src="../_images/notebooks_1KG_40_9.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_10.svg" src="../_images/notebooks_1KG_40_10.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_11.svg" src="../_images/notebooks_1KG_40_11.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GWD
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_13.svg" src="../_images/notebooks_1KG_40_13.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_14.svg" src="../_images/notebooks_1KG_40_14.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_15.svg" src="../_images/notebooks_1KG_40_15.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ESN
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_17.svg" src="../_images/notebooks_1KG_40_17.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_18.svg" src="../_images/notebooks_1KG_40_18.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_19.svg" src="../_images/notebooks_1KG_40_19.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ASW
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_21.svg" src="../_images/notebooks_1KG_40_21.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_22.svg" src="../_images/notebooks_1KG_40_22.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_23.svg" src="../_images/notebooks_1KG_40_23.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ACB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_25.svg" src="../_images/notebooks_1KG_40_25.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_26.svg" src="../_images/notebooks_1KG_40_26.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_27.svg" src="../_images/notebooks_1KG_40_27.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PUR
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_29.svg" src="../_images/notebooks_1KG_40_29.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_30.svg" src="../_images/notebooks_1KG_40_30.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_31.svg" src="../_images/notebooks_1KG_40_31.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PEL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_33.svg" src="../_images/notebooks_1KG_40_33.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_34.svg" src="../_images/notebooks_1KG_40_34.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_35.svg" src="../_images/notebooks_1KG_40_35.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+MXL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_37.svg" src="../_images/notebooks_1KG_40_37.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_38.svg" src="../_images/notebooks_1KG_40_38.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_39.svg" src="../_images/notebooks_1KG_40_39.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CLM
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_41.svg" src="../_images/notebooks_1KG_40_41.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_42.svg" src="../_images/notebooks_1KG_40_42.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_43.svg" src="../_images/notebooks_1KG_40_43.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+KHV
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_45.svg" src="../_images/notebooks_1KG_40_45.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_46.svg" src="../_images/notebooks_1KG_40_46.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_47.svg" src="../_images/notebooks_1KG_40_47.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+JPT
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_49.svg" src="../_images/notebooks_1KG_40_49.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_50.svg" src="../_images/notebooks_1KG_40_50.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_51.svg" src="../_images/notebooks_1KG_40_51.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CHS
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_53.svg" src="../_images/notebooks_1KG_40_53.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_54.svg" src="../_images/notebooks_1KG_40_54.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_55.svg" src="../_images/notebooks_1KG_40_55.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CHB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_57.svg" src="../_images/notebooks_1KG_40_57.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_58.svg" src="../_images/notebooks_1KG_40_58.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_59.svg" src="../_images/notebooks_1KG_40_59.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CDX
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_61.svg" src="../_images/notebooks_1KG_40_61.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_62.svg" src="../_images/notebooks_1KG_40_62.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_63.svg" src="../_images/notebooks_1KG_40_63.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TSI
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_65.svg" src="../_images/notebooks_1KG_40_65.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_66.svg" src="../_images/notebooks_1KG_40_66.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_67.svg" src="../_images/notebooks_1KG_40_67.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+IBS
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_69.svg" src="../_images/notebooks_1KG_40_69.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_70.svg" src="../_images/notebooks_1KG_40_70.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_71.svg" src="../_images/notebooks_1KG_40_71.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GBR
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_73.svg" src="../_images/notebooks_1KG_40_73.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_74.svg" src="../_images/notebooks_1KG_40_74.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_75.svg" src="../_images/notebooks_1KG_40_75.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+FIN
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_77.svg" src="../_images/notebooks_1KG_40_77.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_78.svg" src="../_images/notebooks_1KG_40_78.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_79.svg" src="../_images/notebooks_1KG_40_79.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CEU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_81.svg" src="../_images/notebooks_1KG_40_81.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_82.svg" src="../_images/notebooks_1KG_40_82.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_83.svg" src="../_images/notebooks_1KG_40_83.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+STU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_85.svg" src="../_images/notebooks_1KG_40_85.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_86.svg" src="../_images/notebooks_1KG_40_86.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_87.svg" src="../_images/notebooks_1KG_40_87.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+PJL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_89.svg" src="../_images/notebooks_1KG_40_89.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_90.svg" src="../_images/notebooks_1KG_40_90.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_91.svg" src="../_images/notebooks_1KG_40_91.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ITU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_93.svg" src="../_images/notebooks_1KG_40_93.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_94.svg" src="../_images/notebooks_1KG_40_94.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_95.svg" src="../_images/notebooks_1KG_40_95.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+GIH
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_97.svg" src="../_images/notebooks_1KG_40_97.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_98.svg" src="../_images/notebooks_1KG_40_98.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_99.svg" src="../_images/notebooks_1KG_40_99.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+BEB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_101.svg" src="../_images/notebooks_1KG_40_101.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_102.svg" src="../_images/notebooks_1KG_40_102.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_40_103.svg" src="../_images/notebooks_1KG_40_103.svg" /></div>
+</div>
+</div>
+</div>
+<div class="section" id="Tensor-decomposition-and-mutation-signature-dynamics">
+<h3>Tensor decomposition and mutation signature dynamics<a class="headerlink" href="#Tensor-decomposition-and-mutation-signature-dynamics" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="Non-negative-CP-decomposition">
+<h4>Non-negative CP decomposition<a class="headerlink" href="#Non-negative-CP-decomposition" title="Permalink to this headline">¶</a></h4>
+<p>We stack the MuSHs for each population to form a tensor of order 3, then use a rank 10 CP decomposition to extract factors for each dimension: sample, time, and mutation type</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">targets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">masked_genome_size</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">triplet</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">triplet</span> <span class="ow">in</span> <span class="n">sorted_triplets</span><span class="p">])</span>
+
+<span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">Z</span> <span class="o">/</span> <span class="n">targets</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+                    <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])],</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># non-negative parafrac decomposition</span>
+<span class="n">core</span><span class="p">,</span> <span class="p">(</span><span class="n">factors_sample</span><span class="p">,</span>
+       <span class="n">factors_history</span><span class="p">,</span>
+       <span class="n">factors_signature</span><span class="p">)</span> <span class="o">=</span> <span class="n">td</span><span class="o">.</span><span class="n">parafac</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">non_negative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                       <span class="n">orthogonalise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalize_factors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                       <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">n_iter_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+                                       <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/tensorly/backend/core.py:722: RuntimeWarning: divide by zero encountered in true_divide
+  V = np.dot(matrix.T.conj(), U * np.where(np.abs(S) &lt;= np.finfo(S.dtype).eps, 0, 1/S)[None, :])
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Project-the-sample-dimension-factors-to-two-principal-components">
+<h4>Project the sample dimension factors to two principal components<a class="headerlink" href="#Project-the-sample-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">xy</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">factors_sample</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="o">*</span><span class="n">xy</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="p">[</span><span class="n">super_pop</span> <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)</span>
+                                      <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])])</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">xy</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;PC 1&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;PC 2&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_44_0.svg" src="../_images/notebooks_1KG_44_0.svg" /></div>
+</div>
+</div>
+<div class="section" id="Project-the-time-dimension-factors-to-two-principal-components">
+<h4>Project the time dimension factors to two principal components<a class="headerlink" href="#Project-the-time-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">xy</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">factors_history</span><span class="p">)</span>
+<span class="n">idxs</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1e3</span> <span class="o">&lt;=</span> <span class="n">t_gen</span> <span class="o">*</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">t_gen</span> <span class="o">*</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">1e6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="n">idxs</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="n">idxs</span><span class="p">][</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">xy</span><span class="p">[</span><span class="n">idxs</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">xy</span><span class="p">[</span><span class="n">idxs</span><span class="p">][</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">t_gen</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">idxs</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">idxs</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">norm</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e6</span><span class="p">)</span>
+<span class="n">points</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">hue_norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+<span class="n">cbar</span><span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+<span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;$t$ (years ago)&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;PC 1&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;PC 2&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_46_0.svg" src="../_images/notebooks_1KG_46_0.svg" /></div>
+</div>
+</div>
+<div class="section" id="Project-the-mutation-type-dimension-factors-to-two-principal-components">
+<h4>Project the mutation type dimension factors to two principal components<a class="headerlink" href="#Project-the-mutation-type-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">mpl</span><span class="o">.</span><span class="n">rc_context</span><span class="p">(</span><span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text.usetex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+    <span class="n">singlets</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">anc</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">der</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">anc</span><span class="p">,</span> <span class="n">der</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                   <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">5</span><span class="p">])]</span>
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">whiten</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">factors_signature</span> <span class="o">*</span> <span class="n">targets</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="o">*</span><span class="n">xy</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">hue</span><span class="o">=</span><span class="n">singlets</span><span class="p">,</span> <span class="n">palette</span><span class="o">=</span><span class="s1">&#39;husl&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mutation_type</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">mutation_types</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">xy</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">mutation_type</span><span class="p">,</span> <span class="n">xy</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;PC 1&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;PC 2&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_48_0.svg" src="../_images/notebooks_1KG_48_0.svg" /></div>
+</div>
+</div>
+<div class="section" id="Display-mutation-type-loadings-as-mutation-signatures">
+<h4>Display mutation type loadings as mutation signatures<a class="headerlink" href="#Display-mutation-type-loadings-as-mutation-signatures" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">signature_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">factors_signature</span><span class="p">,</span>
+                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">factors_signature</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="n">signature_df</span><span class="p">[</span><span class="s1">&#39;mutation type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">mutation_types</span>
+<span class="n">signature_df</span><span class="p">[</span><span class="s1">&#39;singlet type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">singlets</span>
+
+<span class="n">pal</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">color_palette</span><span class="p">(</span><span class="s1">&#39;husl&#39;</span><span class="p">,</span> <span class="n">n_colors</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;A&gt;C&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;A&gt;G&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;A&gt;T&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+          <span class="s1">&#39;C&gt;A&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;C&gt;G&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;C&gt;T&#39;</span><span class="p">:</span> <span class="n">pal</span><span class="p">[</span><span class="mi">5</span><span class="p">]}</span>
+<span class="n">palette</span> <span class="o">=</span> <span class="p">[</span><span class="n">colors</span><span class="p">[</span><span class="n">singlet</span><span class="p">]</span> <span class="k">for</span> <span class="n">singlet</span> <span class="ow">in</span> <span class="n">signature_df</span><span class="p">[</span><span class="s1">&#39;singlet type&#39;</span><span class="p">]]</span>
+<span class="n">signature_df</span> <span class="o">=</span> <span class="n">signature_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mutation type&#39;</span><span class="p">,</span> <span class="s1">&#39;singlet type&#39;</span><span class="p">],</span> <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;signature&#39;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">mpl</span><span class="o">.</span><span class="n">rc_context</span><span class="p">(</span><span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text.usetex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">FacetGrid</span><span class="p">(</span><span class="n">signature_df</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="s1">&#39;signature&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                      <span class="n">margin_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">,</span> <span class="s1">&#39;mutation type&#39;</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+              <span class="n">order</span><span class="o">=</span><span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">mutation_types</span><span class="p">,</span>
+              <span class="n">palette</span><span class="o">=</span><span class="n">palette</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">xtick</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">palette</span><span class="p">):</span>
+        <span class="n">xtick</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_50_0.svg" src="../_images/notebooks_1KG_50_0.svg" /></div>
+</div>
+</div>
+<div class="section" id="Mutation-signature-dynamics-in-each-population">
+<h4>Mutation signature dynamics in each population<a class="headerlink" href="#Mutation-signature-dynamics-in-each-population" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p>rows correspond to 10 mutation signatures</p></li>
+<li><p>columns correspond to super populations</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">factors_signature_normed</span> <span class="o">=</span> <span class="n">factors_signature</span> <span class="o">*</span> <span class="n">targets</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+<span class="n">factors_signature_normed</span> <span class="o">/=</span> <span class="n">factors_signature_normed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">Z_transform</span> <span class="o">=</span> <span class="n">ta</span><span class="o">.</span><span class="n">mode_dot</span><span class="p">(</span><span class="n">Z</span> <span class="o">*</span> <span class="n">targets</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">factors_signature_normed</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">Z_transform_normed</span> <span class="o">=</span> <span class="n">Z_transform</span> <span class="o">/</span> <span class="n">Z_transform</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">2.1</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">pops</span><span class="p">),</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">idx</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span> <span class="o">*</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Z_transform_normed</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">k</span><span class="p">],</span>
+                     <span class="n">label</span><span class="o">=</span><span class="n">pop</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">super_pop</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$t$ (years ago)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_52_0.svg" src="../_images/notebooks_1KG_52_0.svg" /></div>
+</div>
+<p>The same histories overlayed for all populations</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="s1">&#39;row&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Z_transform</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span> <span class="o">*</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">arrays</span><span class="p">()[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Z_transform_normed</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">k</span><span class="p">],</span>
+                     <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="n">super_pop</span> <span class="k">if</span> <span class="n">idx2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$t$ (years ago)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_54_0.svg" src="../_images/notebooks_1KG_54_0.svg" /></div>
+</div>
+</div>
+</div>
+<div class="section" id="Global-divergence-in-mutation-spectra">
+<h3>Global divergence in mutation spectra<a class="headerlink" href="#Global-divergence-in-mutation-spectra" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="UMAP-embedding-of-mutation-signatures-through-time-for-all-populations">
+<h4>UMAP embedding of mutation signatures through time for all populations<a class="headerlink" href="#UMAP-embedding-of-mutation-signatures-through-time-for-all-populations" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># truncate to the time range we want to plot</span>
+<span class="n">start</span> <span class="o">=</span> <span class="mi">58</span>
+<span class="n">end</span> <span class="o">=</span> <span class="o">-</span><span class="mi">30</span>
+
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="mi">0</span><span class="p">],</span> <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">change_points</span><span class="p">))[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">embedding_init</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">embedding_init</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">factors_history</span><span class="p">)</span>
+
+<span class="n">colors</span> <span class="o">=</span> <span class="p">{</span><span class="n">super_pop</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;C</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="o">.</span><span class="n">keys</span><span class="p">())}</span>
+
+<span class="n">Z_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+        <span class="n">Z_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span> <span class="o">=</span> <span class="n">Z_transform</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">Z_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">Z_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span> <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span> <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]])</span>
+
+<span class="n">embedding</span> <span class="o">=</span> <span class="n">umap</span><span class="o">.</span><span class="n">UMAP</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                      <span class="n">init</span><span class="o">=</span><span class="n">embedding_init</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Z_stack</span><span class="p">),</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">embedding</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Z_stack</span><span class="p">)</span>
+
+<span class="n">Z_transform_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">pop</span><span class="p">:</span><span class="n">embedding</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Z_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">])[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span>
+                    <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Plot-embedding">
+<h4>Plot embedding<a class="headerlink" href="#Plot-embedding" title="Permalink to this headline">¶</a></h4>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">mpl</span><span class="o">.</span><span class="n">rc_context</span><span class="p">(</span><span class="n">rc</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text.usetex&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="c1"># plt.subplot(311)</span>
+    <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">idx2</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">Z_transform_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                     <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span>
+                     <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">super_pop</span><span class="p">],</span>
+                     <span class="n">label</span><span class="o">=</span><span class="n">super_pop</span> <span class="k">if</span> <span class="n">idx2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">pop</span><span class="p">,</span> <span class="n">Z_transform_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span>
+                         <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span>
+                         <span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">,</span>
+                         <span class="n">bbox</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">boxstyle</span><span class="o">=</span><span class="s1">&#39;circle&#39;</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">super_pop</span><span class="p">],</span> <span class="n">ec</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">super_pop</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+                         <span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;UMAP 1&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;UMAP 2&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="c1"># plt.subplot(311)</span>
+    <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">Z_transform_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">t_gen</span> <span class="o">*</span> <span class="n">time</span><span class="p">),</span>
+                    <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">c</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">super_pop</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">super_pop</span> <span class="k">if</span> <span class="n">idx2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="c1">#             ax.scatter(*Z_transform_dict[pop][None, 0, :].T, np.log10(t_gen * time[1]), s=50,</span>
+<span class="c1">#                        c=f&#39;C{idx}&#39;, alpha=1)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;UMAP 1&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;UMAP 2&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(t)$&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zticks</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlim</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+    <span class="c1"># ax.zaxis._set_scale(&#39;log&#39;)</span>
+    <span class="c1"># ax.legend()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_58_0.svg" src="../_images/notebooks_1KG_58_0.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_58_1.svg" src="../_images/notebooks_1KG_58_1.svg" /></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="observability.html" class="btn btn-neutral float-right" title="Observability toward the coalescent horizon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="simulation.html" class="btn btn-neutral float-left" title="Testing mushi with stdpopsim simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, William DeWitt, Kameron Decker Harris, and Kelley Harris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
