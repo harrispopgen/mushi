@@ -1,4 +1,6 @@
-#! /usr/bin/env python
+r"""Utility functions
+
+"""
 
 import numpy as onp
 import jax.numpy as np
@@ -6,9 +8,14 @@ from jax.ops import index, index_update
 
 
 def C(n: int) -> onp.ndarray:
-    """The C matrix defined in the text
+    r"""The combinatorial :math:`C` matrix defined in the paper's appendix
 
-    n: number of sampled haplotypes
+    Args:
+        n: the number of sampled haplotypes :math:`n`
+
+    Returns:
+        :math:`(n-1)\times(n-1)` matrix
+
     """
     W1 = onp.zeros((n - 1, n - 1))
     W2 = onp.zeros((n - 1, n - 1))
@@ -30,10 +37,17 @@ def C(n: int) -> onp.ndarray:
 
 
 def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """The M matrix defined in the text
+    r"""The M matrix defined in the paper's appendix
 
-    t: time grid, starting at zero and ending at np.inf
-    y: population size in each epoch
+    Args:
+        n: the number of sampled haplotypes :math:`n`
+        t: time grid, starting at zero and ending at np.inf
+        y: population size in each epoch
+
+    Returns:
+        :math:`(n-1)\times m` matrix, where :math:`m` is the number of epochs
+        (the length of the ``y`` argument)
+
     """
     # epoch durations
     s = np.diff(t)
@@ -52,24 +66,28 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
 
 
 def prf(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    u"""Poisson random field log-likelihood of history
+    r"""Poisson random field log-likelihood of history (neglecting constant
+    terms)
 
-    Z: mutation spectrum history matrix (μ.Z)
-    X: k-SFS data
-    L: model matrix
+    Args:
+        Z: mutation spectrum history matrix (μ.Z)
+        X: :math:`k`-SFS data
+        L: model matrix
+
     """
     Ξ = L @ Z
     return (X * np.log(Ξ) - Ξ).sum()
 
 
 def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
-    u"""generalized Kullback-Liebler divergence between normalized SFS and its
-    expectation under history (a Bregman divergence)
-    ignores constant term
+    r"""generalized Kullback-Liebler divergence (a Bregman divergence) between
+    normalized SFS and its expectation under history (ignores constant term)
 
-    Z: mutation spectrum history matrix (μ.Z)
-    X: k-SFS data
-    L: model matrix
+    Args:
+        Z: mutation spectrum history matrix (μ.Z)
+        X: k-SFS data
+        L: model matrix
+
     """
     Ξ = L @ Z
     d_kl = (X * np.log(X / Ξ) - X + Ξ).sum()
@@ -77,11 +95,13 @@ def d_kl(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> np.float64:
 
 
 def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
-    u"""least-squares loss between SFS and its expectation under history
+    r"""Least-squares loss between SFS and its expectation under history
 
-    Z: mutation spectrum history matrix (μ.Z)
-    X: k-SFS data
-    L: model matrix
+    Args:
+        Z: mutation spectrum history matrix (μ.Z)
+        X: k-SFS data
+        L: model matrix
+
     """
     Ξ = L @ Z
     lsq = (1 / 2) * ((Ξ - X) ** 2).sum()
@@ -91,9 +111,11 @@ def lsq(Z: np.ndarray, X: np.ndarray, L: np.ndarray) -> float:
 def tmrca_sf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     """The survival function of the TMRCA at each time point
 
-    t: time grid (including zero and infinity)
-    y: effective population size in each epoch
-    n: number of sampled haplotypes
+    Args:
+        t: time grid (including zero and infinity)
+        y: effective population size in each epoch
+        n: number of sampled haplotypes
+
     """
     # epoch durations
     s = np.diff(t)
