@@ -27,7 +27,10 @@ setuptools.setup(
         'jaxlib',
         'prox-tv',
         'seaborn',
-        'pandas'
+        'pandas',
+        'matplotlib',
+        'numpy',
+        'scipy'
     ],
     setup_requires=['setuptools-git']
 )
