@@ -1,10 +1,8 @@
 r"""
-Composition Statistics (:mod:`skbio.stats.composition`)
-=======================================================
+Functions for compositional data analysis.
 
-.. currentmodule:: skbio.stats.composition
-
-This module provides functions for compositional data analysis.
+It was copied from the :mod:`skbio.stats.composition` module and edited slightly to
+enable compatibility with the JAX package.
 
 Many 'omics datasets are inherently compositional - meaning that they
 are best interpreted as proportions or percentages rather than
@@ -34,25 +32,6 @@ the Aitchison geometry, only compositions with nonzero components can
 be considered. The multiplicative replacement technique [3]_ can be
 used to substitute these zeros with small pseudocounts without
 introducing major distortions to the data.
-
-Functions
----------
-
-.. autosummary::
-   :toctree: generated/
-
-   closure
-   multiplicative_replacement
-   perturb
-   perturb_inv
-   power
-   inner
-   clr
-   clr_inv
-   ilr
-   ilr_inv
-   centralize
-   ancom
 
 References
 ----------
@@ -135,7 +114,7 @@ def closure(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import closure
+    >>> from mushi.composition import closure
     >>> X = np.array([[2, 2, 6], [4, 4, 2]])
     >>> closure(X)
     array([[ 0.2,  0.2,  0.6],
@@ -198,7 +177,7 @@ def multiplicative_replacement(mat, delta=None):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import multiplicative_replacement
+    >>> from mushi.composition import multiplicative_replacement
     >>> X = np.array([[.2,.4,.4, 0],[0,.5,.5,0]])
     >>> multiplicative_replacement(X)
     array([[ 0.1875,  0.375 ,  0.375 ,  0.0625],
@@ -260,7 +239,7 @@ def perturb(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import perturb
+    >>> from mushi.composition import perturb
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
     >>> perturb(x,y)
@@ -310,7 +289,7 @@ def perturb_inv(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import perturb_inv
+    >>> from mushi.composition import perturb_inv
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
     >>> perturb_inv(x,y)
@@ -356,7 +335,7 @@ def power(x, a):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import power
+    >>> from mushi.composition import power
     >>> x = np.array([.1,.3,.4, .2])
     >>> power(x, .1)
     array([ 0.23059566,  0.25737316,  0.26488486,  0.24714631])
@@ -396,7 +375,7 @@ def inner(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import inner
+    >>> from mushi.composition import inner
     >>> x = np.array([.1, .3, .4, .2])
     >>> y = np.array([.2, .4, .2, .2])
     >>> inner(x, y)  # doctest: +ELLIPSIS
@@ -444,7 +423,7 @@ def clr(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import clr
+    >>> from mushi.composition import clr
     >>> x = np.array([.1, .3, .4, .2])
     >>> clr(x)
     array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628])
@@ -489,7 +468,7 @@ def clr_inv(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import clr_inv
+    >>> from mushi.composition import clr_inv
     >>> x = np.array([.1, .3, .4, .2])
     >>> clr_inv(x)
     array([ 0.21383822,  0.26118259,  0.28865141,  0.23632778])
@@ -534,7 +513,7 @@ def ilr(mat, basis=None, check=True):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import ilr
+    >>> from mushi.composition import ilr
     >>> x = np.array([.1, .3, .4, .2])
     >>> ilr(x)
     array([-0.7768362 , -0.68339802,  0.11704769])
@@ -584,7 +563,7 @@ def ilr_inv(mat, basis):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import ilr
+    >>> from mushi.composition import ilr
     >>> x = np.array([.1, .3, .6,])
     >>> ilr_inv(x)
     array([ 0.34180297,  0.29672718,  0.22054469,  0.14092516])
@@ -612,7 +591,7 @@ def centralize(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from skbio.stats.composition import centralize
+    >>> from mushi.composition import centralize
     >>> X = np.array([[.1,.3,.4, .2],[.2,.2,.2,.4]])
     >>> centralize(X)
     array([[ 0.17445763,  0.30216948,  0.34891526,  0.17445763],
@@ -733,7 +712,7 @@ def ancom(table, grouping,
     --------
     First import all of the necessary modules:
 
-    >>> from skbio.stats.composition import ancom
+    >>> from mushi.composition import ancom
     >>> import pandas as pd
 
     Now let's load in a pd.DataFrame with 6 samples and 7 unknown bacteria:

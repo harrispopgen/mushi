@@ -1,5 +1,8 @@
+r"""Optimization functions.
+
+"""
+
 import jax.numpy as np
-from jax.ops import index, index_update
 from typing import Callable
 
 
@@ -13,19 +16,36 @@ def acc_prox_grad_method(x: np.ndarray,
                          s0: np.float64 = 1,
                          max_line_iter: int = 100,
                          gamma: np.float64 = 0.8) -> np.ndarray:
-    u"""Nesterov accelerated proximal gradient method
-    https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+    r"""Nesterov accelerated proximal gradient method with backtracking line
+    search [1]_.
 
-    x: initial point
-    g: differentiable term in objective function
-    grad_g: gradient of g
-    h: non-differentiable term in objective function
-    prox: proximal operator corresponding to h
-    tol: relative tolerance in objective function for convergence
-    max_iter: maximum number of proximal gradient steps
-    s0: initial step size
-    max_line_iter: maximum number of line search steps
-    gamma: step size shrinkage rate for line search
+    The optimization problem solved is:
+
+    .. math::
+        \min_x g(x) + h(x)
+
+    where :math:`g` is differentiable, and the proximal operator for :math:`h`
+    is available.
+
+    Args:
+        x: initial point
+        g: differentiable term in objective function
+        grad_g: gradient of g
+        h: non-differentiable term in objective function
+        prox: proximal operator corresponding to h
+        tol: relative tolerance in objective function for convergence
+        max_iter: maximum number of proximal gradient steps
+        s0: initial step size
+        max_line_iter: maximum number of line search steps
+        gamma: step size shrinkage rate for line search
+
+    Returns:
+        solution point
+
+    References
+    ----------
+    .. [1] https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+
     """
     # initialize step size
     s = s0
@@ -100,31 +120,41 @@ def three_op_prox_grad_method(x: np.ndarray,
                               max_line_iter: int = 100,
                               gamma: np.float64 = 0.8,
                               ls_tol: np.float64 = 0) -> np.ndarray:
-    u"""Three operator splitting proximal gradient method
-
-    We implement the method of Pedregosa & Gidel (ICML 2018),
-    including backtracking line search.
+    r"""Three operator splitting proximal gradient method with backtracking line
+    search [2]_.
 
     The optimization problem solved is:
 
-      min_x g(x) + h1(x) + h2(x)
+    .. math::
+        \min_x g(x) + h_1(x) + h_2(x)
 
-    where g is differentiable, and the proximal operators for h1 and h2 are
-    available.
+    where :math:`g` is differentiable, and the proximal operators for
+    :math:`h_1` and :math:`h_2` are available.
 
-    x: initial point
-    g: differentiable term in objective function
-    grad_g: gradient of g
-    h1: 1st non-differentiable term in objective function
-    h2: 2nd non-differentiable term in objective function
-    prox1: proximal operator corresponding to h1
-    prox2: proximal operator corresponding to h2
-    tol: relative tolerance in objective function for convergence
-    max_iter: maximum number of proximal gradient steps
-    s0: step size
-    max_line_iter: maximum number of line search steps
-    gamma: step size shrinkage rate for line search
-    ls_tol: line search tolerance
+    Args:
+        x: initial point
+        g: differentiable term in objective function
+        grad_g: gradient of g
+        h1: 1st non-differentiable term in objective function
+        h2: 2nd non-differentiable term in objective function
+        prox1: proximal operator corresponding to h1
+        prox2: proximal operator corresponding to h2
+        tol: relative tolerance in objective function for convergence
+        max_iter: maximum number of proximal gradient steps
+        s0: step size
+        max_line_iter: maximum number of line search steps
+        gamma: step size shrinkage rate for line search
+        ls_tol: line search tolerance
+
+    Returns:
+        solution point
+
+    References:
+        .. [2] Pedregosa, Gidel, Adaptive Three Operator Splitting in
+               Proceedings of the 35th International Conference on Machine
+               Learning, Proceedings of Machine Learning Research., J. Dy, A.
+               Krause, Eds. (PMLR, 2018), pp. 4085–4094.
+
     """
 
     # initial objective value
@@ -149,7 +179,7 @@ def three_op_prox_grad_method(x: np.ndarray,
             x = prox1(z - s * (u + grad_g1), s)
             # quadratic approximation of objective
             Q = (g1 + (grad_g1 * (x - z)).sum()
-                  + ((x - z) ** 2).sum() / (2 * s))
+                    + ((x - z) ** 2).sum() / (2 * s))
             if g(x) - Q <= ls_tol:
                 # sufficient decrease satisfied
                 break

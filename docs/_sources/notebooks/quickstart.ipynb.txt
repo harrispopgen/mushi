@@ -1,0 +1,521 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Quickstart\n",
+    "==\n",
+    "\n",
+    "This page demonstrates how to use the Python module `mushi` to inferring mutation spectrum history and demography"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "We use `mushi` to infer history of the mutation process, which we can think of as the mutation rate function over time for each triplet mutation type.\n",
+    "In `mushi`, we use coalescent theory and optimization techniques to learn about this history from the $k$-SFS: a matrix whose columns are sample frequency spectra (SFS) for each mutation type.\n",
+    "\n",
+    "\n",
+    "## Imports\n",
+    "We first import the `ksfs` module from the `mushi` package, and a few other standard packages."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "slideshow": {
+     "slide_type": "-"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "import mushi\n",
+    "\n",
+    "import matplotlib.pyplot as plt\n",
+    "import pandas as pd\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Load $k$-SFS data\n",
+    "\n",
+    "### $3$-SFS for 1000 Genomes FIN population\n",
+    "\n",
+    "We load $3$-SFS data for the 1000 Genomes Finnish population, which we previously computed with the `mutyper` [package](https://github.com/harrispopgen/mutyper) and saved in tabular format."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [],
+   "source": [
+    "ksfs = mushi.kSFS(file='../example_data/3-SFS.EUR.FIN.tsv')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Plot the population variant spectrum (summing the $k$-SFS over sample frequency)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.as_df().sum(0).plot.bar(figsize=(17, 3))\n",
+    "plt.xticks(family='monospace')\n",
+    "plt.ylabel('number of variants');"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "### Target sizes\n",
+    "We will also need the masked genome size for each mutation type, which we've also previously computed with `mutyper targets`. This defines mutational target sizes."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "masked_genome_size = pd.read_csv(f'../example_data/masked_size.tsv', sep='\\t', header=None, index_col=0)\n",
+    "masked_genome_size.index.name='mutation type'\n",
+    "\n",
+    "masked_genome_size.plot.bar(figsize=(6, 3), legend=False)\n",
+    "plt.xticks(family='monospace')\n",
+    "plt.ylabel('mutational target size (sites)');"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "### Normalized variant spectra\n",
+    "\n",
+    "With this we can compute the number of SNPs per target in each mutation type. Notice the enrichment of C>T transitions at CpG sites."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "normalized_hit_rates = ksfs.as_df().sum(0).to_frame(name='variant count')\n",
+    "normalized_hit_rates['target size'] = [int(masked_genome_size.loc[context])\n",
+    "                                       for context, _ in normalized_hit_rates['variant count'].index.str.split('>')]\n",
+    "\n",
+    "(normalized_hit_rates['variant count'] /\n",
+    " normalized_hit_rates['target size']).plot.bar(figsize=(17, 3), legend=False)\n",
+    "plt.xticks(family='monospace')\n",
+    "plt.ylabel('variants per target');"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Plot the SFS\n",
+    "The SFS is given by summing the rows of the $k$-SFS over mutation types"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.plot_total()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Plot on log scale instead of linear"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.plot_total()\n",
+    "plt.xscale('log')\n",
+    "plt.yscale('log')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Plot the $k$-SFS\n",
+    "Plot $k$-SFS composition as a scatter (a color for each mutation type)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.plot()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Plot again using the centered log ratio transform option (`clr=True`) to represent compositions over mutation types in each frequency class"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.plot(clr=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Use a heatmap to show the $k$-SFS as a matrix, colored using a compositional centralization transform.\n",
+    "This method wraps the `clustermap` function in [Seaborn](https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap), and you can use keyword arguments you would use in that function. A few of note:\n",
+    "- `figsize`: a tuple giving the width and height of the figure\n",
+    "- `col_cluster`: if `False`, don't cluster the columns (giving an ordinary heatmap)\n",
+    "- `xticklabels`: if `True`, force printing of all the mutation type labels\n",
+    "- `robust`: if `True`, automatically set the min and max values for the color scaling\n",
+    "- `cmap`: color map name"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.clustermap(figsize=(17, 7), xticklabels=True, robust=True, cmap='RdBu_r')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Basic model parameters\n",
+    "### Total mutation rate\n",
+    "To compute the total mutation rate in units of mutations per masked genome per generation, we multiply an estimate of the site-wise rate by the target size"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "μ0 = 1.25e-8 * masked_genome_size[1].sum()\n",
+    "μ0"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "fragment"
+    }
+   },
+   "source": [
+    "### Generation time\n",
+    "To render time in years rather than generations, we use an estimate of the generation time"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t_gen = 29"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "### Discrete time grid\n",
+    "We define a grid of times to represent histories on, measured retrospectively from the present in units of Wright-Fisher generations."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t = np.logspace(np.log10(1), np.log10(200000), 200)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Jointly infer demography and mutation spectrum history\n",
+    "\n",
+    "To infer a time-calibrated mutation spectrum history (MuSH), we need to jointly estimate the demographic history, since this defines the diffusion timescale of the coalescent process."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "We now run the optimization, setting a few parameters to control how complicated we let the histories look."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ksfs.infer_history(t, μ0, alpha_tv=1e2, alpha_spline=3e3, alpha_ridge=1e-10,\n",
+    "                   beta_rank=1e1, beta_tv=7e1, beta_spline=1e1, beta_ridge=1e-10,\n",
+    "                   tol=1e-11)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Hopefully you agree that was fast 🏎"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "## Visualizing inferred histories\n",
+    "\n",
+    "After inferring histories, we can access them as instance attributes of the `kSFS` object:\n",
+    "- demography: `ksfs.eta` (or `ksfs.η`)\n",
+    "- MuSH: `ksfs.mu` (or `ksfs.μ`)\n",
+    "\n",
+    "We can inspect these, and see they're both object with base class `mushi.histories.history`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(ksfs.eta.__class__)\n",
+    "print(ksfs.eta.__class__.__bases__[0])\n",
+    "\n",
+    "print(ksfs.mu.__class__)\n",
+    "print(ksfs.mu.__class__.__bases__[0])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "fragment"
+    }
+   },
+   "source": [
+    "We'll now check that the demography has a few features we expect in the Finnish population: the out-of-Africa bottleneck shared by all Eurasians, a later bottleneck associated with northward migration, and exponential population growth toward the present.\n",
+    "- The plot on the left shows fit to the SFS\n",
+    "- The plot on the right shows the inferred haploid effective population size history."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "scrolled": false,
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(10, 5))\n",
+    "plt.subplot(121)\n",
+    "ksfs.plot_total()\n",
+    "plt.xscale('log')\n",
+    "plt.yscale('log')\n",
+    "plt.subplot(122)\n",
+    "ksfs.eta.plot(t_gen=t_gen)\n",
+    "plt.xlim([1e3, 1e6]);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Now let's take a look at the inferred mutation spectrum history (MuSH).\n",
+    "- The plot on the left shows the measured $k$-SFS composition (points) and the fit from `mushi` (lines)\n",
+    "- The plot on the right shows the inferred MuSH"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(16, 5))\n",
+    "plt.subplot(121)            \n",
+    "ksfs.plot(clr=True)            \n",
+    "plt.subplot(122)\n",
+    "ksfs.μ.plot(t_gen=t_gen, clr=True, alpha=0.75)\n",
+    "ksfs.μ.plot(('TCC>TTC',), t_gen=t_gen, clr=True, lw=5)\n",
+    "plt.xscale('log')\n",
+    "plt.xlim([1e3, 1e6]);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "We can also plot the MuSH as a heatmap with the y axis representing time (with an interface similar to the `kSFS.clustermap` method above)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "ksfs.μ.clustermap(t_gen=t_gen, figsize=(17, 7), xticklabels=True, robust=True, cmap='RdBu_r')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "slide"
+    }
+   },
+   "source": [
+    "Now that you have a MuSH, you can start answering questions about mutation spectrum history!🤸‍"
+   ]
+  }
+ ],
+ "metadata": {
+  "celltoolbar": "Slideshow",
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

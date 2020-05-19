@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mushi.optimization &mdash; mushi 0.1-dev documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1-dev
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cite.html">Citing <code class="docutils literal notranslate"><span class="pre">mushi</span></code></a></li>
+</ul>
+<p class="caption"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../developer.html">Update documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../developer.html#todo-list">Todo list</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">mushi</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mushi.optimization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mushi.optimization</h1><div class="highlight"><pre>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimization functions.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span>
+
+
+<div class="viewcode-block" id="acc_prox_grad_method"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.acc_prox_grad_method">[docs]</a><span class="k">def</span> <span class="nf">acc_prox_grad_method</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                         <span class="n">g</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                         <span class="n">grad_g</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                         <span class="n">h</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                         <span class="n">prox</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                         <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">,</span>
+                         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+                         <span class="n">s0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                         <span class="n">max_line_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+                         <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Nesterov accelerated proximal gradient method with backtracking line</span>
+<span class="sd">    search [1]_.</span>
+
+<span class="sd">    The optimization problem solved is:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \min_x g(x) + h(x)</span>
+
+<span class="sd">    where :math:`g` is differentiable, and the proximal operator for :math:`h`</span>
+<span class="sd">    is available.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: initial point</span>
+<span class="sd">        g: differentiable term in objective function</span>
+<span class="sd">        grad_g: gradient of g</span>
+<span class="sd">        h: non-differentiable term in objective function</span>
+<span class="sd">        prox: proximal operator corresponding to h</span>
+<span class="sd">        tol: relative tolerance in objective function for convergence</span>
+<span class="sd">        max_iter: maximum number of proximal gradient steps</span>
+<span class="sd">        s0: initial step size</span>
+<span class="sd">        max_line_iter: maximum number of line search steps</span>
+<span class="sd">        gamma: step size shrinkage rate for line search</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        solution point</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initialize step size</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+    <span class="c1"># initialize momentum iterate</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="c1"># initial objective value</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># evaluate differtiable part of objective at momentum point</span>
+        <span class="n">g1</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">grad_g1</span> <span class="o">=</span> <span class="n">grad_g</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grad_g1</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;invalid gradient at iteration </span><span class="si">{</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s1">: &#39;</span>
+                               <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">grad_g1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># store old iterate</span>
+        <span class="n">x_old</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="c1"># Armijo line search</span>
+        <span class="k">for</span> <span class="n">line_iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_line_iter</span><span class="p">):</span>
+            <span class="c1"># new point via prox-gradient of momentum point</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">prox</span><span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="n">grad_g1</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+            <span class="c1"># G_s(q) as in the notes linked above</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span>
+            <span class="c1"># test g(q - sG_s(q)) for sufficient decrease</span>
+            <span class="k">if</span> <span class="n">g</span><span class="p">(</span><span class="n">q</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="n">G</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">g1</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad_g1</span> <span class="o">*</span> <span class="n">G</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                                <span class="o">+</span> <span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">G</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()):</span>
+                <span class="c1"># Armijo satisfied</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Armijo not satisfied</span>
+                <span class="n">s</span> <span class="o">*=</span> <span class="n">gamma</span>  <span class="c1"># shrink step size</span>
+
+        <span class="c1"># update momentum point</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x_old</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">line_iter</span> <span class="o">==</span> <span class="n">max_line_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warning: line search failed&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;warning: x contains invalid values&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># terminate if objective function is constant within tolerance</span>
+        <span class="n">f_old</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">rel_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">f_old</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
+              <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+              <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rel_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
+                  <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">max_iter</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="three_op_prox_grad_method"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.three_op_prox_grad_method">[docs]</a><span class="k">def</span> <span class="nf">three_op_prox_grad_method</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                              <span class="n">g</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">grad_g</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">h1</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">prox1</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                                              <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">h2</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">prox2</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                                              <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+                              <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">,</span>
+                              <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+                              <span class="n">s0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                              <span class="n">max_line_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+                              <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+                              <span class="n">ls_tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Three operator splitting proximal gradient method with backtracking line</span>
+<span class="sd">    search [2]_.</span>
+
+<span class="sd">    The optimization problem solved is:</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \min_x g(x) + h_1(x) + h_2(x)</span>
+
+<span class="sd">    where :math:`g` is differentiable, and the proximal operators for</span>
+<span class="sd">    :math:`h_1` and :math:`h_2` are available.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: initial point</span>
+<span class="sd">        g: differentiable term in objective function</span>
+<span class="sd">        grad_g: gradient of g</span>
+<span class="sd">        h1: 1st non-differentiable term in objective function</span>
+<span class="sd">        h2: 2nd non-differentiable term in objective function</span>
+<span class="sd">        prox1: proximal operator corresponding to h1</span>
+<span class="sd">        prox2: proximal operator corresponding to h2</span>
+<span class="sd">        tol: relative tolerance in objective function for convergence</span>
+<span class="sd">        max_iter: maximum number of proximal gradient steps</span>
+<span class="sd">        s0: step size</span>
+<span class="sd">        max_line_iter: maximum number of line search steps</span>
+<span class="sd">        gamma: step size shrinkage rate for line search</span>
+<span class="sd">        ls_tol: line search tolerance</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        solution point</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        .. [2] Pedregosa, Gidel, Adaptive Three Operator Splitting in</span>
+<span class="sd">               Proceedings of the 35th International Conference on Machine</span>
+<span class="sd">               Learning, Proceedings of Machine Learning Research., J. Dy, A.</span>
+<span class="sd">               Krause, Eds. (PMLR, 2018), pp. 4085–4094.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># initial objective value</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s0</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># evaluate differentiable part of objective</span>
+        <span class="n">g1</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">grad_g1</span> <span class="o">=</span> <span class="n">grad_g</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grad_g1</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;invalid gradient at iteration </span><span class="si">{</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s1">: &#39;</span>
+                               <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">grad_g1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="c1"># store old iterate</span>
+        <span class="c1"># x_old = x</span>
+        <span class="c1"># Armijo line search</span>
+        <span class="k">for</span> <span class="n">line_iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_line_iter</span><span class="p">):</span>
+            <span class="c1"># new point via prox-gradient of momentum point</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">prox1</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="n">grad_g1</span><span class="p">),</span> <span class="n">s</span><span class="p">)</span>
+            <span class="c1"># quadratic approximation of objective</span>
+            <span class="n">Q</span> <span class="o">=</span> <span class="p">(</span><span class="n">g1</span> <span class="o">+</span> <span class="p">(</span><span class="n">grad_g1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                    <span class="o">+</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">z</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">s</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">Q</span> <span class="o">&lt;=</span> <span class="n">ls_tol</span><span class="p">:</span>
+                <span class="c1"># sufficient decrease satisfied</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># sufficient decrease not satisfied</span>
+                <span class="n">s</span> <span class="o">*=</span> <span class="n">gamma</span>  <span class="c1"># shrink step size</span>
+        <span class="k">if</span> <span class="n">line_iter</span> <span class="o">==</span> <span class="n">max_line_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;warning: line search failed&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># update z variables with 2nd prox</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">prox2</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="c1"># update u variables: dual variables</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="n">s</span>
+        <span class="c1"># grow step size</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="n">gamma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">s0</span><span class="p">)</span>
+
+        <span class="c1"># TODO: convergence based on dual certificate</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;warning: x contains invalid values&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># terminate if objective function is constant within tolerance</span>
+        <span class="n">f_old</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">rel_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">f_old</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
+              <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+              <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rel_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
+                  <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="c1"># if certificate &lt; tol:</span>
+        <span class="c1">#     print(f&#39;certificate norm {certificate:.2g} &#39;</span>
+        <span class="c1">#           f&#39;is within tolerance {tol} after {k} iterations&#39;)</span>
+        <span class="c1">#     break</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">max_iter</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, William DeWitt, Kameron Decker Harris, and Kelley Harris
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

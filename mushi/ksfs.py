@@ -22,22 +22,36 @@ config.update('jax_enable_x64', True)
 
 
 class kSFS():
-    """The kSFS model described in the text"""
+    r"""The core :math:`k`-SFS class for simulation and inference
+
+    Attributes:
+        X (:obj:`numpy.ndarray`): :math:`k`-SFS matrix
+        eta (:obj:`mushi.eta`): demographic history
+        mu (:obj:`mushi.mu`): mutation spectrum history
+        mutation_types (:obj:`mushi.mu`): mutation spectrum history
+        n (:obj:`int`): number of sampled haplotypes
+
+    Notes:
+        Three constructors:
+
+        1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`
+
+        2) ``X``: k-SFS matrix
+
+        3) ``n``: number of haplotypes to initialize for simulation
+
+    Args:
+        ksfs_file: path to :math:`k`-SFS file, as ouput by ``mutyper ksfs``
+        X: :math:`k`-SFS matrix
+        n: number of sampled haplotypes
+        mutation_types: list of names of X columns
+                        (defaults to integer range)
+
+    """
 
     def __init__(self, X: np.ndarray = None, mutation_types: List[str] = None,
                  file: str = None,
                  n: int = None):
-        u"""Sample frequency spectrum
-
-        Three constructors:
-
-        ksfs_file: path to k-SFS file, as ouput by `mutyper ksfs`
-
-        X: observed k-SFS matrix
-        mutation_types: names of X columns (optional)
-
-        n: number of haplotypes
-        """
         if file is not None:
             df = pd.read_csv(file, sep='\t', index_col=0)
             assert np.all(df.values >= 0)
@@ -67,36 +81,40 @@ class kSFS():
         self.L = None
 
     @property
-    def eta(self):
-        """read-only alias to η attribute"""
+    def eta(self) -> hst.eta:
+        r"""Read-only alias to η attribute
+        """
         return self.η
 
     @property
-    def mu(self):
-        """read-only alias to μ attribute"""
+    def mu(self) -> hst.mu:
+        r"""Read-only alias to μ attribute
+        """
         return self.μ
 
-    def as_df(self):
-        """return a pandas DataFrame representation"""
+    def as_df(self) -> pd.DataFrame:
+        r"""Return a pandas DataFrame representation
+        """
         return pd.DataFrame(self.X, index=range(1, self.n),
                             columns=self.mutation_types)
 
-    def clear_eta(self):
-        """clear demographic history attribute η
+    def clear_eta(self) -> None:
+        r"""Clear demographic history attribute η
         """
         self.η = None
         self.M = None
         self.L = None
 
-    def clear_mu(self):
-        """clear mush attribute μ
+    def clear_mu(self) -> None:
+        r"""Clear μ attribute
         """
         self.μ = None
 
     def tmrca_cdf(self, eta: hst.eta) -> onp.ndarray:
-        """The CDF of the TMRCA of at each change point
+        r"""The CDF of the TMRCA at each change point in ``eta``
 
-        eta: demographic history η
+        Args:
+            eta: demographic history
         """
         if eta is None:
             raise ValueError('η(t) must be defined first')
@@ -105,12 +123,13 @@ class kSFS():
 
     def simulate(self, eta: hst.eta, mu: hst.mu,
                  seed: int = None) -> None:
-        """simulate a SFS under the Poisson random field model (no linkage)
-        assigns simulated SFS to self.X
+        r"""Simulate a SFS under the Poisson random field model (no linkage)
+        assigns simulated SFS to ``X`` attribute
 
-        eta: demographic history η
-        mu: mush μ
-        seed: random seed (optional)
+        Args:
+            eta: demographic history
+            mu: mutation spectrum history
+            seed: random seed
         """
         if not eta.check_grid(mu):
             raise ValueError('η(t) and μ(t) must use the same time grid')
@@ -143,46 +162,39 @@ class kSFS():
                       max_line_iter=100,
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 1e-4,
-                      loss='prf',
+                      loss: str = 'prf',
                       mask: np.array = None) -> None:
-        u"""perform sequential inference to fit η(t) and μ(t)
+        r"""Perform sequential inference to fit :math:`\eta(t)` and
+        :math:`\mu(t)`
 
-        change_points: epoch change points (times)
-        mu0: total mutation rate (per genome per generation)
-        eta: optional initial demographic history. If None (the default), a
-             constant MLE is computed
-        eta_ref: optional reference demographic history for ridge penalty. If
-                 None (the default), the constant MLE is used
-        mu_ref: optional reference MuSH for ridge penalty. If None (the
-                default), the constant MLE is used
-
-        infer_eta, infer_mu: flags can be set to False to skip either
-                             optimization
-
-        loss parameters:
-        - loss: loss function, 'prf' for Poisson random field, 'kl' for
-               Kullback-Leibler divergence, 'lsq' for least-squares
-        - mask: array of bools, with False indicating exclusion of that
-                frequency
-
-        η(t) regularization parameters:
-        - alpha_tv: total variation
-        - alpha_spline: L2 on first differences
-        - alpha_ridge: L2 for strong convexity
-
-        μ(t) regularization parameters:
-        - hard: hard singular value thresholding (non-convex)
-        - beta_tv: total variation
-        - beta_spline: L2 on first differences for each mutation type
-        - beta_rank: spectral regularization (soft singular value threshold)
-        - beta_ridge: L2 for strong convexity
-
-        convergence parameters:
-        - max_iter: maximum number of proximal gradient steps
-        - tol: relative tolerance in objective function
-        - s0: max step size
-        - max_line_iter: maximum number of line search steps
-        - gamma: step size shrinkage rate for line search
+        Args:
+            change_points: epoch change points (ordered times > 0)
+            mu0: total mutation rate (per genome per generation)
+            eta: initial demographic history. By default, a
+                 constant MLE is computed
+            eta_ref: reference demographic history for ridge penalty. If
+                     ``None``, the constant MLE is used
+            mu_ref: reference MuSH for ridge penalty. If None, the constant
+                    MLE is used
+            infer_eta: skip :math:`\eta` inference if ``False``
+            infer_mu: skip :math:`\mu` inference if ``False``
+            loss: loss function, 'prf' for Poisson random field, 'kl' for
+                  Kullback-Leibler divergence, 'lsq' for least-squares
+            mask: array of bools, with False indicating exclusion of that
+                  frequency
+            alpha_tv: total variation penalty on :math:`\eta(t)`
+            alpha_spline: L2 on first differences penalty on :math:`\eta(t)`
+            alpha_ridge: L2 for strong convexity penalty on :math:`\eta(t)`
+            hard: hard rank penalty on :math:`\mu(t)` (non-convex)
+            beta_tv: total variation penalty on :math:`\mu(t)`
+            beta_spline: penalty on :math:`\mu(t)`
+            beta_rank: rank penalty on :math:`\mu(t)`
+            beta_ridge: L2 penalty on :math:`\mu(t)`
+            max_iter: maximum number of proximal gradient steps
+            tol: relative tolerance in objective function
+            s0: max step size
+            max_line_iter: maximum number of line search steps
+            gamma: step size shrinkage rate for line search
         """
 
         # pithify reg paramter names
@@ -219,9 +231,9 @@ class kSFS():
             self.η = hst.eta(change_points, y)
 
         μ_const = hst.mu(self.η.change_points,
-                               mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                              self.X.shape[1])),
-                               mutation_types=self.mutation_types.values)
+                         mu0 * (S / S.sum()) * np.ones((self.η.m,
+                                                        self.X.shape[1])),
+                         mutation_types=self.mutation_types.values)
 
         if self.μ is None:
             self.μ = μ_const
@@ -260,7 +272,7 @@ class kSFS():
                 Γ = np.diag(np.ones_like(eta_ref.y))
             else:
                 # - log(1 - CDF)
-                Γ = np.diag(- np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
+                Γ = np.diag(-np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
             logy_ref = np.log(eta_ref.y)
 
             @jit
@@ -274,7 +286,8 @@ class kSFS():
                 spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
                 # generalized Tikhonov
                 logy_delta = logy - logy_ref
-                ridge_term = (α_ridge / 2) * ((logy_delta.T @ Γ @ logy_delta) ** 2).sum()
+                ridge_term = (α_ridge / 2) * ((logy_delta.T @
+                                               Γ @ logy_delta) ** 2).sum()
                 return loss_term + spline_term + ridge_term
 
             if α_tv > 0:
@@ -335,10 +348,11 @@ class kSFS():
             def g(Z):
                 """differentiable piece of objective in μ problem"""
                 if mask is not None:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
-                                     self.L[mask, :])
+                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
+                                     self.X[mask, :], self.L[mask, :])
                 else:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X, self.L)
+                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
+                                     self.X, self.L)
                 spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
                 # generalized Tikhonov
                 Z_delta = Z - Z_ref
@@ -412,7 +426,8 @@ class kSFS():
 
                     def prox(Z, s):
                         """singular value thresholding"""
-                        U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
+                        U, σ, Vt = np.linalg.svd(Z - Z_const,
+                                                 full_matrices=False)
                         if hard:
                             σ = index_update(σ, index[σ <= s * β_rank], 0)
                         else:
@@ -442,12 +457,13 @@ class kSFS():
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
                    line_kwargs: Dict = dict(),
-                   fill_kwargs: Dict = dict()):
-        """plot the total SFS
+                   fill_kwargs: Dict = dict()) -> None:
+        r"""Plot the SFS using matplotlib
 
-        kwargs: keyword arguments for scatter plot
-        line_kwargs: keyword arguments for expectation line
-        fill_kwargs: keyword arguments for marginal fill
+        Args:
+            kwargs: keyword arguments for scatter plot
+            line_kwargs: keyword arguments for expectation line
+            fill_kwargs: keyword arguments for marginal fill
         """
         x = self.X.sum(1, keepdims=True)
         plt.plot(range(1, len(x) + 1), x, **kwargs)
@@ -466,19 +482,19 @@ class kSFS():
                              ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
-        plt.xscale('log')
-        plt.yscale('symlog')
         plt.tight_layout()
 
     def plot(self, types=None, clr: bool = False,
              kwargs: Dict = dict(ls='', marker='.', rasterized=True),
              line_kwargs: Dict = dict()) -> None:
-        """
-        types: iterable of mutation type names to restrict plotting to
-        clr: flag to normalize to total mutation intensity and display as
-             centered log ratio transform
-        kwargs: key word arguments passed to data scatter plot
-        line_kwargs: key word arguments passed to expectation line plot
+        r"""Plot the :math:`k`-SFS
+
+        Args:
+            types: iterable of mutation type names to restrict plotting to
+            clr: flag to normalize to total mutation intensity and display as
+                 centered log ratio transform
+            kwargs: key word arguments passed to data scatter plot
+            line_kwargs: key word arguments passed to expectation line plot
         """
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
@@ -504,10 +520,11 @@ class kSFS():
         plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, **kwargs):
-        u"""clustermap of compositionally centralized k-SFS
+    def clustermap(self, **kwargs) -> None:
+        r"""Clustermap of compositionally centralized k-SFS
 
-        kwargs: additional keyword arguments passed to pd.clustermap
+        Args:
+            kwargs: additional keyword arguments passed to pandas.clustermap
         """
         Z = cmp.centralize(self.X)
         cbar_label = 'variant count\nperturbation'
@@ -518,4 +535,4 @@ class kSFS():
                            center=1 / Z.shape[1],
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
-        return g
+        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(), fontsize = 9, family='monospace');

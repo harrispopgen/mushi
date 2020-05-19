@@ -64,7 +64,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docsrc/_build/
 
 # PyBuilder
 target/
@@ -111,3 +111,4 @@ manuscript/_build
 scons_output*
 
 .DS_Store
+data

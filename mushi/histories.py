@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Iterable
 
 import numpy as np
 import matplotlib as mpl
@@ -148,9 +148,10 @@ class mu(History):
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
-    def plot(self, types=None, clr=False,
+    def plot(self, types: List[str] = None, clr: bool = False,
              **kwargs) -> List[mpl.lines.Line2D]:
         """
+        types: list of mutation types to plot (default all)
         clr: flag to normalize to total mutation intensity and display as
              centered log ratio transform
         """
@@ -175,7 +176,8 @@ class mu(History):
         plt.tight_layout()
         return lines
 
-    def plot_cumulative(self, t_gen=None, clr=False, **kwargs):
+    def plot_cumulative(self, t_gen: np.float = None, clr: bool = False,
+                        **kwargs) -> None:
         """plot the cumulative mutation rate, like a Muller plot
 
         t_gen: generation time in years (optional)
@@ -199,7 +201,7 @@ class mu(History):
         plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, t_gen: np.float = None, **kwargs):
+    def clustermap(self, t_gen: np.float = None, **kwargs) -> None:
         """clustermap of compositionally centralized MUSH
 
         t_gen: generation time in years (optional)
@@ -218,5 +220,4 @@ class mu(History):
         g = sns.clustermap(df, row_cluster=False,
                            cbar_kws={'label': label},
                            **kwargs)
-        # g.ax_heatmap.set_yscale('symlog')
-        return g
+        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(), fontsize = 9, family='monospace')
