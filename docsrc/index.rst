@@ -1,20 +1,13 @@
 mutation spectrum history inference
 ===================================
 
-.. todo:: citation/paper link (using sphinx bibref?)
-.. todo:: add install info
-.. todo:: nest things better in TOC tree
-.. todo:: update GH links to notebooks in manuscipt (including appendix!)?
-.. todo:: docstrings with tex
-.. todo:: google collab
-
-
 .. toctree::
   :maxdepth: 1
   :caption: User Guide
 
-  installation
+  install
   notebooks/quickstart
+  cite
 
 .. toctree::
   :maxdepth: 1
@@ -24,6 +17,8 @@ mutation spectrum history inference
   notebooks/1KG
   notebooks/observability
 
+.. todo:: set up Google collab for notebooks
+
 .. toctree::
    :maxdepth: 1
    :caption: Notes
@@ -32,17 +27,18 @@ mutation spectrum history inference
    faq
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Developer Documentation
-
-   developer
-
-.. toctree::
    :maxdepth: 3
    :caption: API Documentation
 
    mushi
 
+.. toctree::
+  :maxdepth: 1
+  :caption: Developer Documentation
+
+  developer
+
+.. todo:: document CLI
 
 Indices and tables
 ==================

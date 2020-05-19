@@ -34,26 +34,23 @@ Submodules that the main classes rely on, and may be of interest to some users
 
 .. autoclass:: kSFS
     :members:
-    .. automethod:: __init__
 
 .. autoclass:: eta
     :members:
-    .. automethod:: __init__
 
 .. autoclass:: mu
     :members:
-    .. automethod:: __init__
 
 
 .. automodule:: mushi.optimization
-  :members:
+    :members:
 
 .. automodule:: mushi.utils
-  :members:
+    :members:
 
 .. automodule:: mushi.composition
-  mushi.composition.clr
-  mushi.composition.clr_inv
-  mushi.composition.ilr
-  mushi.composition.ilr_inv
-  mushi.composition.centralize
+    mushi.composition.clr
+    mushi.composition.clr_inv
+    mushi.composition.ilr
+    mushi.composition.ilr_inv
+    mushi.composition.centralize

@@ -1,10 +1,5 @@
 r"""
-Compositional statistics
-=======================================================
-
-.. currentmodule:: mushi.composition
-
-This module provides functions for compositional data analysis.
+Functions for compositional data analysis.
 
 It was copied from the :mod:`skbio.stats.composition` module and edited slightly to
 enable compatibility with the JAX package.
@@ -37,25 +32,6 @@ the Aitchison geometry, only compositions with nonzero components can
 be considered. The multiplicative replacement technique [3]_ can be
 used to substitute these zeros with small pseudocounts without
 introducing major distortions to the data.
-
-Functions
----------
-
-.. autosummary::
-   :toctree: generated/
-
-   closure
-   multiplicative_replacement
-   perturb
-   perturb_inv
-   power
-   inner
-   clr
-   clr_inv
-   ilr
-   ilr_inv
-   centralize
-   ancom
 
 References
 ----------

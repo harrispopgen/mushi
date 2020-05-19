@@ -29,7 +29,10 @@ extensions = [
     "sphinx.ext.viewcode",
     "nbsphinx",
     "sphinx_autodoc_typehints",
+    "sphinx.ext.todo"
 ]
+
+todo_include_todos = True
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),

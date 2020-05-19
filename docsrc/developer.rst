@@ -10,12 +10,12 @@ Go to the ``docsrc`` directory::
 Environment
 -----------
 
-Create and activate the `mushidocs` conda environment::
+Create and activate the ```mushidocs`` conda environment::
 
   conda env create -f env.yml
   conda activate mushidocs
 
-Install `mushi` itself from the local copy in the parent directory::
+Install ```mushi`` itself from the local copy in the parent directory::
 
   pip install -e ..
 
@@ -38,9 +38,14 @@ You can then see the generated documentation in ``docsrc/_build/index.html``.
 Github Pages build
 ------------------
 
-From the `docsrc` dir::
+From the ``docsrc`` dir::
 
   make github
 
 You can then see the generated documentation in
 ``docs/index.html``.
+
+Todo list
+=========
+
+.. todolist::
