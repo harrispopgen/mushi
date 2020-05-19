@@ -34,7 +34,7 @@ class kSFS():
         ksfs_file: path to k-SFS file, as ouput by `mutyper ksfs`
 
         X: observed k-SFS matrix
-        mutation_types: names of X columns (optional)
+        mutation_types: names of X columns (defaults to integer range)
 
         n: number of haplotypes
         """
@@ -219,9 +219,9 @@ class kSFS():
             self.η = hst.eta(change_points, y)
 
         μ_const = hst.mu(self.η.change_points,
-                               mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                              self.X.shape[1])),
-                               mutation_types=self.mutation_types.values)
+                         mu0 * (S / S.sum()) * np.ones((self.η.m,
+                                                        self.X.shape[1])),
+                         mutation_types=self.mutation_types.values)
 
         if self.μ is None:
             self.μ = μ_const
@@ -260,7 +260,7 @@ class kSFS():
                 Γ = np.diag(np.ones_like(eta_ref.y))
             else:
                 # - log(1 - CDF)
-                Γ = np.diag(- np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
+                Γ = np.diag(-np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
             logy_ref = np.log(eta_ref.y)
 
             @jit
@@ -274,7 +274,8 @@ class kSFS():
                 spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
                 # generalized Tikhonov
                 logy_delta = logy - logy_ref
-                ridge_term = (α_ridge / 2) * ((logy_delta.T @ Γ @ logy_delta) ** 2).sum()
+                ridge_term = (α_ridge / 2) * ((logy_delta.T @
+                                               Γ @ logy_delta) ** 2).sum()
                 return loss_term + spline_term + ridge_term
 
             if α_tv > 0:
@@ -335,10 +336,11 @@ class kSFS():
             def g(Z):
                 """differentiable piece of objective in μ problem"""
                 if mask is not None:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X[mask, :],
-                                     self.L[mask, :])
+                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
+                                     self.X[mask, :], self.L[mask, :])
                 else:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis), self.X, self.L)
+                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
+                                     self.X, self.L)
                 spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
                 # generalized Tikhonov
                 Z_delta = Z - Z_ref
@@ -412,7 +414,8 @@ class kSFS():
 
                     def prox(Z, s):
                         """singular value thresholding"""
-                        U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
+                        U, σ, Vt = np.linalg.svd(Z - Z_const,
+                                                 full_matrices=False)
                         if hard:
                             σ = index_update(σ, index[σ <= s * β_rank], 0)
                         else:
@@ -442,7 +445,7 @@ class kSFS():
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
                    line_kwargs: Dict = dict(),
-                   fill_kwargs: Dict = dict()):
+                   fill_kwargs: Dict = dict()) -> None:
         """plot the total SFS
 
         kwargs: keyword arguments for scatter plot
@@ -466,8 +469,6 @@ class kSFS():
                              ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
-        plt.xscale('log')
-        plt.yscale('symlog')
         plt.tight_layout()
 
     def plot(self, types=None, clr: bool = False,
@@ -504,7 +505,7 @@ class kSFS():
         plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, **kwargs):
+    def clustermap(self, **kwargs) -> None:
         u"""clustermap of compositionally centralized k-SFS
 
         kwargs: additional keyword arguments passed to pd.clustermap
@@ -518,4 +519,4 @@ class kSFS():
                            center=1 / Z.shape[1],
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
-        return g
+        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(), fontsize = 9, family='monospace');
