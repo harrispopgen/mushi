@@ -12,7 +12,7 @@ from jax import jit, grad
 from jax.ops import index, index_update
 from scipy.stats import poisson
 import prox_tv as ptv
-from typing import List, Dict
+from typing import Union, List, Dict
 from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -25,10 +25,10 @@ class kSFS():
     r"""The core :math:`k`-SFS class for simulation and inference
 
     Attributes:
-        X (:obj:`numpy.ndarray`): :math:`k`-SFS matrix
+        X (:obj:`numpy.ndarray`): :math:`k`-SFS matrix (or 1D SFS vector)
         eta (:obj:`mushi.eta`): demographic history
         mu (:obj:`mushi.mu`): mutation spectrum history
-        mutation_types (:obj:`mushi.mu`): mutation spectrum history
+        mutation_types (:obj:`List[str]`): mutation spectrum history
         n (:obj:`int`): number of sampled haplotypes
 
     Notes:
@@ -62,6 +62,9 @@ class kSFS():
                                            name='mutation type')
 
         elif X is not None:
+            # if 1D SFS, make a column vector
+            if len(X.shape) == 1:
+                X = X[:, np.newaxis]
             self.X = X
             self.n = len(X) + 1
             if mutation_types is not None:
@@ -121,23 +124,25 @@ class kSFS():
         t, y = eta.arrays()
         return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
 
-    def simulate(self, eta: hst.eta, mu: hst.mu,
+    def simulate(self, eta: hst.eta, mu: Union[hst.mu, np.float64],
                  seed: int = None) -> None:
         r"""Simulate a SFS under the Poisson random field model (no linkage)
         assigns simulated SFS to ``X`` attribute
 
         Args:
             eta: demographic history
-            mu: mutation spectrum history
+            mu: mutation spectrum history (or constant rate)
             seed: random seed
         """
-        if not eta.check_grid(mu):
-            raise ValueError('η(t) and μ(t) must use the same time grid')
         onp.random.seed(seed)
         t, y = eta.arrays()
         M = utils.M(self.n, t, y)
         L = self.C @ M
-
+        if type(mu) == hst.mu:
+            if not eta.check_grid(mu):
+                raise ValueError('η(t) and μ(t) must use the same time grid')
+        else:
+            mu = hst.mu(eta.change_points, mu * np.ones_like(y))
         self.X = poisson.rvs(L @ mu.Z)
         self.mutation_types = mu.mutation_types
 
@@ -161,7 +166,7 @@ class kSFS():
                       s0: int = 1,
                       max_line_iter=100,
                       gamma: np.float64 = 0.8,
-                      tol: np.float64 = 1e-4,
+                      tol: np.float64 = 0,
                       loss: str = 'prf',
                       mask: np.array = None) -> None:
         r"""Perform sequential inference to fit :math:`\eta(t)` and
@@ -176,8 +181,8 @@ class kSFS():
                      ``None``, the constant MLE is used
             mu_ref: reference MuSH for ridge penalty. If None, the constant
                     MLE is used
-            infer_eta: skip :math:`\eta` inference if ``False``
-            infer_mu: skip :math:`\mu` inference if ``False``
+            infer_eta: perform :math:`\eta` inference if ``True``
+            infer_mu: perform :math:`\mu` inference if ``True``
             loss: loss function, 'prf' for Poisson random field, 'kl' for
                   Kullback-Leibler divergence, 'lsq' for least-squares
             mask: array of bools, with False indicating exclusion of that
@@ -191,7 +196,7 @@ class kSFS():
             beta_rank: rank penalty on :math:`\mu(t)`
             beta_ridge: L2 penalty on :math:`\mu(t)`
             max_iter: maximum number of proximal gradient steps
-            tol: relative tolerance in objective function
+            tol: relative tolerance in objective function (if 0, not used)
             s0: max step size
             max_line_iter: maximum number of line search steps
             gamma: step size shrinkage rate for line search
@@ -266,9 +271,9 @@ class kSFS():
             # decomposes as f = g + h, where g is differentiable and h is not.
             # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
+            # Tikhonov matrix
             if eta_ref is None:
                 eta_ref = self.η
-                # Tikhonov matrix
                 Γ = np.diag(np.ones_like(eta_ref.y))
             else:
                 # - log(1 - CDF)
@@ -324,7 +329,7 @@ class kSFS():
             self.M = utils.M(self.n, t, y)
             self.L = self.C @ self.M
 
-        if infer_mu:
+        if infer_mu and len(self.mutation_types) > 1:
             print('inferring μ(t) conditioned on η(t)', flush=True)
 
             if mu_ref is None:
