@@ -1,5 +1,11 @@
-mutation spectrum history inference
-===================================
+Mutation Spectrum History Inference
+###################################
+
+``mushi`` is a Python package for nonparametric coalescent inference of demographic
+history and mutation spectrum history (MuSH) from genomic variation data.
+Both demographic history and MuSH are encoded in sample allele frequency
+spectra as joint inverse problems, and ``mushi`` uses fast optimization methods
+to infer these histories from data without model specification.
 
 .. toctree::
   :maxdepth: 1
