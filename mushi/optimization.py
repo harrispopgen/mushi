@@ -15,7 +15,8 @@ def acc_prox_grad_method(x: np.ndarray,
                          max_iter: int = 100,
                          s0: np.float64 = 1,
                          max_line_iter: int = 100,
-                         gamma: np.float64 = 0.8) -> np.ndarray:
+                         gamma: np.float64 = 0.8,
+                         verbose: bool = False) -> np.ndarray:
     r"""Nesterov accelerated proximal gradient method with backtracking line
     search [1]_.
 
@@ -38,6 +39,7 @@ def acc_prox_grad_method(x: np.ndarray,
         s0: initial step size
         max_line_iter: maximum number of line search steps
         gamma: step size shrinkage rate for line search
+        verbose: print convergence messages
 
     Returns:
         solution point
@@ -53,7 +55,8 @@ def acc_prox_grad_method(x: np.ndarray,
     q = x
     # initial objective value
     f = g(x) + h(x)
-    print(f'initial objective {f:.6e}', flush=True)
+    if verbose:
+        print(f'initial objective {f:.6e}', flush=True)
     for k in range(1, max_iter + 1):
         # evaluate differtiable part of objective at momentum point
         g1 = g(q)
@@ -90,17 +93,21 @@ def acc_prox_grad_method(x: np.ndarray,
         f_old = f
         f = g(x) + h(x)
         rel_change = np.abs((f - f_old) / f_old)
-        print(f'iteration {k}, objective {f:.3e}, '
-              f'relative change {rel_change:.3e}',
-              end='        \r', flush=True)
+        if verbose:
+            print(f'iteration {k}, objective {f:.3e}, '
+                  f'relative change {rel_change:.3e}',
+                  end='        \r', flush=True)
         if rel_change < tol:
-            print(f'\nrelative change in objective function {rel_change:.2g} '
-                  f'is within tolerance {tol} after {k} iterations',
-                  flush=True)
+            if verbose:
+                print(f'\nrelative change in objective function {rel_change:.2g} '
+                      f'is within tolerance {tol} after {k} iterations',
+                      flush=True)
             break
         if k == max_iter:
-            print(f'\nmaximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}', flush=True)
+            if verbose:
+                print(f'\nmaximum iteration {max_iter} reached with relative '
+                      f'change in objective function {rel_change:.2g}',
+                      flush=True)
 
     return x
 
@@ -119,7 +126,8 @@ def three_op_prox_grad_method(x: np.ndarray,
                               s0: np.float64 = 1,
                               max_line_iter: int = 100,
                               gamma: np.float64 = 0.8,
-                              ls_tol: np.float64 = 0) -> np.ndarray:
+                              ls_tol: np.float64 = 0,
+                              verbose: bool = False) -> np.ndarray:
     r"""Three operator splitting proximal gradient method with backtracking line
     search [2]_.
 
@@ -145,6 +153,7 @@ def three_op_prox_grad_method(x: np.ndarray,
         max_line_iter: maximum number of line search steps
         gamma: step size shrinkage rate for line search
         ls_tol: line search tolerance
+        verbose: print convergence messages
 
     Returns:
         solution point
@@ -162,7 +171,8 @@ def three_op_prox_grad_method(x: np.ndarray,
     z = x
     u = np.zeros_like(z)
     f = g(x) + h1(x) + h2(x)
-    print(f'initial objective {f:.6e}', flush=True)
+    if verbose:
+        print(f'initial objective {f:.6e}', flush=True)
 
     for k in range(1, max_iter + 1):
         # evaluate differentiable part of objective
@@ -203,20 +213,23 @@ def three_op_prox_grad_method(x: np.ndarray,
         f_old = f
         f = g(x) + h1(x) + h2(x)
         rel_change = np.abs((f - f_old) / f_old)
-        print(f'iteration {k}, objective {f:.3e}, '
-              f'relative change {rel_change:.3e}',
-              end='        \r', flush=True)
+        if verbose:
+            print(f'iteration {k}, objective {f:.3e}, '
+                  f'relative change {rel_change:.3e}',
+                  end='        \r', flush=True)
         if rel_change < tol:
-            print(f'\nrelative change in objective function {rel_change:.2g} '
-                  f'is within tolerance {tol} after {k} iterations',
-                  flush=True)
+            if verbose:
+                print(f'\nrelative change in objective function {rel_change:.2g} '
+                      f'is within tolerance {tol} after {k} iterations',
+                      flush=True)
             break
         # if certificate < tol:
         #     print(f'certificate norm {certificate:.2g} '
         #           f'is within tolerance {tol} after {k} iterations')
         #     break
         if k == max_iter:
-            print(f'\nmaximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}', flush=True)
+            if verbose:
+                print(f'\nmaximum iteration {max_iter} reached with relative '
+                      f'change in objective function {rel_change:.2g}', flush=True)
 
     return x

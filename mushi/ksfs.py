@@ -168,7 +168,8 @@ class kSFS():
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 0,
                       loss: str = 'prf',
-                      mask: np.array = None) -> None:
+                      mask: np.array = None,
+                      verbose: bool = False) -> None:
         r"""Perform sequential inference to fit :math:`\eta(t)` and
         :math:`\mu(t)`
 
@@ -196,10 +197,11 @@ class kSFS():
             beta_rank: rank penalty on :math:`\mu(t)`
             beta_ridge: L2 penalty on :math:`\mu(t)`
             max_iter: maximum number of proximal gradient steps
-            tol: relative tolerance in objective function (if 0, not used)
+            tol: relative tolerance in objective function (if ``0``, not used)
             s0: max step size
             max_line_iter: maximum number of line search steps
             gamma: step size shrinkage rate for line search
+            verbose: print verbose messages if ``True``
         """
 
         # pithify reg paramter names
@@ -265,7 +267,8 @@ class kSFS():
         # D2 = D1.T @ D1  # 2nd difference matrix
 
         if infer_eta:
-            print('inferring η(t)', flush=True)
+            if verbose:
+                print('inferring η(t)', flush=True)
 
             # Accelerated proximal gradient method: our objective function
             # decomposes as f = g + h, where g is differentiable and h is not.
@@ -321,7 +324,8 @@ class kSFS():
                                             max_iter=max_iter,
                                             s0=s0,
                                             max_line_iter=max_line_iter,
-                                            gamma=gamma)
+                                            gamma=gamma,
+                                            verbose=verbose)
 
             y = np.exp(logy)
 
@@ -330,7 +334,8 @@ class kSFS():
             self.L = self.C @ self.M
 
         if infer_mu and len(self.mutation_types) > 1:
-            print('inferring μ(t) conditioned on η(t)', flush=True)
+            if verbose:
+                print('inferring μ(t) conditioned on η(t)', flush=True)
 
             if mu_ref is None:
                 mu_ref = μ_const
@@ -403,7 +408,8 @@ class kSFS():
                                                   max_iter=max_iter,
                                                   s0=s0,
                                                   max_line_iter=max_line_iter,
-                                                  gamma=gamma, ls_tol=0)
+                                                  gamma=gamma, ls_tol=0,
+                                                  verbose=verbose)
 
             else:
                 if β_tv:
@@ -454,7 +460,8 @@ class kSFS():
                                              max_iter=max_iter,
                                              s0=s0,
                                              max_line_iter=max_line_iter,
-                                             gamma=gamma)
+                                             gamma=gamma,
+                                             verbose=verbose)
 
             self.μ = hst.mu(self.η.change_points,
                             mu0 * cmp.ilr_inv(Z, basis),
