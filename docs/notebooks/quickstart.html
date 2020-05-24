@@ -716,7 +716,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Jointly-infer-demography-and-mutation-spectrum-history">
 <h2>Jointly infer demography and mutation spectrum history<a class="headerlink" href="#Jointly-infer-demography-and-mutation-spectrum-history" title="Permalink to this headline">¶</a></h2>
 <p>To infer a time-calibrated mutation spectrum history (MuSH), we need to jointly estimate the demographic history, since this defines the diffusion timescale of the coalescent process.</p>
-<p>We now run the optimization, setting a few parameters to control how complicated we let the histories look.</p>
+<p>We now run the optimization, setting a few parameters to control how complicated we let the histories look. We use the <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> argument to print convergence messages.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
@@ -724,7 +724,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">μ0</span><span class="p">,</span> <span class="n">alpha_tv</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">alpha_spline</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span> <span class="n">alpha_ridge</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
                    <span class="n">beta_rank</span><span class="o">=</span><span class="mf">1e1</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">1e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span>
-                   <span class="n">tol</span><span class="o">=</span><span class="mf">1e-11</span><span class="p">)</span>
+                   <span class="n">tol</span><span class="o">=</span><span class="mf">1e-11</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

@@ -189,7 +189,8 @@
                          <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                          <span class="n">s0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                          <span class="n">max_line_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-                         <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                         <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+                         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Nesterov accelerated proximal gradient method with backtracking line</span>
 <span class="sd">    search [1]_.</span>
 
@@ -212,6 +213,7 @@
 <span class="sd">        s0: initial step size</span>
 <span class="sd">        max_line_iter: maximum number of line search steps</span>
 <span class="sd">        gamma: step size shrinkage rate for line search</span>
+<span class="sd">        verbose: print convergence messages</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        solution point</span>
@@ -227,7 +229,8 @@
     <span class="n">q</span> <span class="o">=</span> <span class="n">x</span>
     <span class="c1"># initial objective value</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="c1"># evaluate differtiable part of objective at momentum point</span>
         <span class="n">g1</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
@@ -264,17 +267,21 @@
         <span class="n">f_old</span> <span class="o">=</span> <span class="n">f</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">rel_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">f_old</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-              <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                  <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rel_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
-                  <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
-                  <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
+                      <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">break</span>
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">max_iter</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
-                  <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                      <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">x</span></div>
 
@@ -293,7 +300,8 @@
                               <span class="n">s0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                               <span class="n">max_line_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                               <span class="n">gamma</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
-                              <span class="n">ls_tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+                              <span class="n">ls_tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                              <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Three operator splitting proximal gradient method with backtracking line</span>
 <span class="sd">    search [2]_.</span>
 
@@ -319,6 +327,7 @@
 <span class="sd">        max_line_iter: maximum number of line search steps</span>
 <span class="sd">        gamma: step size shrinkage rate for line search</span>
 <span class="sd">        ls_tol: line search tolerance</span>
+<span class="sd">        verbose: print convergence messages</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        solution point</span>
@@ -336,7 +345,8 @@
     <span class="n">z</span> <span class="o">=</span> <span class="n">x</span>
     <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
     <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.6e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="c1"># evaluate differentiable part of objective</span>
@@ -377,21 +387,24 @@
         <span class="n">f_old</span> <span class="o">=</span> <span class="n">f</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">h2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">rel_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">f_old</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
-              <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-              <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">, &#39;</span>
+                  <span class="sa">f</span><span class="s1">&#39;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.3e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+                  <span class="n">end</span><span class="o">=</span><span class="s1">&#39;        </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rel_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
-                  <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
-                  <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">relative change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1"> &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1"> iterations&#39;</span><span class="p">,</span>
+                      <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">break</span>
         <span class="c1"># if certificate &lt; tol:</span>
         <span class="c1">#     print(f&#39;certificate norm {certificate:.2g} &#39;</span>
         <span class="c1">#           f&#39;is within tolerance {tol} after {k} iterations&#39;)</span>
         <span class="c1">#     break</span>
         <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">max_iter</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
-                  <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s1"> reached with relative &#39;</span>
+                      <span class="sa">f</span><span class="s1">&#39;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s1">.2g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">x</span></div>
 </pre></div>

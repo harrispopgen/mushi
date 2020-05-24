@@ -581,14 +581,14 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="n">chrom</span> <span class="o">=</span> <span class="mi">22</span>
+<span class="n">chrom</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">species</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_species</span><span class="p">(</span><span class="s1">&#39;HomSap&#39;</span><span class="p">)</span>
 <span class="n">contig</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get_contig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;chr</span><span class="si">{</span><span class="n">chrom</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="n">contig</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">Contig</span><span class="p">(</span><span class="n">recombination_map</span><span class="o">=</span><span class="n">contig</span><span class="o">.</span><span class="n">recombination_map</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">genetic_map</span><span class="o">=</span><span class="n">contig</span><span class="o">.</span><span class="n">genetic_map</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">PiecewiseConstantSize</span><span class="p">(</span><span class="n">eta_true</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">eta_true</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
 <span class="n">samples</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
 <span class="n">engine</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_default_engine</span><span class="p">()</span>
-<span class="n">ts</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">contig</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">contig</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -608,7 +608,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-64851
+250115
 </pre></div></div>
 </div>
 <p>Display first tree in the tree sequence</p>
@@ -720,7 +720,7 @@ epoch boundaries: (100000.00, inf), μ: 82.83
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-8300725.0
+8264757.0
 </pre></div></div>
 </div>
 <p>TMRCA CDF</p>
@@ -749,7 +749,7 @@ epoch boundaries: (100000.00, inf), μ: 82.83
 </div>
 <div class="section" id="Infer-\eta(t)-and-\boldsymbol\mu(t)">
 <h2>Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-\eta(t)-and-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
-<p>Define regularization parameters and convergence criteria. We use a tolerance of zero and a very large number of iterations.</p>
+<p>Define regularization parameters and convergence criteria. We use a very low tolerance and a very large number of iterations.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -762,7 +762,7 @@ epoch boundaries: (100000.00, inf), μ: 82.83
 </div>
 </div>
 <p>Clear out histories (just in case) and run inference</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
@@ -774,16 +774,6 @@ epoch boundaries: (100000.00, inf), μ: 82.83
                    <span class="o">**</span><span class="n">regularization_eta</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_mu</span><span class="p">,</span> <span class="o">**</span><span class="n">convergence</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-inferring η(t)
-initial objective -8.994664e+07
-iteration 3334, objective -9.005e+07, relative change 1.012e-12
-</pre></div></div>
 </div>
 </div>
 <div class="section" id="Plot-results">
