@@ -126,10 +126,12 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#Infer-mutation-spectrum-history-\boldsymbol\mu(t)">Infer mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#TCC\toTTC-pulse-in-Europeans">TCC<span class="math notranslate nohighlight">\(\to\)</span>TTC pulse in Europeans</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Regularization-paremeters">Regularization paremeters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Loop-over-EUR-populations,-inferring-history-for-each-under-three-alternative-demographic-conditionings">Loop over EUR populations, inferring history for each under three alternative demographic conditionings</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#Mutation-spectrum-histories-for-all-populations">Mutation spectrum histories for all populations</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Regularization-parameters">Regularization parameters</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id1">Loop over populations, inferring history for each</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id2">Plot histories</a></li>
 </ul>
@@ -911,7 +913,10 @@ SAS BEB
 <h2>Infer mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-mutation-spectrum-history-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="TCC\toTTC-pulse-in-Europeans">
 <h3>TCC<span class="math notranslate nohighlight">\(\to\)</span>TTC pulse in Europeans<a class="headerlink" href="#TCC\toTTC-pulse-in-Europeans" title="Permalink to this headline">¶</a></h3>
-<p>First we’ll focus on sharply timing the TCC<span class="math notranslate nohighlight">\(\to\)</span>TTC, and assessing sensitivity to demographic assumptions. #### Regularization paremeters total variation regularization to minimize the number of change points.</p>
+<p>First we’ll focus on sharply timing the TCC<span class="math notranslate nohighlight">\(\to\)</span>TTC, and assessing sensitivity to demographic assumptions.</p>
+<div class="section" id="Regularization-paremeters">
+<h4>Regularization paremeters<a class="headerlink" href="#Regularization-paremeters" title="Permalink to this headline">¶</a></h4>
+<p>total variation regularization to minimize the number of change points.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
@@ -919,6 +924,7 @@ SAS BEB
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
 </pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="Loop-over-EUR-populations,-inferring-history-for-each-under-three-alternative-demographic-conditionings">
@@ -1078,13 +1084,15 @@ TSI
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_34_10.svg" src="../_images/notebooks_1KG_34_10.svg" /></div>
+<img alt="../_images/notebooks_1KG_35_10.svg" src="../_images/notebooks_1KG_35_10.svg" /></div>
 </div>
 </div>
 </div>
 <div class="section" id="Mutation-spectrum-histories-for-all-populations">
 <h3>Mutation spectrum histories for all populations<a class="headerlink" href="#Mutation-spectrum-histories-for-all-populations" title="Permalink to this headline">¶</a></h3>
-<p>Now we’ll aim for smooth histories that capture all components well #### Regularization parameters</p>
+<p>Now we’ll aim for smooth histories that capture all components well</p>
+<div class="section" id="Regularization-parameters">
+<h4>Regularization parameters<a class="headerlink" href="#Regularization-parameters" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
@@ -1092,6 +1100,7 @@ TSI
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hard</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">beta_rank</span><span class="o">=</span><span class="mf">2e2</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">1e5</span><span class="p">)</span>
 </pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="id1">
@@ -1214,19 +1223,19 @@ AFR YRI
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_1.svg" src="../_images/notebooks_1KG_40_1.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_1.svg" src="../_images/notebooks_1KG_42_1.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_2.svg" src="../_images/notebooks_1KG_40_2.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_2.svg" src="../_images/notebooks_1KG_42_2.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_3.svg" src="../_images/notebooks_1KG_40_3.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_3.svg" src="../_images/notebooks_1KG_42_3.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1240,19 +1249,19 @@ AFR MSL
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_5.svg" src="../_images/notebooks_1KG_40_5.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_5.svg" src="../_images/notebooks_1KG_42_5.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_6.svg" src="../_images/notebooks_1KG_40_6.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_6.svg" src="../_images/notebooks_1KG_42_6.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_7.svg" src="../_images/notebooks_1KG_40_7.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_7.svg" src="../_images/notebooks_1KG_42_7.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1266,19 +1275,19 @@ AFR LWK
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_9.svg" src="../_images/notebooks_1KG_40_9.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_9.svg" src="../_images/notebooks_1KG_42_9.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_10.svg" src="../_images/notebooks_1KG_40_10.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_10.svg" src="../_images/notebooks_1KG_42_10.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_11.svg" src="../_images/notebooks_1KG_40_11.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_11.svg" src="../_images/notebooks_1KG_42_11.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1292,19 +1301,19 @@ AFR GWD
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_13.svg" src="../_images/notebooks_1KG_40_13.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_13.svg" src="../_images/notebooks_1KG_42_13.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_14.svg" src="../_images/notebooks_1KG_40_14.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_14.svg" src="../_images/notebooks_1KG_42_14.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_15.svg" src="../_images/notebooks_1KG_40_15.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_15.svg" src="../_images/notebooks_1KG_42_15.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1318,19 +1327,19 @@ AFR ESN
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_17.svg" src="../_images/notebooks_1KG_40_17.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_17.svg" src="../_images/notebooks_1KG_42_17.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_18.svg" src="../_images/notebooks_1KG_40_18.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_18.svg" src="../_images/notebooks_1KG_42_18.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_19.svg" src="../_images/notebooks_1KG_40_19.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_19.svg" src="../_images/notebooks_1KG_42_19.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1344,19 +1353,19 @@ AFR ASW
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_21.svg" src="../_images/notebooks_1KG_40_21.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_21.svg" src="../_images/notebooks_1KG_42_21.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_22.svg" src="../_images/notebooks_1KG_40_22.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_22.svg" src="../_images/notebooks_1KG_42_22.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_23.svg" src="../_images/notebooks_1KG_40_23.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_23.svg" src="../_images/notebooks_1KG_42_23.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1370,19 +1379,19 @@ AFR ACB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_25.svg" src="../_images/notebooks_1KG_40_25.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_25.svg" src="../_images/notebooks_1KG_42_25.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_26.svg" src="../_images/notebooks_1KG_40_26.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_26.svg" src="../_images/notebooks_1KG_42_26.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_27.svg" src="../_images/notebooks_1KG_40_27.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_27.svg" src="../_images/notebooks_1KG_42_27.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1396,19 +1405,19 @@ AMR PUR
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_29.svg" src="../_images/notebooks_1KG_40_29.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_29.svg" src="../_images/notebooks_1KG_42_29.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_30.svg" src="../_images/notebooks_1KG_40_30.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_30.svg" src="../_images/notebooks_1KG_42_30.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_31.svg" src="../_images/notebooks_1KG_40_31.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_31.svg" src="../_images/notebooks_1KG_42_31.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1422,19 +1431,19 @@ AMR PEL
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_33.svg" src="../_images/notebooks_1KG_40_33.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_33.svg" src="../_images/notebooks_1KG_42_33.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_34.svg" src="../_images/notebooks_1KG_40_34.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_34.svg" src="../_images/notebooks_1KG_42_34.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_35.svg" src="../_images/notebooks_1KG_40_35.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_35.svg" src="../_images/notebooks_1KG_42_35.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1448,19 +1457,19 @@ AMR MXL
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_37.svg" src="../_images/notebooks_1KG_40_37.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_37.svg" src="../_images/notebooks_1KG_42_37.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_38.svg" src="../_images/notebooks_1KG_40_38.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_38.svg" src="../_images/notebooks_1KG_42_38.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_39.svg" src="../_images/notebooks_1KG_40_39.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_39.svg" src="../_images/notebooks_1KG_42_39.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1474,19 +1483,19 @@ AMR CLM
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_41.svg" src="../_images/notebooks_1KG_40_41.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_41.svg" src="../_images/notebooks_1KG_42_41.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_42.svg" src="../_images/notebooks_1KG_40_42.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_42.svg" src="../_images/notebooks_1KG_42_42.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_43.svg" src="../_images/notebooks_1KG_40_43.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_43.svg" src="../_images/notebooks_1KG_42_43.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1500,19 +1509,19 @@ EAS KHV
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_45.svg" src="../_images/notebooks_1KG_40_45.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_45.svg" src="../_images/notebooks_1KG_42_45.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_46.svg" src="../_images/notebooks_1KG_40_46.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_46.svg" src="../_images/notebooks_1KG_42_46.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_47.svg" src="../_images/notebooks_1KG_40_47.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_47.svg" src="../_images/notebooks_1KG_42_47.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1526,19 +1535,19 @@ EAS JPT
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_49.svg" src="../_images/notebooks_1KG_40_49.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_49.svg" src="../_images/notebooks_1KG_42_49.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_50.svg" src="../_images/notebooks_1KG_40_50.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_50.svg" src="../_images/notebooks_1KG_42_50.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_51.svg" src="../_images/notebooks_1KG_40_51.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_51.svg" src="../_images/notebooks_1KG_42_51.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1552,19 +1561,19 @@ EAS CHS
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_53.svg" src="../_images/notebooks_1KG_40_53.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_53.svg" src="../_images/notebooks_1KG_42_53.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_54.svg" src="../_images/notebooks_1KG_40_54.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_54.svg" src="../_images/notebooks_1KG_42_54.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_55.svg" src="../_images/notebooks_1KG_40_55.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_55.svg" src="../_images/notebooks_1KG_42_55.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1578,19 +1587,19 @@ EAS CHB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_57.svg" src="../_images/notebooks_1KG_40_57.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_57.svg" src="../_images/notebooks_1KG_42_57.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_58.svg" src="../_images/notebooks_1KG_40_58.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_58.svg" src="../_images/notebooks_1KG_42_58.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_59.svg" src="../_images/notebooks_1KG_40_59.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_59.svg" src="../_images/notebooks_1KG_42_59.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1604,19 +1613,19 @@ EAS CDX
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_61.svg" src="../_images/notebooks_1KG_40_61.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_61.svg" src="../_images/notebooks_1KG_42_61.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_62.svg" src="../_images/notebooks_1KG_40_62.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_62.svg" src="../_images/notebooks_1KG_42_62.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_63.svg" src="../_images/notebooks_1KG_40_63.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_63.svg" src="../_images/notebooks_1KG_42_63.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1630,19 +1639,19 @@ EUR TSI
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_65.svg" src="../_images/notebooks_1KG_40_65.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_65.svg" src="../_images/notebooks_1KG_42_65.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_66.svg" src="../_images/notebooks_1KG_40_66.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_66.svg" src="../_images/notebooks_1KG_42_66.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_67.svg" src="../_images/notebooks_1KG_40_67.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_67.svg" src="../_images/notebooks_1KG_42_67.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1656,19 +1665,19 @@ EUR IBS
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_69.svg" src="../_images/notebooks_1KG_40_69.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_69.svg" src="../_images/notebooks_1KG_42_69.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_70.svg" src="../_images/notebooks_1KG_40_70.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_70.svg" src="../_images/notebooks_1KG_42_70.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_71.svg" src="../_images/notebooks_1KG_40_71.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_71.svg" src="../_images/notebooks_1KG_42_71.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1682,19 +1691,19 @@ EUR GBR
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_73.svg" src="../_images/notebooks_1KG_40_73.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_73.svg" src="../_images/notebooks_1KG_42_73.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_74.svg" src="../_images/notebooks_1KG_40_74.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_74.svg" src="../_images/notebooks_1KG_42_74.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_75.svg" src="../_images/notebooks_1KG_40_75.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_75.svg" src="../_images/notebooks_1KG_42_75.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1708,19 +1717,19 @@ EUR FIN
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_77.svg" src="../_images/notebooks_1KG_40_77.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_77.svg" src="../_images/notebooks_1KG_42_77.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_78.svg" src="../_images/notebooks_1KG_40_78.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_78.svg" src="../_images/notebooks_1KG_42_78.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_79.svg" src="../_images/notebooks_1KG_40_79.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_79.svg" src="../_images/notebooks_1KG_42_79.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1734,19 +1743,19 @@ EUR CEU
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_81.svg" src="../_images/notebooks_1KG_40_81.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_81.svg" src="../_images/notebooks_1KG_42_81.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_82.svg" src="../_images/notebooks_1KG_40_82.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_82.svg" src="../_images/notebooks_1KG_42_82.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_83.svg" src="../_images/notebooks_1KG_40_83.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_83.svg" src="../_images/notebooks_1KG_42_83.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1760,19 +1769,19 @@ SAS STU
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_85.svg" src="../_images/notebooks_1KG_40_85.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_85.svg" src="../_images/notebooks_1KG_42_85.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_86.svg" src="../_images/notebooks_1KG_40_86.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_86.svg" src="../_images/notebooks_1KG_42_86.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_87.svg" src="../_images/notebooks_1KG_40_87.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_87.svg" src="../_images/notebooks_1KG_42_87.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1786,19 +1795,19 @@ SAS PJL
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_89.svg" src="../_images/notebooks_1KG_40_89.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_89.svg" src="../_images/notebooks_1KG_42_89.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_90.svg" src="../_images/notebooks_1KG_40_90.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_90.svg" src="../_images/notebooks_1KG_42_90.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_91.svg" src="../_images/notebooks_1KG_40_91.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_91.svg" src="../_images/notebooks_1KG_42_91.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1812,19 +1821,19 @@ SAS ITU
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_93.svg" src="../_images/notebooks_1KG_40_93.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_93.svg" src="../_images/notebooks_1KG_42_93.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_94.svg" src="../_images/notebooks_1KG_40_94.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_94.svg" src="../_images/notebooks_1KG_42_94.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_95.svg" src="../_images/notebooks_1KG_40_95.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_95.svg" src="../_images/notebooks_1KG_42_95.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1838,19 +1847,19 @@ SAS GIH
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_97.svg" src="../_images/notebooks_1KG_40_97.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_97.svg" src="../_images/notebooks_1KG_42_97.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_98.svg" src="../_images/notebooks_1KG_40_98.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_98.svg" src="../_images/notebooks_1KG_42_98.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_99.svg" src="../_images/notebooks_1KG_40_99.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_99.svg" src="../_images/notebooks_1KG_42_99.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
@@ -1864,19 +1873,19 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_101.svg" src="../_images/notebooks_1KG_40_101.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_101.svg" src="../_images/notebooks_1KG_42_101.svg" /></div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_102.svg" src="../_images/notebooks_1KG_40_102.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_102.svg" src="../_images/notebooks_1KG_42_102.svg" /></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_40_103.svg" src="../_images/notebooks_1KG_40_103.svg" /></div>
+<img alt="../_images/notebooks_1KG_42_103.svg" src="../_images/notebooks_1KG_42_103.svg" /></div>
 </div>
 </div>
 </div>
@@ -1943,7 +1952,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_44_0.svg" src="../_images/notebooks_1KG_44_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_46_0.svg" src="../_images/notebooks_1KG_46_0.svg" /></div>
 </div>
 </div>
 <div class="section" id="Project-the-time-dimension-factors-to-two-principal-components">
@@ -1975,7 +1984,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_46_0.svg" src="../_images/notebooks_1KG_46_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_48_0.svg" src="../_images/notebooks_1KG_48_0.svg" /></div>
 </div>
 </div>
 <div class="section" id="Project-the-mutation-type-dimension-factors-to-two-principal-components">
@@ -2005,7 +2014,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_48_0.svg" src="../_images/notebooks_1KG_48_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_50_0.svg" src="../_images/notebooks_1KG_50_0.svg" /></div>
 </div>
 </div>
 <div class="section" id="Display-mutation-type-loadings-as-mutation-signatures">
@@ -2044,7 +2053,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_50_0.svg" src="../_images/notebooks_1KG_50_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_52_0.svg" src="../_images/notebooks_1KG_52_0.svg" /></div>
 </div>
 </div>
 <div class="section" id="Mutation-signature-dynamics-in-each-population">
@@ -2088,7 +2097,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_52_0.svg" src="../_images/notebooks_1KG_52_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_54_0.svg" src="../_images/notebooks_1KG_54_0.svg" /></div>
 </div>
 <p>The same histories overlayed for all populations</p>
 <div class="nbinput docutils container">
@@ -2119,7 +2128,7 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_54_0.svg" src="../_images/notebooks_1KG_54_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_56_0.svg" src="../_images/notebooks_1KG_56_0.svg" /></div>
 </div>
 </div>
 </div>
@@ -2221,13 +2230,13 @@ SAS BEB
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_58_0.svg" src="../_images/notebooks_1KG_58_0.svg" /></div>
+<img alt="../_images/notebooks_1KG_60_0.svg" src="../_images/notebooks_1KG_60_0.svg" /></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_1KG_58_1.svg" src="../_images/notebooks_1KG_58_1.svg" /></div>
+<img alt="../_images/notebooks_1KG_60_1.svg" src="../_images/notebooks_1KG_60_1.svg" /></div>
 </div>
 </div>
 </div>
