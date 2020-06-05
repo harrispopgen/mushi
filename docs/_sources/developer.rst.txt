@@ -1,7 +1,7 @@
 Update documentation
 ====================
 
-Inspired  by: https://www.docslikecode.com/articles/github-pages-python-sphinx/
+Inspired by: https://www.docslikecode.com/articles/github-pages-python-sphinx/
 
 Go to the ``docsrc`` directory::
 
@@ -44,6 +44,12 @@ From the ``docsrc`` dir::
 
 You can then see the generated documentation in
 ``docs/index.html``.
+
+Test notebook
+=============
+
+A test notebook that simulates under the linkage-free forward model (where the PRF composite likelihood is not approximate): `<notebooks/simulation_simple.html>`_
+
 
 Todo list
 =========
