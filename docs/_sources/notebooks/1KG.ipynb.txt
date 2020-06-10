@@ -668,6 +668,8 @@
     "    print(f'rank {rank} decomposition, error = {error[-1]}')\n",
     "    errors.append(error[-1])\n",
     "    tensors[rank] = tensor[1]\n",
+    "\n",
+    "plt.figure(figsize=(2, 4))\n",
     "plt.plot(ranks, errors, 'ko')\n",
     "plt.xlabel('rank')\n",
     "plt.xticks(ranks)\n",
