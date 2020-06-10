@@ -773,7 +773,6 @@
     "            plt.annotate(mutation_type, xy[i], size=6)   \n",
     "    plt.xlabel('PC 1')\n",
     "    plt.ylabel('PC 2')\n",
-    "    plt.legend(loc='upper right')\n",
     "    plt.tight_layout()"
    ]
   },
