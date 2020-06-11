@@ -294,8 +294,7 @@ class kSFS():
                 spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
                 # generalized Tikhonov
                 logy_delta = logy - logy_ref
-                ridge_term = (α_ridge / 2) * ((logy_delta.T @
-                                               Γ @ logy_delta) ** 2).sum()
+                ridge_term = (α_ridge / 2) * (logy_delta.T @ Γ @ logy_delta)
                 return loss_term + spline_term + ridge_term
 
             if α_tv > 0:
