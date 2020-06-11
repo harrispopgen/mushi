@@ -546,4 +546,5 @@ class kSFS():
                            center=1 / Z.shape[1],
                            cbar_kws={'label': cbar_label}, **kwargs)
         g.ax_heatmap.set_yscale('symlog')
-        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(), fontsize = 9, family='monospace');
+        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(),
+                                     fontsize=9, family='monospace')
