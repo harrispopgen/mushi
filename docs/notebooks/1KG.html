@@ -769,15 +769,16 @@ OrderedDict([(&#39;AFR&#39;, [&#39;ACB&#39;, &#39;ASW&#39;, &#39;ESN&#39;, &#39;
 <span></span><span class="n">eta_ref</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">for</span> <span class="n">idx_super</span><span class="p">,</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">pops</span><span class="p">)):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">super_pop</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">super_pop</span><span class="p">,</span> <span class="n">pop</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;    </span><span class="si">{</span><span class="n">pop</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="c1"># clear solutions, in case rerunning this cell</span>
         <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_eta</span><span class="p">()</span>
         <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e-10</span>
+            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e-4</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e3</span>
+            <span class="n">alpha_ridge</span> <span class="o">=</span> <span class="mf">1e4</span>
         <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">eta_ref</span><span class="o">=</span><span class="n">eta_ref</span><span class="p">,</span> <span class="n">alpha_ridge</span><span class="o">=</span><span class="n">alpha_ridge</span><span class="p">,</span>
                                      <span class="n">infer_mu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                                      <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_eta</span><span class="p">,</span>
@@ -792,32 +793,37 @@ OrderedDict([(&#39;AFR&#39;, [&#39;ACB&#39;, &#39;ASW&#39;, &#39;ESN&#39;, &#39;
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-AFR YRI
-AFR MSL
-AFR LWK
-AFR GWD
-AFR ESN
-AFR ASW
-AFR ACB
-AMR PUR
-AMR PEL
-AMR MXL
-AMR CLM
-EAS KHV
-EAS JPT
-EAS CHS
-EAS CHB
-EAS CDX
-EUR TSI
-EUR IBS
-EUR GBR
-EUR FIN
-EUR CEU
-SAS STU
-SAS PJL
-SAS ITU
-SAS GIH
-SAS BEB
+AFR
+    YRI
+    MSL
+    LWK
+    GWD
+    ESN
+    ASW
+    ACB
+AMR
+    PUR
+    PEL
+    MXL
+    CLM
+EAS
+    KHV
+    JPT
+    CHS
+    CHB
+    CDX
+EUR
+    TSI
+    IBS
+    GBR
+    FIN
+    CEU
+SAS
+    STU
+    PJL
+    ITU
+    GIH
+    BEB
 </pre></div></div>
 </div>
 </div>
@@ -923,7 +929,7 @@ SAS BEB
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+<span></span><span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1033,7 +1039,7 @@ TSI
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="c1"># NOTE: soft rank penalty seems to cause shrinkage noticable in UMAP</span>
-<span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">beta_rank</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">3e4</span><span class="p">)</span>
+<span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">beta_rank</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">5e4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1051,7 +1057,7 @@ TSI
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pop</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">])):</span>
         <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">idx_super</span> <span class="o">==</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">beta_ridge</span> <span class="o">=</span> <span class="mf">1e-10</span>
+            <span class="n">beta_ridge</span> <span class="o">=</span> <span class="mf">1e-4</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">beta_ridge</span> <span class="o">=</span> <span class="mf">1e4</span>
         <span class="n">ksfs_dict</span><span class="p">[</span><span class="n">pop</span><span class="p">]</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">infer_eta</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mu_ref</span><span class="o">=</span><span class="n">mu_ref</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="n">beta_ridge</span><span class="p">,</span>
@@ -1077,28 +1083,28 @@ AFR
     ASW: rank = 6
     ACB: rank = 7
 AMR
-    PUR: rank = 7
-    PEL: rank = 7
+    PUR: rank = 6
+    PEL: rank = 6
     MXL: rank = 6
     CLM: rank = 6
 EAS
     KHV: rank = 6
-    JPT: rank = 7
-    CHS: rank = 7
-    CHB: rank = 7
+    JPT: rank = 6
+    CHS: rank = 6
+    CHB: rank = 6
     CDX: rank = 6
 EUR
-    TSI: rank = 7
-    IBS: rank = 7
-    GBR: rank = 7
-    FIN: rank = 7
-    CEU: rank = 7
+    TSI: rank = 6
+    IBS: rank = 6
+    GBR: rank = 6
+    FIN: rank = 6
+    CEU: rank = 6
 SAS
     STU: rank = 7
-    PJL: rank = 7
+    PJL: rank = 6
     ITU: rank = 7
     GIH: rank = 6
-    BEB: rank = 7
+    BEB: rank = 6
 </pre></div></div>
 </div>
 </div>
@@ -1848,7 +1854,7 @@ SAS BEB
 </pre></div>
 </div>
 </div>
-<p>NNCP decomposition to extract factors for each dimension: sample, time, and mutation type. We try a range of ranks and assess reconstruction error at each</p>
+<p>NNCP decomposition to extract factors for each dimension: sample, time, and mutation type. We try a range of ranks and assess reconstruction error at each.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
@@ -1861,7 +1867,7 @@ SAS BEB
     <span class="c1"># NOTE: normalize_factors=True leads to instability for some reason</span>
     <span class="n">tensor</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">tensorly</span><span class="o">.</span><span class="n">decomposition</span><span class="o">.</span><span class="n">parafac</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">non_negative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                                    <span class="n">orthogonalise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalize_factors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                                   <span class="n">tol</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span> <span class="n">n_iter_max</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">cvg_criterion</span><span class="o">=</span><span class="s1">&#39;rec_error&#39;</span><span class="p">,</span>
+                                                   <span class="n">tol</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">n_iter_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">cvg_criterion</span><span class="o">=</span><span class="s1">&#39;rec_error&#39;</span><span class="p">,</span>
                                                    <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s1"> decomposition, error = </span><span class="si">{</span><span class="n">error</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
     <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -1880,11 +1886,10 @@ SAS BEB
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-rank 3 decomposition, error = 0.028714890422600774
-rank 4 decomposition, error = 0.027514983143195594
-rank 5 decomposition, error = 0.024003197497215942
-rank 6 decomposition, error = 0.021611932580874085
-rank 7 decomposition, error = 0.021317566467761735
+rank 3 decomposition, error = 0.028183862298926637
+rank 4 decomposition, error = 0.027123340703610888
+rank 5 decomposition, error = 0.022783999422965683
+rank 6 decomposition, error = 0.020800952577710273
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1901,9 +1906,10 @@ rank 7 decomposition, error = 0.021317566467761735
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-rank 8 decomposition, error = 0.02104625238372573
-rank 9 decomposition, error = 0.021051855088330306
-rank 10 decomposition, error = 0.021062919220353412
+rank 7 decomposition, error = 0.02060520352800661
+rank 8 decomposition, error = 0.020458039920092954
+rank 9 decomposition, error = 0.020464519166810306
+rank 10 decomposition, error = 0.02048486737156384
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -2158,8 +2164,6 @@ rank 10 decomposition, error = 0.021062919220353412
 
 <span class="n">embedding</span> <span class="o">=</span> <span class="n">umap</span><span class="o">.</span><span class="n">UMAP</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                       <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-<span class="c1">#                       min_dist=0,</span>
-<span class="c1">#                       n_neighbors=10,</span>
                       <span class="n">init</span><span class="o">=</span><span class="n">embedding_init</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">Z_stack</span><span class="p">),</span>
                       <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">embedding</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Z_stack</span><span class="p">)</span>
@@ -2201,7 +2205,7 @@ rank 10 decomposition, error = 0.021062919220353412
 
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">gca</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">70</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">view_init</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">110</span><span class="p">)</span>
     <span class="c1"># plt.subplot(311)</span>
     <span class="k">for</span> <span class="n">super_pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">pop</span> <span class="ow">in</span> <span class="n">pops</span><span class="p">[</span><span class="n">super_pop</span><span class="p">]:</span>
@@ -2234,6 +2238,15 @@ rank 10 decomposition, error = 0.021062919220353412
 </div>
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_1KG_64_1.svg" src="../_images/notebooks_1KG_64_1.svg" /></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
