@@ -2,7 +2,6 @@
 #
 import os
 import sys
-from mushi import __version__
 sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
@@ -11,8 +10,11 @@ project = 'mushi'
 copyright = '2020, William DeWitt, Kameron Decker Harris, and Kelley Harris'
 author = 'William DeWitt, Kameron Decker Harris, and Kelley Harris'
 
-version = __version__
-release = version
+# No version in docs, doesn't play nice with versioneer
+# The short X.Y version
+version = ''
+# The full version, including alpha/beta/rc tags
+release = ''
 
 # -- General configuration ---------------------------------------------------
 

@@ -1,4 +1,6 @@
-__version__ = '0.1-dev'
+from .ksfs import kSFS  # noqa
+from .histories import eta, mu  # noqa
 
-from .ksfs import kSFS
-from .histories import eta, mu
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions

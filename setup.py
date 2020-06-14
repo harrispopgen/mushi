@@ -1,5 +1,5 @@
 import setuptools
-from mushi import __version__
+import versioneer
 
 
 with open('README.md', 'r') as fh:
@@ -7,10 +7,11 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='mushi',
-    version=__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author='William DeWitt',
     author_email='wsdewitt@gmail.com',
-    description='[mu]tation [s]pectrum [h]istory [i]nference',
+    description='🍄 [mu]tation [s]pectrum [h]istory [i]nference 🍄',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/harrispopgen/mushi',
