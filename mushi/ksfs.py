@@ -146,7 +146,7 @@ class kSFS():
         self.X = poisson.rvs(L @ mu.Z)
         self.mutation_types = mu.mutation_types
 
-    def infer_history(self,
+    def infer_history(self,  # noqa: C901
                       change_points: np.array,
                       mu0: np.float64,
                       eta: hst.eta = None,

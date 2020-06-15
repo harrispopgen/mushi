@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from dataclasses import dataclass
-from typing import List, Iterable
+from typing import List
 
 import numpy as np
 import matplotlib as mpl
@@ -32,7 +32,7 @@ class History():
                              f' implies {len(self.change_points) + 1} epochs,'
                              f' but len(vals) = {len(self.vals)}')
         if np.any(self.vals < 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError(f'elements of vals must be finite and nonnegative')
+            raise ValueError('elements of vals must be finite and nonnegative')
         self.m = len(self.vals)
 
     def arrays(self):
@@ -220,4 +220,5 @@ class mu(History):
         g = sns.clustermap(df, row_cluster=False,
                            cbar_kws={'label': label},
                            **kwargs)
-        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(), fontsize = 9, family='monospace')
+        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(),
+                                     fontsize=9, family='monospace')

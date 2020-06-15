@@ -6,7 +6,7 @@ import jax.numpy as np
 from typing import Callable
 
 
-def acc_prox_grad_method(x: np.ndarray,
+def acc_prox_grad_method(x: np.ndarray,  # noqa: C901
                          g: Callable[[np.ndarray], np.float64],
                          grad_g: Callable[[np.ndarray], np.float64],
                          h: Callable[[np.ndarray], np.float64],
@@ -88,7 +88,7 @@ def acc_prox_grad_method(x: np.ndarray,
             print('warning: line search failed', flush=True)
             s = s0
         if not np.all(np.isfinite(x)):
-            print(f'warning: x contains invalid values', flush=True)
+            print('warning: x contains invalid values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h(x)
@@ -112,7 +112,7 @@ def acc_prox_grad_method(x: np.ndarray,
     return x
 
 
-def three_op_prox_grad_method(x: np.ndarray,
+def three_op_prox_grad_method(x: np.ndarray,  # noqa: C901
                               g: Callable[[np.ndarray], np.float64],
                               grad_g: Callable[[np.ndarray], np.float64],
                               h1: Callable[[np.ndarray], np.float64],
@@ -208,7 +208,7 @@ def three_op_prox_grad_method(x: np.ndarray,
 
         # TODO: convergence based on dual certificate
         if not np.all(np.isfinite(x)):
-            print(f'warning: x contains invalid values', flush=True)
+            print('warning: x contains invalid values', flush=True)
         # terminate if objective function is constant within tolerance
         f_old = f
         f = g(x) + h1(x) + h2(x)
