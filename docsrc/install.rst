@@ -3,25 +3,20 @@ Installation
 
 Python 3.7 is required (higher versions not supported by ``prox-tv`` dependency).
 
+Pip
+===
+
+.. code-block:: bash
+
+  pip install mushi
+
+
 Conda
 =====
 
 .. todo::
   setup Conda install
 
-Pip
-===
-
-.. code-block:: bash
-
-  pip install git+https://github.com/harrispopgen/mushi
-
-
-.. note::
-  currently using pip to install dev version from github
-
-.. todo::
-  cut version and create PyPy wheels
 
 Additional dependencies
 =======================
