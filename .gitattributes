@@ -1,1 +1,3 @@
 mushi/_version.py export-subst
+
+docsrc/* linguist-documentation
