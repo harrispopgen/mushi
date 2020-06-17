@@ -1,3 +1,9 @@
+Open source code repository
+===========================
+
+All code is freely available at `<https://github.com/harrispopgen/mushi>`_
+
+
 Update documentation
 ====================
 
