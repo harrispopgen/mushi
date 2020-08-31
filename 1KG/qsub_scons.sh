@@ -1,32 +1,36 @@
 #!usr/bin/bash
 
-# cd /net/harris/vol1/project/mushi/pipeline_1KG
-# source activate mushi
+source activate 1KG
 
 # linux
-# n_jobs=`nproc --all`
+n_jobs=`nproc --all`
 # mac
-n_jobs=`sysctl -n hw.physicalcpu`
+# n_jobs=`sysctl -n hw.physicalcpu`
 
-bcfs="../../data/1KG/phase3_1000genomes/bcfs"
-ancs="../../data/1KG/human_ancestor_GRCh37_e59"
-samples="../../data/1KG/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
-# mask="../../data/1KG/phase3_1000genomes/20140520.pilot_mask.autosomes.bed"
-mask="../../data/1KG/phase3_1000genomes/20140520.strict_mask.autosomes.bed"
+home="/net/harris/vol1"
+
+cd $home/project/mushi/1KG
+
+vcfs="$home/nygc-transfered"
+reference="$home/data/hg38"
+outgroup="$home/data/panTro6/panTro6.fa"
+chains="$home/data/alignment_chains/hg38ToPanTro6.over.chain.gz"
+mask="$home/data/phase3_1000genomes_supporting/accessible_genome_mask_hg38/pilot_strict_combined.allChr.mask.bed"
+samples="$home/data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
 
 # restrict to pops
-# pops="--pops=GBR,FIN"
+pops="--pops=GBR,FIN"
 
 # restrict to one chromosome
-# chrom="--chrom=22"
+chrom="--chrom=chr22"
 
 # kmer
 k="3"
 
 outdir="scons_output"
 
-# no_exec="--no-exec"
+no_exec="--no-exec"
 
-cmd="scons --mask=${mask} ${pops} ${chrom} --bcfs=${bcfs} --ancs=${ancs} --kmer=${k} --jobs=${n_jobs} --outdir=${outdir} ${debug} ${no_exec} --samples=${samples}"
+cmd="scons --mask=${mask} ${pops} ${chrom} --vcfs=${vcfs} --reference=${reference} --outgroup=${outgroup} --chains=${chains} --kmer=${k} --jobs=${n_jobs} --outdir=${outdir} ${no_exec} --samples=${samples}"
 echo $cmd
 $cmd
