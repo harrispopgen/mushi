@@ -169,7 +169,9 @@ class kSFS():
                       tol: np.float64 = 0,
                       loss: str = 'prf',
                       mask: np.array = None,
-                      verbose: bool = False) -> None:
+                      verbose: bool = False,
+                      folded: bool = False ## added by AR
+                      ) -> None:
         r"""Perform sequential inference to fit :math:`\eta(t)` and
         :math:`\mu(t)`
 
@@ -202,7 +204,12 @@ class kSFS():
             max_line_iter: maximum number of line search steps
             gamma: step size shrinkage rate for line search
             verbose: print verbose messages if ``True``
+            folded: if False, run on unfolded spectrum. If True, can only be used
+                    with infer_mu=False, and infers eta on folded SFS.
         """
+        ## added by AR
+        if folded is True and infer_mu is not False:
+            raise ValueError('can only infer with folded spectrum with infer_mu = False')
 
         # pithify reg paramter names
         α_tv = alpha_tv
@@ -222,6 +229,17 @@ class kSFS():
 
         # ininitialize with MLE constant η and μ
         x = self.X.sum(1, keepdims=True)
+        ## added by AR: if folded, fold the data spectrum and update mask
+        if folded:
+            sample_size = len(x[:, 0]) + 1
+            x += x[::-1]   # fold the data spectrum
+            if sample_size % 2 == 0:
+                x[sample_size // 2 - 1] /= 2
+            if mask is None:
+                mask = onp.array([True for _ in range(sample_size - 1)])
+            mask = onp.logical_and(mask, mask[::-1])  # fold the mask
+            mask[sample_size // 2:] = False  # mask entries with AF > 0.5
+
         μ_total = hst.mu(change_points,
                          mu0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
@@ -287,6 +305,12 @@ class kSFS():
             def g(logy):
                 """differentiable piece of objective in η problem"""
                 L = self.C @ utils.M(self.n, t, np.exp(logy))
+                ## added by AR: if folded, we fold the model matrix
+                if folded:
+                    if sample_size % 2 == 1:
+                        L += L[::-1][sample_size // 2 - 1]
+                    else:
+                        L += L[::-1][sample_size // 2 - 2]
                 if mask is not None:
                     loss_term = loss(z, x[mask, :], L[mask, :])
                 else:
@@ -468,16 +492,24 @@ class kSFS():
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
                    line_kwargs: Dict = dict(),
-                   fill_kwargs: Dict = dict()) -> None:
+                   fill_kwargs: Dict = dict(),
+                   folded: bool = False) -> None:
         r"""Plot the SFS using matplotlib
 
         Args:
             kwargs: keyword arguments for scatter plot
             line_kwargs: keyword arguments for expectation line
             fill_kwargs: keyword arguments for marginal fill
+            folded: if True, plot the folded SFS and fit
         """
         x = self.X.sum(1, keepdims=True)
-        plt.plot(range(1, len(x) + 1), x, **kwargs)
+        if folded:
+            x += x[::-1]   # fold the data spectrum
+            if self.n % 2 == 0:
+                x[self.n // 2 - 1] /= 2
+            plt.plot(range(1, self.n // 2 + 1), x[:self.n // 2], **kwargs)
+        else:
+            plt.plot(range(1, len(x) + 1), x, **kwargs)
         if self.η is not None:
             if 'label' in kwargs:
                 del kwargs['label']
@@ -486,11 +518,24 @@ class kSFS():
             else:
                 z = np.ones_like(self.η.y)
             ξ = self.L.dot(z)
-            plt.plot(range(1, self.n), ξ, **line_kwargs)
+            if folded:
+                ξ = onp.array(ξ)
+                ξ += ξ[::-1]
+                if self.n % 2 == 0:
+                    ξ[self.n // 2 - 1] /= 2
+                plt.plot(range(1, self.n // 2 + 1), ξ[:self.n // 2], **line_kwargs)
+            else:
+                plt.plot(range(1, self.n), ξ, **line_kwargs)
             ξ_lower = poisson.ppf(.025, ξ)
             ξ_upper = poisson.ppf(.975, ξ)
-            plt.fill_between(range(1, self.n),
-                             ξ_lower, ξ_upper, **fill_kwargs)
+            if folded:
+                plt.fill_between(range(1, self.n // 2 + 1),
+                                 ξ_lower[:self.n // 2],
+                                 ξ_upper[:self.n // 2],
+                                 **fill_kwargs)
+            else:
+                plt.fill_between(range(1, self.n),
+                                 ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
         plt.tight_layout()
