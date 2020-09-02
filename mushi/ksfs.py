@@ -207,7 +207,6 @@ class kSFS():
             folded: if False, run on unfolded spectrum. If True, can only be used
                     with infer_mu=False, and infers eta on folded SFS.
         """
-        ## added by AR
         if folded is True and infer_mu is not False:
             raise ValueError('can only infer with folded spectrum with infer_mu = False')
 
@@ -229,7 +228,8 @@ class kSFS():
 
         # ininitialize with MLE constant η and μ
         x = self.X.sum(1, keepdims=True)
-        ## added by AR: if folded, fold the data spectrum and update mask
+
+        # fold the spectrum and mask, if inference is on folded SFS
         if folded:
             sample_size = len(x[:, 0]) + 1
             x += x[::-1]   # fold the data spectrum
@@ -305,7 +305,7 @@ class kSFS():
             def g(logy):
                 """differentiable piece of objective in η problem"""
                 L = self.C @ utils.M(self.n, t, np.exp(logy))
-                ## added by AR: if folded, we fold the model matrix
+                # if folded, we fold the model matrix
                 if folded:
                     if sample_size % 2 == 1:
                         L += L[::-1][sample_size // 2 - 1]
