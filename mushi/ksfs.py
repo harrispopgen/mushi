@@ -170,7 +170,7 @@ class kSFS():
                       loss: str = 'prf',
                       mask: np.array = None,
                       verbose: bool = False,
-                      folded: bool = False ## added by AR
+                      folded: bool = False
                       ) -> None:
         r"""Perform sequential inference to fit :math:`\eta(t)` and
         :math:`\mu(t)`
@@ -204,11 +204,12 @@ class kSFS():
             max_line_iter: maximum number of line search steps
             gamma: step size shrinkage rate for line search
             verbose: print verbose messages if ``True``
-            folded: if False, run on unfolded spectrum. If True, can only be used
-                    with infer_mu=False, and infers eta on folded SFS.
+            folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
+                    ``True``, can only be used with ``infer_mu=False``, and infer
+                    :math:`\eta(t)` using folded SFS.
         """
         if folded is True and infer_mu is not False:
-            raise ValueError('can only infer with folded spectrum with infer_mu = False')
+            raise ValueError('infer_mu=False is required for folded=True')
 
         # pithify reg paramter names
         α_tv = alpha_tv
@@ -231,14 +232,13 @@ class kSFS():
 
         # fold the spectrum and mask, if inference is on folded SFS
         if folded:
-            sample_size = len(x[:, 0]) + 1
             x += x[::-1]   # fold the data spectrum
-            if sample_size % 2 == 0:
-                x[sample_size // 2 - 1] /= 2
+            if self.n % 2 == 0:
+                x[self.n // 2 - 1] /= 2
             if mask is None:
-                mask = onp.array([True for _ in range(sample_size - 1)])
+                mask = onp.array([True for _ in range(self.n - 1)])
             mask = onp.logical_and(mask, mask[::-1])  # fold the mask
-            mask[sample_size // 2:] = False  # mask entries with AF > 0.5
+            mask[self.n // 2:] = False  # mask entries with AF > 0.5
 
         μ_total = hst.mu(change_points,
                          mu0 * np.ones((len(change_points) + 1, 1)))
@@ -307,10 +307,10 @@ class kSFS():
                 L = self.C @ utils.M(self.n, t, np.exp(logy))
                 # if folded, we fold the model matrix
                 if folded:
-                    if sample_size % 2 == 1:
-                        L += L[::-1][sample_size // 2 - 1]
+                    if self.n % 2 == 1:
+                        L += L[::-1][self.n // 2 - 1]
                     else:
-                        L += L[::-1][sample_size // 2 - 2]
+                        L += L[::-1][self.n // 2 - 2]
                 if mask is not None:
                     loss_term = loss(z, x[mask, :], L[mask, :])
                 else:
@@ -500,7 +500,7 @@ class kSFS():
             kwargs: keyword arguments for scatter plot
             line_kwargs: keyword arguments for expectation line
             fill_kwargs: keyword arguments for marginal fill
-            folded: if True, plot the folded SFS and fit
+            folded: if ``True``, plot the folded SFS and fit
         """
         x = self.X.sum(1, keepdims=True)
         if folded:
@@ -509,7 +509,7 @@ class kSFS():
                 x[self.n // 2 - 1] /= 2
             plt.plot(range(1, self.n // 2 + 1), x[:self.n // 2], **kwargs)
         else:
-            plt.plot(range(1, len(x) + 1), x, **kwargs)
+            plt.plot(range(1, self.n), x, **kwargs)
         if self.η is not None:
             if 'label' in kwargs:
                 del kwargs['label']
