@@ -5,7 +5,7 @@ outgroup_fasta = file("/net/harris/vol1/data/panTro6/panTro6.fa")
 chains = file("/net/harris/vol1/data/alignment_chains/hg38ToPanTro6.over.chain.gz")
 
 params.hg38_dir = "/net/harris/vol1/data/hg38/"
-vcf_dir = "/net/harris/vol1/nygc-transfered/"
+params.vcf_dir = "/net/harris/vol1/nygc-transfered/"
 
 chromosomes = 1..22
 
@@ -27,7 +27,7 @@ params.k = 3
 process mask_and_ancestor {
 
   executor 'sge'
-  memory '1 GB'
+  memory '5 GB'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
@@ -43,8 +43,8 @@ process mask_and_ancestor {
 
   """
   zcat -f ref.fa.gz > ref.fa
-  grep -P "^chr${chrom}*\\t.*strict\$" ${masks} | cut -f1-3 > mask.bed
-  mutyper ancestor --bed mask.bed snps.vcf.gz ref.fa ${outgroup_fasta} ${chains} ancestor.fa
+  grep -P "^chr${chrom}\\t.*strict\$" ${masks} | cut -f1-3 > mask.bed
+  bcftools view -T mask.bed -Ou -f PASS -U snps.vcf.gz | mutyper ancestor --bed mask.bed - ref.fa ${outgroup_fasta} ${chains} ancestor.fa
   """
 }
 
