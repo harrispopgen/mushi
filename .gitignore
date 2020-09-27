@@ -106,9 +106,9 @@ venv.bak/
 # scons
 .sconsign.dblite
 
-# tex builds
-manuscript/_build
-scons_output*
+# nextflow build
+1KG/work
+1KG/.nextflow*
 
 .DS_Store
 data

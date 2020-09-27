@@ -10,12 +10,9 @@ conda env create -f env.yml
 conda activate 1KG
 ```
 
-SCons Pipeline
+Nexflow Pipeline
 --
-To print usage:
+To run on an SGE cluster:
 ```bash
-scons -h
+nextflow run 1KG.nf
 ```
-(note "Local Options")
-
-Example SGE job script: [`qsub_scons.sh`](qsub_scons.sh)

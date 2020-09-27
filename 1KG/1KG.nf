@@ -1,28 +1,27 @@
 #!/usr/bin/env nextflow
 
-masks = file("/net/harris/vol1/data/phase3_1000genomes_supporting/accessible_genome_mask_hg38/pilot_strict_combined.allChr.mask.bed")
-outgroup_fasta = file("/net/harris/vol1/data/panTro6/panTro6.fa")
-chains = file("/net/harris/vol1/data/alignment_chains/hg38ToPanTro6.over.chain.gz")
-
 params.hg38_dir = "/net/harris/vol1/data/hg38/"
 params.vcf_dir = "/net/harris/vol1/nygc-transfered/"
+params.masks = "/net/harris/vol1/data/phase3_1000genomes_supporting/accessible_genome_mask_hg38/pilot_strict_combined.allChr.mask.bed"
+params.outgroup_fasta = "/net/harris/vol1/data/panTro6/panTro6.fa"
+params.chains = "/net/harris/vol1/data/alignment_chains/hg38ToPanTro6.over.chain.gz"
+params.samples = "/net/harris/vol1/data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
+params.k = 3
 
 chromosomes = 1..22
 
 ref_fastagz_channel = Channel
-    .from(chromosomes)
+    .of (chromosomes)
     .map { [it,
             file(params.hg38_dir + "chr${it}.fa.gz")]
           }
 
 Channel
-  .from(chromosomes)
+  .of (chromosomes)
   .map { [it,
           file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz")]
         }
-  .into{ vcf_channel_1; vcf_channel_2 }
-
-params.k = 3
+  .into { vcf_channel_1; vcf_channel_2 }
 
 process mask_and_ancestor {
 
@@ -32,10 +31,10 @@ process mask_and_ancestor {
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  file masks
+  'masks.bed' from file(params.masks)
   tuple chrom, 'ref.fa.gz', 'snps.vcf.gz' from ref_fastagz_channel.join(vcf_channel_1)
-  file outgroup_fasta
-  file chains
+  'outgroup.fa' from file(params.outgroup_fasta)
+  'chain.gz' from file(params.chains)
 
   output:
   tuple chrom, 'mask.bed' into mask_channel
@@ -43,8 +42,8 @@ process mask_and_ancestor {
 
   """
   zcat -f ref.fa.gz > ref.fa
-  grep -P "^chr${chrom}\\t.*strict\$" ${masks} | cut -f1-3 > mask.bed
-  bcftools view -T mask.bed -Ou -f PASS -U snps.vcf.gz | mutyper ancestor --bed mask.bed - ref.fa ${outgroup_fasta} ${chains} ancestor.fa
+  grep -P "^chr${chrom}\\t.*strict\$" masks.bed | cut -f1-3 > mask.bed
+  bcftools view -T mask.bed -Ou -f PASS -U snps.vcf.gz | mutyper ancestor --bed mask.bed - ref.fa outgroup.fa chain.gz ancestor.fa
   """
 }
 
@@ -60,7 +59,7 @@ process masked_size {
 
   input:
   tuple chrom, 'mask.bed', 'ancestor.fa' from mask_channel_1.join(ancestor_channel_1)
-  val k from params.k
+  k from params.k
 
   output:
   tuple chrom, 'masked_size.tsv' into masked_size_channel
@@ -79,40 +78,35 @@ process mutation_types {
 
   input:
   tuple chrom, 'mask.bed', 'snps.vcf.gz', 'ancestor.fa' from mask_channel_2.join(vcf_channel_2).join(ancestor_channel_2)
-  val k from params.k
+  k from params.k
 
   output:
   tuple chrom, 'mutation_types.bcf' into mutation_types_channel
 
   """
-  bcftools view -T mask.bed -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U snps.vcf.gz | mutyper variants ancestor.fa - --k ${k} | bcftools convert -Ob > mutation_types.bcf
+  bcftools view -T mask.bed -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U snps.vcf.gz | bcftools view -g ^miss -G -Ou | mutyper variants ancestor.fa - --k ${k} | bcftools convert -Ob > mutation_types.bcf
   """
 }
 
+populations_channel = Channel.fromList(["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT", "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI"])
 
+// ksfs for each chromosome X population
+process ksfs {
 
-  //
-  // # nested dict of superpopulation -> population -> sample list
-  // superpops = defaultdict(lambda: defaultdict(list))
-  // with open(samples) as f:
-  //     f.readline()
-  //     for line in f:
-  //         sample, pop, superpop = line.split('\t')[:3]
-  //         if pops is None or pop in pops:
-  //             superpops[superpop][pop].append(sample)
-  //
-  // # loop over populations and compute sample frequency data
-  // # for superpop in superpops:
-  // #     for pop in superpops[superpop]:
-  // #         # k-SFS
-  // #         tgt = os.path.join(outdir, f'{k}-SFS.{superpop}.{pop}.tsv')
-  // #         cmd = ('bcftools concat -n -Ou $SOURCES '
-  // #                f'| bcftools view -s {",".join(superpops[superpop][pop])} '
-  // #                '-c 1:minor -Ou '
-  // #                '| mutyper ksfs - > $TARGET')
-  // #         freqs = env.Command(tgt, bcf_mutation_types, cmd)
-  //
-  // # masked genome size for mutation rate estimation
-  // tgt = os.path.join(outdir, f'masked_size.tsv')
-  // cmd = 'python masked_size_aggregator.py $SOURCES > $TARGET'
-  // masked_size = env.Command(tgt, masked_sizes, cmd)
+  executor 'sge'
+  memory '5 GB'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+
+  input:
+  tuple 'mutation_types.bcf', population from mutation_types_channel.combine(populations_channel)
+  'integrated_call_samples.tsv' from file(params.samples)
+
+  output:
+  'ksfs.tsv'
+
+  """
+  awk '{if($2=="${population}"){print $1}}' integrated_call_samples.tsv > samples.txt
+  bcftools view -S samples.txt -c 1:minor -Ou | mutyper ksfs - > ksfs.tsv
+  """
+}
