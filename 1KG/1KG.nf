@@ -11,16 +11,12 @@ params.k = 3
 chromosomes = 1..22
 
 ref_fastagz_channel = Channel
-    .of (chromosomes)
-    .map { [it,
-            file(params.hg38_dir + "chr${it}.fa.gz")]
-          }
+  .of (chromosomes)
+  .map { [it, file(params.hg38_dir + "chr${it}.fa.gz")] }
 
 Channel
   .of (chromosomes)
-  .map { [it,
-          file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz")]
-        }
+  .map { [it, file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz")] }
   .into { vcf_channel_1; vcf_channel_2 }
 
 process mask_and_ancestor {
@@ -31,10 +27,10 @@ process mask_and_ancestor {
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  'masks.bed' from file(params.masks)
   tuple chrom, 'ref.fa.gz', 'snps.vcf.gz' from ref_fastagz_channel.join(vcf_channel_1)
-  'outgroup.fa' from file(params.outgroup_fasta)
-  'chain.gz' from file(params.chains)
+  file 'masks.bed' from file(params.masks)
+  file 'outgroup.fa' from file(params.outgroup_fasta)
+  file 'chain.gz' from file(params.chains)
 
   output:
   tuple chrom, 'mask.bed' into mask_channel
@@ -58,14 +54,44 @@ process masked_size {
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  tuple chrom, 'mask.bed', 'ancestor.fa' from mask_channel_1.join(ancestor_channel_1)
-  k from params.k
+  tuple chrom, 'mask.bed' from mask_channel_1
+  tuple chrom, 'ancestor.fa' from ancestor_channel_1
+  val k from params.k
 
   output:
-  tuple chrom, 'masked_size.tsv' into masked_size_channel
+  file 'masked_size.tsv' into masked_size_channel
 
   """
   mutyper targets ancestor.fa --k ${k} --bed mask.bed > masked_size.tsv
+  """
+}
+
+process masked_size_total {
+
+  executor 'sge'
+  memory '10 MB'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+
+  input:
+  stdin 'masked_size*.tsv' from masked_size_channel.collect()
+
+  output:
+  stdout into masked_size_total_channel
+
+  """
+  #! /usr/bin/env python
+
+  import sys
+  from collections import Counter
+
+  sizes = Counter()
+  for line in sys.stdin:
+      context, count = line.rstrip().split()
+      sizes[context] += int(count)
+
+  for context in sorted(sizes):
+      print(f'{context}\t{sizes[context]}')
   """
 }
 
@@ -77,20 +103,20 @@ process mutation_types {
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  tuple chrom, 'mask.bed', 'snps.vcf.gz', 'ancestor.fa' from mask_channel_2.join(vcf_channel_2).join(ancestor_channel_2)
-  k from params.k
+  tuple chrom, 'mask.bed', 'ancestor.fa', 'snps.vcf.gz' from mask_channel_2.join(ancestor_channel_2).join(vcf_channel_2)
+  val k from params.k
 
   output:
-  tuple chrom, 'mutation_types.bcf' into mutation_types_channel
+  file 'mutation_types.bcf' into mutation_types_channel
 
   """
-  bcftools view -T mask.bed -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U snps.vcf.gz | bcftools view -g ^miss -G -Ou | mutyper variants ancestor.fa - --k ${k} | bcftools convert -Ob > mutation_types.bcf
+  bcftools view -T mask.bed -m2 -M2 -v snps -c 1:minor -Ou -f PASS -U snps.vcf.gz | bcftools view -g ^miss -Ou | mutyper variants ancestor.fa - --k ${k} | bcftools convert -Ob > mutation_types.bcf
   """
 }
 
-populations_channel = Channel.fromList(["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT", "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI"])
+populations = ["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT", "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI"]
 
-// ksfs for each chromosome X population
+// ksfs for each population X chromosome
 process ksfs {
 
   executor 'sge'
@@ -99,14 +125,32 @@ process ksfs {
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  tuple 'mutation_types.bcf', population from mutation_types_channel.combine(populations_channel)
-  'integrated_call_samples.tsv' from file(params.samples)
+  tuple population, 'mutation_types.bcf' from Channel.fromList(populations).combine(mutation_types_channel)
+  file 'integrated_call_samples.tsv' from file(params.samples)
 
   output:
-  'ksfs.tsv'
+  tuple population, 'ksfs.tsv' into ksfs_channel
 
   """
-  awk '{if($2=="${population}"){print $1}}' integrated_call_samples.tsv > samples.txt
-  bcftools view -S samples.txt -c 1:minor -Ou | mutyper ksfs - > ksfs.tsv
+  awk '{if(\$2=="${population}"){print \$1}}' integrated_call_samples.tsv > samples.txt
+  bcftools view -S samples.txt -c 1:minor -Ou mutation_types.bcf | mutyper ksfs - > ksfs.tsv
   """
 }
+
+// // ksfs for each population
+// process ksfs_total {
+//
+//   executor 'sge'
+//   memory '5 GB'
+//   scratch true
+//   conda "${CONDA_PREFIX}/envs/1KG"
+//
+//   input:
+//   tuple population, 'ksfs*.tsv' from ksfs_channel.collate(chromosomes.size())
+//
+//   output:
+//   tuple population, 'ksfs.tsv' into ksfs_total_channel
+//
+//   """
+//   """
+// }

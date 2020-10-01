@@ -7,12 +7,11 @@ Set up environment
 --
 ```bash
 conda env create -f env.yml
-conda activate 1KG
 ```
 
 Nexflow Pipeline
 --
 To run on an SGE cluster:
 ```bash
-nextflow run 1KG.nf
+nextflow run 1KG.nf -with-report report.html -with-timeline timeline.html -with-dag dag.html
 ```
