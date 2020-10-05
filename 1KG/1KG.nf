@@ -23,7 +23,7 @@ Channel
 process mask_and_ancestor {
 
   executor 'sge'
-  memory '1 GB'
+  memory '10 GB'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
@@ -50,7 +50,7 @@ ancestor_channel.into{ ancestor_channel_1; ancestor_channel_2 }
 process masked_size {
 
   executor 'sge'
-  memory '1 GB'
+  memory '10 GB'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
@@ -98,7 +98,7 @@ populations = ["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "F
 process ksfs {
 
   executor 'sge'
-  memory '1 GB'
+  memory '10 GB'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
