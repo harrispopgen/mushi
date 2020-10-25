@@ -485,7 +485,7 @@ div.rendered_html tbody tr:hover {
 <h1>Inferring demography and mutation spectrum history for human populations<a class="headerlink" href="#Inferring-demography-and-mutation-spectrum-history-for-human-populations" title="Permalink to this headline">¶</a></h1>
 <p>Run mushi on 3-SFS computed from 1000 Genome Project data</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -518,7 +518,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -535,8 +535,8 @@ div.rendered_html tbody tr:hover {
 <h2>Load data<a class="headerlink" href="#Load-data" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="Parse-population-manifest">
 <h3>Parse population manifest<a class="headerlink" href="#Parse-population-manifest" title="Permalink to this headline">¶</a></h3>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -553,11 +553,24 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+OrderedDict([(&#39;AFR&#39;, [&#39;ACB&#39;, &#39;ASW&#39;, &#39;ESN&#39;, &#39;GWD&#39;, &#39;LWK&#39;, &#39;MSL&#39;, &#39;YRI&#39;]),
+             (&#39;AMR&#39;, [&#39;CLM&#39;, &#39;MXL&#39;, &#39;PEL&#39;, &#39;PUR&#39;]),
+             (&#39;EAS&#39;, [&#39;CDX&#39;, &#39;CHB&#39;, &#39;CHS&#39;, &#39;JPT&#39;, &#39;KHV&#39;]),
+             (&#39;EUR&#39;, [&#39;CEU&#39;, &#39;FIN&#39;, &#39;GBR&#39;, &#39;IBS&#39;, &#39;TSI&#39;]),
+             (&#39;SAS&#39;, [&#39;BEB&#39;, &#39;GIH&#39;, &#39;ITU&#39;, &#39;PJL&#39;, &#39;STU&#39;])])
+</pre></div></div>
+</div>
 </div>
 <div class="section" id="Load-1KG-3-SFSs">
 <h3>Load 1KG 3-SFSs<a class="headerlink" href="#Load-1KG-3-SFSs" title="Permalink to this headline">¶</a></h3>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -581,10 +594,25 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
+  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_6_1.svg" src="../_images/notebooks_1KG_6_1.svg" /></div>
+</div>
 <div class="section" id="Number-of-segregating-variants-in-each-population">
 <h4>Number of segregating variants in each population<a class="headerlink" href="#Number-of-segregating-variants-in-each-population" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -594,13 +622,19 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_8_0.svg" src="../_images/notebooks_1KG_8_0.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Triplet-target-sizes">
 <h3>Triplet target sizes<a class="headerlink" href="#Triplet-target-sizes" title="Permalink to this headline">¶</a></h3>
 <p>Load masked genome size (also previously computed with 1KG pipeline)</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -612,6 +646,12 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_10_0.svg" src="../_images/notebooks_1KG_10_0.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Define-a-few-parameters">
@@ -620,7 +660,7 @@ div.rendered_html tbody tr:hover {
 <h3>Frequency masking<a class="headerlink" href="#Frequency-masking" title="Permalink to this headline">¶</a></h3>
 <p>clip high frequencies due to ancestral state misidentification</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -641,7 +681,7 @@ div.rendered_html tbody tr:hover {
 <h3>Time discretization<a class="headerlink" href="#Time-discretization" title="Permalink to this headline">¶</a></h3>
 <p>time grid of epoch boundaries (measured in generations)</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -654,7 +694,7 @@ div.rendered_html tbody tr:hover {
 <h3>Total mutation rate<a class="headerlink" href="#Total-mutation-rate" title="Permalink to this headline">¶</a></h3>
 <p>Mutation rate per site per generation (Scally, 2016)</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -663,8 +703,8 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <p>Mutation rate per masked genome per generation</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -673,12 +713,21 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+25.421035375
+</pre></div></div>
+</div>
 </div>
 <div class="section" id="Generation-time">
 <h3>Generation time<a class="headerlink" href="#Generation-time" title="Permalink to this headline">¶</a></h3>
 <p>Generation time for time calibration (Fenner, 2005)</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -693,7 +742,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Regularization-parameters-and-convergence-criteria">
 <h3>Regularization parameters and convergence criteria<a class="headerlink" href="#Regularization-parameters-and-convergence-criteria" title="Permalink to this headline">¶</a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -709,8 +758,8 @@ div.rendered_html tbody tr:hover {
 <li><p>For the first population (YRI) we set <code class="docutils literal notranslate"><span class="pre">eta_ref</span> <span class="pre">=</span> <span class="pre">None</span></code> to use the default constant MLE as the reference history.</p></li>
 <li><p>For the other populations, we use the YRI history as the reference</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -736,12 +785,50 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR
+    YRI
+    MSL
+    LWK
+    GWD
+    ESN
+    ASW
+    ACB
+AMR
+    PUR
+    PEL
+    MXL
+    CLM
+EAS
+    KHV
+    JPT
+    CHS
+    CHB
+    CDX
+EUR
+    TSI
+    IBS
+    GBR
+    FIN
+    CEU
+SAS
+    STU
+    PJL
+    ITU
+    GIH
+    BEB
+</pre></div></div>
+</div>
 </div>
 <div class="section" id="Plot-histories">
 <h3>Plot histories<a class="headerlink" href="#Plot-histories" title="Permalink to this headline">¶</a></h3>
 <p>Plot results separately for each superpopulation</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -767,9 +854,15 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_26_0.svg" src="../_images/notebooks_1KG_26_0.svg" /></div>
+</div>
 <p>Plot all demographies on the same axes</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -783,12 +876,18 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_28_0.svg" src="../_images/notebooks_1KG_28_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="TMRCA">
 <h3>TMRCA<a class="headerlink" href="#TMRCA" title="Permalink to this headline">¶</a></h3>
 <p>As a diagnostic to make sure the time range we used is consistent with the histories we inferred, plot the CDF of the sample TMRCA for each population</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -806,6 +905,12 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_30_0.svg" src="../_images/notebooks_1KG_30_0.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Infer-mutation-spectrum-history-\boldsymbol\mu(t)">
@@ -817,7 +922,7 @@ div.rendered_html tbody tr:hover {
 <h4>Regularization paremeters<a class="headerlink" href="#Regularization-paremeters" title="Permalink to this headline">¶</a></h4>
 <p>total variation regularization to minimize the number of change points.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -833,8 +938,8 @@ div.rendered_html tbody tr:hover {
 <li><p>The demographies for each EUR population reported by Speidel et al. using the Relate method</p></li>
 <li><p>The inferred demographies from above</p></li>
 </ol>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -900,6 +1005,24 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CEU
+FIN
+GBR
+IBS
+TSI
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_35_1.svg" src="../_images/notebooks_1KG_35_1.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Mutation-spectrum-histories-for-all-populations">
@@ -908,7 +1031,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Regularization-parameters">
 <h4>Regularization parameters<a class="headerlink" href="#Regularization-parameters" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -920,8 +1043,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="id1">
 <h4>Loop over populations, inferring history for each<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -943,12 +1066,50 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR
+    YRI: rank = 6
+    MSL: rank = 7
+    LWK: rank = 7
+    GWD: rank = 7
+    ESN: rank = 7
+    ASW: rank = 6
+    ACB: rank = 7
+AMR
+    PUR: rank = 6
+    PEL: rank = 6
+    MXL: rank = 6
+    CLM: rank = 6
+EAS
+    KHV: rank = 6
+    JPT: rank = 6
+    CHS: rank = 6
+    CHB: rank = 6
+    CDX: rank = 6
+EUR
+    TSI: rank = 6
+    IBS: rank = 6
+    GBR: rank = 6
+    FIN: rank = 6
+    CEU: rank = 6
+SAS
+    STU: rank = 7
+    PJL: rank = 6
+    ITU: rank = 7
+    GIH: rank = 6
+    BEB: rank = 6
+</pre></div></div>
+</div>
 </div>
 <div class="section" id="id2">
 <h4>Plot histories<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
 <p>plot 3-SFS and inferred mush for each population (this produces many plots)</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -994,6 +1155,682 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR YRI
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_1.svg" src="../_images/notebooks_1KG_42_1.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_2.svg" src="../_images/notebooks_1KG_42_2.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_3.svg" src="../_images/notebooks_1KG_42_3.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR MSL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_5.svg" src="../_images/notebooks_1KG_42_5.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_6.svg" src="../_images/notebooks_1KG_42_6.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_7.svg" src="../_images/notebooks_1KG_42_7.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR LWK
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_9.svg" src="../_images/notebooks_1KG_42_9.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_10.svg" src="../_images/notebooks_1KG_42_10.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_11.svg" src="../_images/notebooks_1KG_42_11.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR GWD
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_13.svg" src="../_images/notebooks_1KG_42_13.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_14.svg" src="../_images/notebooks_1KG_42_14.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_15.svg" src="../_images/notebooks_1KG_42_15.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR ESN
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_17.svg" src="../_images/notebooks_1KG_42_17.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_18.svg" src="../_images/notebooks_1KG_42_18.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_19.svg" src="../_images/notebooks_1KG_42_19.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR ASW
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_21.svg" src="../_images/notebooks_1KG_42_21.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_22.svg" src="../_images/notebooks_1KG_42_22.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_23.svg" src="../_images/notebooks_1KG_42_23.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AFR ACB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_25.svg" src="../_images/notebooks_1KG_42_25.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_26.svg" src="../_images/notebooks_1KG_42_26.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_27.svg" src="../_images/notebooks_1KG_42_27.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AMR PUR
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_29.svg" src="../_images/notebooks_1KG_42_29.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_30.svg" src="../_images/notebooks_1KG_42_30.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_31.svg" src="../_images/notebooks_1KG_42_31.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AMR PEL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_33.svg" src="../_images/notebooks_1KG_42_33.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_34.svg" src="../_images/notebooks_1KG_42_34.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_35.svg" src="../_images/notebooks_1KG_42_35.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AMR MXL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_37.svg" src="../_images/notebooks_1KG_42_37.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_38.svg" src="../_images/notebooks_1KG_42_38.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_39.svg" src="../_images/notebooks_1KG_42_39.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+AMR CLM
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_41.svg" src="../_images/notebooks_1KG_42_41.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_42.svg" src="../_images/notebooks_1KG_42_42.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_43.svg" src="../_images/notebooks_1KG_42_43.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EAS KHV
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_45.svg" src="../_images/notebooks_1KG_42_45.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_46.svg" src="../_images/notebooks_1KG_42_46.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_47.svg" src="../_images/notebooks_1KG_42_47.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EAS JPT
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_49.svg" src="../_images/notebooks_1KG_42_49.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_50.svg" src="../_images/notebooks_1KG_42_50.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_51.svg" src="../_images/notebooks_1KG_42_51.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EAS CHS
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_53.svg" src="../_images/notebooks_1KG_42_53.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_54.svg" src="../_images/notebooks_1KG_42_54.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_55.svg" src="../_images/notebooks_1KG_42_55.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EAS CHB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_57.svg" src="../_images/notebooks_1KG_42_57.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_58.svg" src="../_images/notebooks_1KG_42_58.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_59.svg" src="../_images/notebooks_1KG_42_59.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EAS CDX
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_61.svg" src="../_images/notebooks_1KG_42_61.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_62.svg" src="../_images/notebooks_1KG_42_62.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_63.svg" src="../_images/notebooks_1KG_42_63.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EUR TSI
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_65.svg" src="../_images/notebooks_1KG_42_65.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_66.svg" src="../_images/notebooks_1KG_42_66.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_67.svg" src="../_images/notebooks_1KG_42_67.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EUR IBS
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_69.svg" src="../_images/notebooks_1KG_42_69.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_70.svg" src="../_images/notebooks_1KG_42_70.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_71.svg" src="../_images/notebooks_1KG_42_71.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EUR GBR
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_73.svg" src="../_images/notebooks_1KG_42_73.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_74.svg" src="../_images/notebooks_1KG_42_74.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_75.svg" src="../_images/notebooks_1KG_42_75.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EUR FIN
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_77.svg" src="../_images/notebooks_1KG_42_77.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_78.svg" src="../_images/notebooks_1KG_42_78.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_79.svg" src="../_images/notebooks_1KG_42_79.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+EUR CEU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_81.svg" src="../_images/notebooks_1KG_42_81.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_82.svg" src="../_images/notebooks_1KG_42_82.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_83.svg" src="../_images/notebooks_1KG_42_83.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SAS STU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_85.svg" src="../_images/notebooks_1KG_42_85.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_86.svg" src="../_images/notebooks_1KG_42_86.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_87.svg" src="../_images/notebooks_1KG_42_87.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SAS PJL
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_89.svg" src="../_images/notebooks_1KG_42_89.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_90.svg" src="../_images/notebooks_1KG_42_90.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_91.svg" src="../_images/notebooks_1KG_42_91.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SAS ITU
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_93.svg" src="../_images/notebooks_1KG_42_93.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_94.svg" src="../_images/notebooks_1KG_42_94.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_95.svg" src="../_images/notebooks_1KG_42_95.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SAS GIH
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_97.svg" src="../_images/notebooks_1KG_42_97.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_98.svg" src="../_images/notebooks_1KG_42_98.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_99.svg" src="../_images/notebooks_1KG_42_99.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+SAS BEB
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_101.svg" src="../_images/notebooks_1KG_42_101.svg" /></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_102.svg" src="../_images/notebooks_1KG_42_102.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_42_103.svg" src="../_images/notebooks_1KG_42_103.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Tensor-decomposition-and-mutation-signature-dynamics">
@@ -1002,7 +1839,7 @@ div.rendered_html tbody tr:hover {
 <h4>Non-negative CP decomposition<a class="headerlink" href="#Non-negative-CP-decomposition" title="Permalink to this headline">¶</a></h4>
 <p>Stack the MuSHs for each population, scaled to site-wise rates, to form a tensor of order 3</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1015,8 +1852,8 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <p>NNCP decomposition to extract factors for each dimension: sample, time, and mutation type. We try a range of ranks and assess reconstruction error at each.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1041,9 +1878,46 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+rank 3 decomposition, error = 0.028183862298926637
+rank 4 decomposition, error = 0.027123340703610888
+rank 5 decomposition, error = 0.022783999422965683
+rank 6 decomposition, error = 0.020800952577710273
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/tensorly/backend/core.py:722: RuntimeWarning: divide by zero encountered in true_divide
+  V = np.dot(matrix.T.conj(), U * np.where(np.abs(S) &lt;= np.finfo(S.dtype).eps, 0, 1/S)[None, :])
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+rank 7 decomposition, error = 0.02060520352800661
+rank 8 decomposition, error = 0.020458039920092954
+rank 9 decomposition, error = 0.020464519166810306
+rank 10 decomposition, error = 0.02048486737156384
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_46_3.svg" src="../_images/notebooks_1KG_46_3.svg" /></div>
+</div>
 <p>Choose rank</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1055,8 +1929,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Project-the-sample-dimension-factors-to-two-principal-components">
 <h4>Project the sample dimension factors to two principal components<a class="headerlink" href="#Project-the-sample-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1075,11 +1949,17 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_50_0.svg" src="../_images/notebooks_1KG_50_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="Project-the-time-dimension-factors-to-two-principal-components">
 <h4>Project the time dimension factors to two principal components<a class="headerlink" href="#Project-the-time-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1100,11 +1980,17 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_52_0.svg" src="../_images/notebooks_1KG_52_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="Project-the-mutation-type-dimension-factors-to-two-principal-components">
 <h4>Project the mutation type dimension factors to two principal components<a class="headerlink" href="#Project-the-mutation-type-dimension-factors-to-two-principal-components" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1123,11 +2009,17 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_54_0.svg" src="../_images/notebooks_1KG_54_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="Display-mutation-type-loadings-as-mutation-signatures">
 <h4>Display mutation type loadings as mutation signatures<a class="headerlink" href="#Display-mutation-type-loadings-as-mutation-signatures" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1155,6 +2047,12 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_56_0.svg" src="../_images/notebooks_1KG_56_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="Mutation-signature-dynamics-in-each-population">
 <h4>Mutation signature dynamics in each population<a class="headerlink" href="#Mutation-signature-dynamics-in-each-population" title="Permalink to this headline">¶</a></h4>
@@ -1162,8 +2060,8 @@ div.rendered_html tbody tr:hover {
 <li><p>rows correspond to mutation signatures</p></li>
 <li><p>columns correspond to super populations</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1192,9 +2090,15 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_58_0.svg" src="../_images/notebooks_1KG_58_0.svg" /></div>
+</div>
 <p>The same histories overlayed for all populations</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1216,6 +2120,12 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_60_0.svg" src="../_images/notebooks_1KG_60_0.svg" /></div>
+</div>
 </div>
 </div>
 <div class="section" id="Global-divergence-in-mutation-spectra">
@@ -1223,7 +2133,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="UMAP-embedding-of-mutation-signatures-through-time-for-all-populations">
 <h4>UMAP embedding of mutation signatures through time for all populations<a class="headerlink" href="#UMAP-embedding-of-mutation-signatures-through-time-for-all-populations" title="Permalink to this headline">¶</a></h4>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1264,8 +2174,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Plot-embedding">
 <h4>Plot embedding<a class="headerlink" href="#Plot-embedding" title="Permalink to this headline">¶</a></h4>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1313,6 +2223,18 @@ div.rendered_html tbody tr:hover {
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_64_0.svg" src="../_images/notebooks_1KG_64_0.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_1KG_64_1.svg" src="../_images/notebooks_1KG_64_1.svg" /></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:

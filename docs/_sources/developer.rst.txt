@@ -16,12 +16,12 @@ Go to the ``docsrc`` directory::
 Environment
 -----------
 
-Create and activate the ```mushidocs`` conda environment::
+Create and activate the ``mushidocs`` conda environment::
 
   conda env create -f env.yml
   conda activate mushidocs
 
-Install ```mushi`` itself from the local copy in the parent directory::
+Install ``mushi`` itself from the local copy in the parent directory::
 
   pip install -e ..
 
