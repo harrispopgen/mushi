@@ -130,7 +130,7 @@ process ksfs_total {
   tuple population, 'ksfs' from ksfs_channel.groupTuple(size: chromosomes.size())
 
   output:
-  file 'ksfs.tsv' into ksfs_total_channel
+  tuple population, 'ksfs.tsv' into ksfs_total_channel
 
   """
   #! /usr/bin/env python
@@ -140,5 +140,69 @@ process ksfs_total {
 
   sum(pd.read_csv(file, sep='\t', index_col=0)
       for file in glob.glob('ksfs*')).to_csv('ksfs.tsv', sep='\t')
+  """
+}
+
+process mushi {
+
+  executor 'sge'
+  memory '1 GB'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/${population}"
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_channel
+  file 'masked_size.tsv' from masked_size_total_channel
+
+  output:
+  file 'sfs.pdf' into sfs_plot
+
+  """
+  #! /usr/bin/env python
+
+  import mushi
+  import numpy as np
+  import pandas as pd
+  import matplotlib.pyplot as plt
+
+  ksfs = mushi.kSFS(file='ksf.tsv')
+
+  # sorts the columns of the ksfs
+  sorted_triplets = [f'{a5}{a}{a3}>{a5}{d}{a3}' for a in 'AC'
+                     for d in 'ACGT' if d != a
+                     for a5 in 'ACGT' for a3 in 'ACGT']
+  foo, bar = ksfs.mutation_types.reindex(sorted_triplets)
+  ksfs.mutation_types = foo
+  ksfs.X = ksfs.X[:, bar]
+
+  masked_genome_size = pd.read_csv('masked_size.tsv', sep='\t', header=None, index_col=0, names=('count',))
+
+  change_points = np.logspace(np.log10(1), np.log10(200000), 200)
+
+  u = 1.25e-8
+  mu0 = u * masked_genome_size['count'].sum()
+
+  t_gen = 29
+
+  ksfs.infer_history(change_points, mu0,
+                     infer_mu=False, loss='prf',
+                     alpha_tv=1e2, alpha_spline=3e3, alpha_ridge=1e-4,
+                     tol=1e-10, max_iter=1000)
+
+  fig = plt.figure(figsize=(6, 3))
+  plt.subplot(1, 2, 1)
+  ksfs.plot_total(kwargs=dict(ls='', marker='o', ms=5, mfc='none'),
+                  line_kwargs=dict(ls=':', marker='.', ms=3, lw=1),
+                  fill_kwargs=dict(alpha=0))
+  plt.xscale('log')
+  plt.yscale('log')
+  plt.subplot(1, 2, 2)
+  ksfs.eta.plot(t_gen=t_gen, lw=3)
+  plt.xlim([1e3, 1e6])
+  plt.tight_layout()
+  plt.savefig('sfs.pdf')
+
+
   """
 }
