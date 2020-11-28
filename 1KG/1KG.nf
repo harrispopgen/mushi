@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 
-params.vcf_dir = "/net/harris/vol1/nygc-transfered/"
-params.masks = "/net/harris/vol1/data/phase3_1000genomes_supporting/accessible_genome_mask_hg38/pilot_strict_combined.allChr.mask.bed"
-params.ancestor = "/net/harris/vol1/data/homo_sapiens_ancestor_GRCh38/"
-params.samples = "/net/harris/vol1/data/phase3_1000genomes/integrated_call_samples_v3.20130502.ALL.panel"
+params.vcf_dir = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_raw_GT_with_annot/"
+params.mask = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/StrictMask/20160622.allChr.mask.bed"
+params.ancestor = "ftp://ftp.ensembl.org/pub/release-100/fasta/ancestral_alleles/homo_sapiens_ancestor_GRCh38.tar.gz"
+params.samples = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel"
 params.outdir = "output"
 params.k = 3
 
@@ -11,16 +11,17 @@ chromosomes = 1..22
 
 vcf_channel = Channel
   .of (chromosomes)
-  .map { [it, file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz"), file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz.tbi")] }
+  .map { [it, file(params.vcf_dir + "*_chr${it}.recalibrated_variants.vcf.gz"), file(params.vcf_dir + "*_chr${it}.recalibrated_variants.vcf.gz.tbi")] }
 
 process mask {
 
   executor 'sge'
   memory '10 MB'
+  time '10m'
   scratch true
 
   input:
-  file 'masks.bed' from file(params.masks)
+  file 'mask.allchr.bed' from file(params.mask)
   each chromosome from chromosomes
 
 
@@ -28,59 +29,59 @@ process mask {
   tuple chromosome, 'mask.bed' into mask_channel
 
   """
-  grep -P "^chr${chromosome}\\t.*strict\$" masks.bed | cut -f1-3 > mask.bed
+  grep -P "^chr${chromosome}\\t" mask.allchr.bed | cut -f1-3 > mask.bed
   """
 }
 
-ancestor_channel = Channel
-  .of (chromosomes)
-  .map { [it, file(params.ancestor + "homo_sapiens_ancestor_${it}.fa")] }
-
-process ancestor_chr {
+process ancestor {
 
   executor 'sge'
   memory '10 MB'
+  time '10m'
   scratch true
 
   input:
-  tuple chromosome, 'ancestor.fa' from ancestor_channel
-
+  file 'homo_sapiens_ancestor_GRCh38.tar.gz' from file(params.ancestor)
+  each chromosome from chromosomes
 
   output:
-  tuple chromosome, 'ancestor.chr.fa' into ancestor_chr_channel
+  tuple chromosome, 'ancestor.fa' into ancestor_channel
 
   """
-  echo ">chr${chromosome}" > ancestor.chr.fa
-  tail -n +2 ancestor.fa >> ancestor.chr.fa
+  tar -zxvf ancestor.tar.gz homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${it}.fa
+  echo ">chr${chromosome}" > ancestor.fa
+  tail -n +2 homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${it}.fa >> ancestor.fa
   """
 }
 
 mask_channel.into{ mask_channel_1; mask_channel_2 }
-ancestor_chr_channel.into{ ancestor_chr_channel_1; ancestor_chr_channel_2 }
+ancestor_channel.into{ ancestor_channel_1; ancestor_channel_2 }
 
 process masked_size {
 
   executor 'sge'
-  memory '5 GB'
+  memory '100 MB'
+  time '10h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  tuple chrom, 'mask.bed', 'ancestor.fa' from mask_channel_1.join(ancestor_chr_channel_1)
+  tuple chrom, 'mask.bed', 'ancestor.fa' from mask_channel_1.join(ancestor_channel_1)
   val k from params.k
 
   output:
   file 'masked_size.tsv' into masked_size_channel
 
   """
-  mutyper targets ancestor.fa --k ${k} --bed mask.bed > masked_size.tsv
+  mutyper targets ancestor.fa --strict --k ${k} --bed mask.bed > masked_size.tsv
   """
 }
 
 process masked_size_total {
 
   executor 'sge'
-  memory '1 GB'
+  memory '100 MB'
+  time '10m'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir params.outdir
@@ -104,16 +105,17 @@ process masked_size_total {
 
 populations = ["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT", "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI"]
 
-// ksfs for each population X chromosome
+// ksfs for each population and chromosome
 process ksfs {
 
   executor 'sge'
-  memory '5 GB'
+  memory '200 MB'
+  time '1d'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
-  tuple chrom, 'mask.bed', 'ancestor.fa', 'snps.vcf.gz', 'snps.vcf.gz.tbi' from mask_channel_2.join(ancestor_chr_channel_2).join(vcf_channel)
+  tuple chrom, 'mask.bed', 'ancestor.fa', 'snps.vcf.gz', 'snps.vcf.gz.tbi' from mask_channel_2.join(ancestor_channel_2).join(vcf_channel)
   each population from populations
   file 'integrated_call_samples.tsv' from file(params.samples)
   val k from params.k
@@ -123,7 +125,7 @@ process ksfs {
 
   """
   awk '{if(\$2=="${population}"){print \$1}}' integrated_call_samples.tsv > samples.txt
-  bcftools view -R mask.bed -m2 -M2 -v snps -Ou -f PASS -g ^miss snps.vcf.gz | bcftools view -S samples.txt -c 1:minor -Ou | mutyper variants ancestor.fa - --k ${k} | mutyper ksfs - > ksfs.tsv
+  bcftools view -R mask.bed -m2 -M2 -v snps -Ou -f PASS -g ^miss snps.vcf.gz | bcftools view -S samples.txt -c 1:minor -Ou | mutyper variants ancestor.fa - --strict --k ${k} | mutyper ksfs - > ksfs.tsv
   """
 }
 
@@ -131,7 +133,8 @@ process ksfs {
 process ksfs_total {
 
   executor 'sge'
-  memory '1 GB'
+  memory '100 MB'
+  time '10m'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/${population}"
@@ -156,7 +159,8 @@ process ksfs_total {
 process mushi {
 
   executor 'sge'
-  memory '2 GB'
+  memory '500 MB'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/${population}"
