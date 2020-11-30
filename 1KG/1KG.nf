@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-params.vcf_dir = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_raw_GT_with_annot/"
+params.vcf_dir = "/net/harris/vol1/nygc-transfered/"
 params.mask = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/StrictMask/20160622.allChr.mask.bed"
 params.ancestor = "ftp://ftp.ensembl.org/pub/release-100/fasta/ancestral_alleles/homo_sapiens_ancestor_GRCh38.tar.gz"
 params.samples = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel"
@@ -11,7 +11,9 @@ chromosomes = 1..22
 
 vcf_channel = Channel
   .of (chromosomes)
-  .map { [it, file(params.vcf_dir + "*_chr${it}.recalibrated_variants.vcf.gz"), file(params.vcf_dir + "*_chr${it}.recalibrated_variants.vcf.gz.tbi")] }
+  .map { [it,
+          file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz"),
+          file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz.tbi")] }
 
 process mask {
 
@@ -21,9 +23,8 @@ process mask {
   scratch true
 
   input:
-  file 'mask.allchr.bed' from file(params.mask)
+  path 'mask.allchr.bed' from params.mask
   each chromosome from chromosomes
-
 
   output:
   tuple chromosome, 'mask.bed' into mask_channel
@@ -41,16 +42,16 @@ process ancestor {
   scratch true
 
   input:
-  file 'homo_sapiens_ancestor_GRCh38.tar.gz' from file(params.ancestor)
+  path 'homo_sapiens_ancestor_GRCh38.tar.gz' from params.ancestor
   each chromosome from chromosomes
 
   output:
   tuple chromosome, 'ancestor.fa' into ancestor_channel
 
   """
-  tar -zxvf ancestor.tar.gz homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${it}.fa
+  tar -zxvf homo_sapiens_ancestor_GRCh38.tar.gz homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${chromosome}.fa
   echo ">chr${chromosome}" > ancestor.fa
-  tail -n +2 homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${it}.fa >> ancestor.fa
+  tail -n +2 homo_sapiens_ancestor_GRCh38/homo_sapiens_ancestor_${chromosome}.fa >> ancestor.fa
   """
 }
 
@@ -103,31 +104,37 @@ process masked_size_total {
   """
 }
 
-populations = ["ACB", "ASW", "BEB", "CDX", "CEU", "CHB", "CHS", "CLM", "ESN", "FIN", "GBR", "GIH", "GWD", "IBS", "ITU", "JPT", "KHV", "LWK", "MSL", "MXL", "PEL", "PJL", "PUR", "STU", "TSI", "YRI"]
-
-// ksfs for each population and chromosome
+// mutation types for each chromosome vcf
 process ksfs {
 
   executor 'sge'
   memory '200 MB'
+  penv 'serial' // UWGS parallel environment
+  cpus 27 // 26 1KG populations
   time '1d'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
 
   input:
   tuple chrom, 'mask.bed', 'ancestor.fa', 'snps.vcf.gz', 'snps.vcf.gz.tbi' from mask_channel_2.join(ancestor_channel_2).join(vcf_channel)
-  each population from populations
-  file 'integrated_call_samples.tsv' from file(params.samples)
+  path 'integrated_call_samples.tsv' from params.samples
   val k from params.k
 
   output:
-  tuple population, 'ksfs.tsv' into ksfs_channel
+  file '*.ksfs.tsv' into ksfs_channel mode flatten
 
   """
-  awk '{if(\$2=="${population}"){print \$1}}' integrated_call_samples.tsv > samples.txt
-  bcftools view -R mask.bed -m2 -M2 -v snps -Ou -f PASS -g ^miss snps.vcf.gz | bcftools view -S samples.txt -c 1:minor -Ou | mutyper variants ancestor.fa - --strict --k ${k} | mutyper ksfs - > ksfs.tsv
+  tail -n +2 integrated_call_samples.tsv | cut -f1 > all_samples.txt
+  cmd="bcftools view -S all_samples.txt -c 1:minor -R mask.bed -m2 -M2 -v snps -f PASS -g ^miss -I -Ou snps.vcf.gz | mutyper variants ancestor.fa - --strict --k ${k} | tee "
+  for pop in `tail -n +2 integrated_call_samples.tsv | cut -f2 | sort | uniq`; do
+    awk '{if(\$2=="\${pop}"){print \$1}}' integrated_call_samples.tsv > \${pop}_samples.txt
+    cmd=\$cmd" >(bcftools view -S \${pop}_samples.txt -c 1:minor -G -Ou | mutyper ksfs - > \${pop}.${chrom}.ksfs.tsv) "
+  done
+  cmd=\$cmd" > /dev/null"
+  eval \$cmd
   """
 }
+
 
 // ksfs for each population
 process ksfs_total {
@@ -140,7 +147,7 @@ process ksfs_total {
   publishDir "$params.outdir/${population}"
 
   input:
-  tuple population, 'ksfs' from ksfs_channel.groupTuple(size: chromosomes.size())
+  tuple population, 'ksfs' from ksfs_channel.map{file -> tuple(file.simpleName, file)}.groupTuple(size: chromosomes.size())
 
   output:
   tuple population, 'ksfs.tsv' into ksfs_total_channel
