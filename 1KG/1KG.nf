@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-params.vcf_dir = "/net/harris/vol1/nygc-transfered/"
+params.vcf_dir = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20201028_3202_phased/"
 params.mask = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000_genomes_project/working/20160622_genome_mask_GRCh38/StrictMask/20160622.allChr.mask.bed"
 params.ancestor = "ftp://ftp.ensembl.org/pub/release-100/fasta/ancestral_alleles/homo_sapiens_ancestor_GRCh38.tar.gz"
 params.samples = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel"
@@ -12,8 +12,8 @@ chromosomes = 1..22
 vcf_channel = Channel
   .of (chromosomes)
   .map { [it,
-          file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz"),
-          file(params.vcf_dir + "CCDG_13607_B01_GRM_WGS_2019-02-19_chr${it}.recalibrated_variants.vcf.gz.tbi")] }
+          file(params.vcf_dir + "CCDG_14151_B01_GRM_WGS_2020-08-05_chr${it}.filtered.shapeit2-duohmm-phased.vcf.gz"),
+          file(params.vcf_dir + "CCDG_14151_B01_GRM_WGS_2020-08-05_chr${it}.filtered.shapeit2-duohmm-phased.vcf.gz.tbi")] }
 
 process mask {
 
@@ -85,7 +85,7 @@ process masked_size_total {
   time '10m'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
-  publishDir params.outdir
+  publishDir params.outdir, mode: 'copy'
 
   input:
   file 'masked_size' from masked_size_channel.collect()
@@ -105,10 +105,11 @@ process masked_size_total {
 }
 
 // mutation types for each chromosome vcf
+// this is overcomplicated with process substitution to avoid writing large files
 process ksfs {
 
   executor 'sge'
-  memory '200 MB'
+  memory '500 MB'
   penv 'serial' // UWGS parallel environment
   cpus 27 // 26 1KG populations
   time '1d'
@@ -125,9 +126,9 @@ process ksfs {
 
   """
   tail -n +2 integrated_call_samples.tsv | cut -f1 > all_samples.txt
-  cmd="bcftools view -S all_samples.txt -c 1:minor -R mask.bed -m2 -M2 -v snps -f PASS -g ^miss -I -Ou snps.vcf.gz | mutyper variants ancestor.fa - --strict --k ${k} | tee "
+  cmd="bcftools view -S all_samples.txt -c 1:minor -R mask.bed -m2 -M2 -v snps -f PASS -Ou snps.vcf.gz | bcftools view -g ^miss -Ou | mutyper variants ancestor.fa - --strict --k ${k} | tee "
   for pop in `tail -n +2 integrated_call_samples.tsv | cut -f2 | sort | uniq`; do
-    awk '{if(\$2=="\${pop}"){print \$1}}' integrated_call_samples.tsv > \${pop}_samples.txt
+    grep \${pop} integrated_call_samples.tsv | cut -f1 > \${pop}_samples.txt
     cmd=\$cmd" >(bcftools view -S \${pop}_samples.txt -c 1:minor -G -Ou | mutyper ksfs - > \${pop}.${chrom}.ksfs.tsv) "
   done
   cmd=\$cmd" > /dev/null"
@@ -144,7 +145,6 @@ process ksfs_total {
   time '10m'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
-  publishDir "$params.outdir/${population}"
 
   input:
   tuple population, 'ksfs' from ksfs_channel.map{file -> tuple(file.simpleName, file)}.groupTuple(size: chromosomes.size())
@@ -170,7 +170,7 @@ process mushi {
   time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
-  publishDir "$params.outdir/${population}"
+  publishDir "$params.outdir/${population}", mode: 'copy'
 
   input:
   tuple population, 'ksf.tsv' from ksfs_total_channel
@@ -206,10 +206,15 @@ process mushi {
 
   t_gen = 29
 
+  clip_low = 0
+  clip_high = 10
+  freq_mask = np.array([True if (clip_low <= i < ksfs.n - clip_high - 1) else False
+                        for i in range(ksfs.n - 1)])
+
   ksfs.infer_history(change_points, mu0,
-                     infer_mu=False, loss='prf',
+                     infer_mu=False, loss='prf', mask=freq_mask,
                      alpha_tv=1e2, alpha_spline=3e3, alpha_ridge=1e-4,
-                     tol=1e-10, max_iter=1000)
+                     tol=1e-12, max_iter=1000)
 
   fig = plt.figure(figsize=(6, 3))
   plt.subplot(1, 2, 1)
