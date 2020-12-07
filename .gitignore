@@ -109,6 +109,8 @@ venv.bak/
 # nextflow build
 1KG/work
 1KG/.nextflow*
+simulation/work
+simulation/.nextflow*
 
 .DS_Store
 data

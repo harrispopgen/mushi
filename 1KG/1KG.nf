@@ -163,18 +163,25 @@ process ksfs_total {
   """
 }
 
+alpha_tv = [0] + (1..2).by(0.2).collect { 10**it }
+alpha_spline = [0] + (1..2).by(1).collect { 10**it }
+alpha_ridge = 1e-4
+
 process mushi {
 
   executor 'sge'
   memory '500 MB'
-  time '1h'
+  time '10m'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
-  publishDir "$params.outdir/${population}", mode: 'copy'
+  publishDir "$params.outdir/${alpha_tv}_${alpha_spline}/${population}", mode: 'copy'
 
   input:
   tuple population, 'ksf.tsv' from ksfs_total_channel
   file 'masked_size.tsv' from masked_size_total_channel
+  each alpha_tv from alpha_tv
+  each alpha_spline from alpha_spline
+  each alpha_ridge from alpha_ridge
 
   output:
   file 'sfs.pdf' into sfs_plot
@@ -213,8 +220,8 @@ process mushi {
 
   ksfs.infer_history(change_points, mu0,
                      infer_mu=False, loss='prf', mask=freq_mask,
-                     alpha_tv=1e2, alpha_spline=3e3, alpha_ridge=1e-4,
-                     tol=1e-12, max_iter=1000)
+                     alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge},
+                     tol=1e-10, max_iter=1000)
 
   fig = plt.figure(figsize=(6, 3))
   plt.subplot(1, 2, 1)
