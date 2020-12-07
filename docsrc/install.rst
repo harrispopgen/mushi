@@ -16,11 +16,3 @@ Conda
 
 .. todo::
   setup Conda install
-
-
-Additional dependencies
-=======================
-
-For :math:`\LaTeX` rendering in ``mushi`` plotting functions, you may also need
-to install dependencies for the ``matplotlib usetex`` option
-`<https://matplotlib.org/tutorials/text/usetex.html>`_.
