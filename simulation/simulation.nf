@@ -260,8 +260,3 @@ process infer_eta {
   pickle.dump([alpha_params['alpha_tv'], alpha_params['alpha_spline'], ksfs, eta_true], open('dat.pkl', 'wb'))
   """
 }
-
-
-
-
-// regularization_mu = dict(hard=False, beta_rank=2e1, beta_tv=1e2, beta_spline=1e3, beta_ridge=1e-4)

@@ -167,7 +167,7 @@ alpha_tv = [0] + (1..2).by(0.2).collect { 10**it }
 alpha_spline = [0] + (1..2).by(1).collect { 10**it }
 alpha_ridge = 1e-4
 
-process mushi {
+process infer_eta {
 
   executor 'sge'
   memory '500 MB'
@@ -184,7 +184,7 @@ process mushi {
   each alpha_ridge from alpha_ridge
 
   output:
-  file 'sfs.pdf' into sfs_plot
+  tuple 'dat.pkl', 'sfs.pdf' into infer_eta
 
   """
   #! /usr/bin/env python
@@ -193,6 +193,7 @@ process mushi {
   import numpy as np
   import pandas as pd
   import matplotlib.pyplot as plt
+  import pickle
 
   ksfs = mushi.kSFS(file='ksf.tsv')
 
@@ -218,9 +219,10 @@ process mushi {
   freq_mask = np.array([True if (clip_low <= i < ksfs.n - clip_high - 1) else False
                         for i in range(ksfs.n - 1)])
 
+  alpha_params = dict(alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge})
   ksfs.infer_history(change_points, mu0,
                      infer_mu=False, loss='prf', mask=freq_mask,
-                     alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge},
+                     **alpha_params,
                      tol=1e-10, max_iter=1000)
 
   fig = plt.figure(figsize=(6, 3))
@@ -236,6 +238,6 @@ process mushi {
   plt.tight_layout()
   plt.savefig('sfs.pdf')
 
-
+  pickle.dump(['${population}', alpha_params['alpha_tv'], alpha_params['alpha_spline'], ksfs], open('dat.pkl', 'wb'))
   """
 }
