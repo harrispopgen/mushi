@@ -109,8 +109,15 @@ venv.bak/
 # nextflow build
 1KG/work
 1KG/.nextflow*
+1KG/report.html*
+1KG/dag.html*
+1KG/timeline.html*
 simulation/work
 simulation/.nextflow*
+simulation/report.html*
+simulation/dag.html*
+simulation/timeline.html*
+
 
 .DS_Store
 data
