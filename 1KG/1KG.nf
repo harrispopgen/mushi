@@ -163,8 +163,8 @@ process ksfs_total {
   """
 }
 
-alpha_tv = [0] + (1..2).by(0.2).collect { 10**it }
-alpha_spline = [0] + (1..2).by(1).collect { 10**it }
+alpha_tv = [0] + (0..5.5).by(0.5).collect { 10**it }
+alpha_spline = [0] + (1..6.5).by(0.5).collect { 10**it }
 alpha_ridge = 1e-4
 
 process infer_eta {
@@ -177,7 +177,7 @@ process infer_eta {
   publishDir "$params.outdir/${alpha_tv}_${alpha_spline}/${population}", mode: 'copy'
 
   input:
-  tuple population, 'ksf.tsv' from ksfs_total_channel
+  tuple population, 'ksf.tsv' from ksfs_total_channel.filter { it[0] == 'CEU' }
   file 'masked_size.tsv' from masked_size_total_channel
   each alpha_tv from alpha_tv
   each alpha_spline from alpha_spline
@@ -223,7 +223,7 @@ process infer_eta {
   ksfs.infer_history(change_points, mu0,
                      infer_mu=False, loss='prf', mask=freq_mask,
                      **alpha_params,
-                     tol=1e-10, max_iter=1000)
+                     tol=1e-16, max_iter=2000)
 
   fig = plt.figure(figsize=(6, 3))
   plt.subplot(1, 2, 1)

@@ -188,75 +188,70 @@ process ksfs {
   """
 }
 
+ksfs_ch.into { ksfs_ch_1; ksfs_ch_2 }
 
-alpha_tv = [0] + (0..4.5).by(0.25).collect{ 10**it }
-alpha_spline = [0] + (1..5.5).by(0.25).collect{ 10**it }
+alpha_tv = [0] + (0..4.5).by(0.5).collect{ 10**it }
+alpha_spline = [0] + (1..5.5).by(0.5).collect{ 10**it }
 alpha_ridge = 1e-4
 
-process infer_eta {
+beta_tv = 1e2
+beta_spline = 1e3
+beta_ridge = 1e-4
+
+process eta_sweep {
 
   executor 'sge'
   memory '1 GB'
   time '5m'
   scratch true
   conda "${CONDA_PREFIX}/envs/simulation"
-  publishDir "$params.outdir/infer_eta/${alpha_tv}_${alpha_spline}", mode: 'copy'
+  publishDir "$params.outdir/eta_sweep/${alpha_tv}_${alpha_spline}", mode: 'copy'
 
   input:
-  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' from ksfs_ch
+  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' from ksfs_ch_1
   each alpha_tv from alpha_tv
   each alpha_spline from alpha_spline
   val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
 
   output:
-  file 'dat.pkl' into infer_eta_ch
-  file 'eta_fit.pdf' into infer_eta_summary_ch
+  file 'dat.pkl' into eta_sweep_ch
 
-  """
-  #!/usr/bin/env python
+  script:
+  template 'infer.py'
+}
 
-  import pickle
-  import mushi
-  import matplotlib as mpl
-  from matplotlib import pyplot as plt
-  import numpy as np
+alpha_tv = 2e0
+alpha_spline = 1e3
+alpha_ridge = 1e-4
 
-  # Load ksfs and true histories
-  ksfs = pickle.load(open('ksfs.pkl', 'rb'))
-  eta_true = pickle.load(open('eta.pkl', 'rb'))
-  mu_true = pickle.load(open('mu.pkl', 'rb'))
+beta_tv = [0] + (0..4.5).by(0.5).collect{ 10**it }
+beta_spline = [0] + (1..5.5).by(0.5).collect{ 10**it }
+beta_ridge = 1e-4
 
-  # Estimate constant total mutation rate using most recent time point (introducing a misspecification)
+process mu_sweep {
 
-  mu0 = mu_true.Z[0, :].sum()
-  print(mu0, file=open('mu0.txt', 'w'))
+  executor 'sge'
+  memory '1 GB'
+  time '5m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/simulation"
+  publishDir "$params.outdir/mu_sweep/${beta_tv}_${beta_spline}", mode: 'copy'
 
-  alpha_params = dict(alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge})
-  ksfs.infer_history(eta_true.change_points, mu0, **alpha_params,
-                     tol=1e-16, max_iter=2000, infer_mu=False)
+  input:
+  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' from ksfs_ch_2
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  each beta_tv from beta_tv
+  each beta_spline from beta_spline
+  val beta_ridge
 
+  output:
+  file 'dat.pkl' into mu_sweep_ch
 
-  # Plot results
-  mpl.rc('text', usetex=True)
-  mpl.rcParams['text.latex.preamble']=r"\\usepackage{amsmath}"
-
-  plt.figure(figsize=(6, 3))
-  plt.subplot(121)
-  ksfs.plot_total(kwargs=dict(ls='', alpha=0.75, marker='o', ms=5, mfc='none', c='k', label=r'simulated SFS, \$\\mathbf x\$'),
-                  line_kwargs=dict(c='r', ls=':', marker='.', ms=3, alpha=0.75, lw=1, label=r'reconstructed SFS, \$\\boldsymbol{\\xi}\$'),
-                  fill_kwargs=dict(alpha=0))
-  plt.xscale('log')
-  plt.yscale('log')
-  plt.legend(fontsize=8)
-
-  plt.subplot(122)
-  eta_true.plot(c='k', alpha=1, lw=3, label='true')
-  ksfs.eta.plot(c='r', alpha=0.75, lw=2, label='inferred')
-  plt.legend(fontsize=8, loc='upper right')
-  plt.xlim([1e1, 5e4])
-  plt.tight_layout()
-  plt.savefig('eta_fit.pdf')
-
-  pickle.dump([alpha_params['alpha_tv'], alpha_params['alpha_spline'], ksfs, eta_true], open('dat.pkl', 'wb'))
-  """
+  script:
+  template 'infer.py'
 }
