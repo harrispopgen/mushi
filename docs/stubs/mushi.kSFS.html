@@ -114,7 +114,8 @@
 </ul>
 <p class="caption"><span class="caption-text">Developer Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../developer.html">Update documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html">Open source code repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#update-documentation">Update documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer.html#test-notebook">Test notebook</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../developer.html#todo-list">Todo list</a></li>
 </ul>
@@ -219,7 +220,7 @@
 <dd><p><span class="math notranslate nohighlight">\(k\)</span>-SFS matrix (or 1D SFS vector)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.18)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -263,7 +264,7 @@
 <dd><p>number of sampled haplotypes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -279,9 +280,9 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ksfs_file</strong> – path to <span class="math notranslate nohighlight">\(k\)</span>-SFS file, as ouput by <code class="docutils literal notranslate"><span class="pre">mutyper</span> <span class="pre">ksfs</span></code></p></li>
-<li><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix</p></li>
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of sampled haplotypes</p></li>
-<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.8)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of names of X columns
+<li><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of sampled haplotypes</p></li>
+<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of names of X columns
 (defaults to integer range)</p></li>
 </ul>
 </dd>
@@ -320,7 +321,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.plot" title="mushi.kSFS.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([types, clr, kwargs, line_kwargs])</p></td>
 <td><p>Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.plot_total" title="mushi.kSFS.plot_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_total</span></code></a>([kwargs, line_kwargs, fill_kwargs])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.plot_total" title="mushi.kSFS.plot_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_total</span></code></a>([kwargs, line_kwargs, …])</p></td>
 <td><p>Plot the SFS using matplotlib</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.simulate" title="mushi.kSFS.simulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate</span></code></a>(eta, mu[, seed])</p></td>
