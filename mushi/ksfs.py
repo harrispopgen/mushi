@@ -234,7 +234,7 @@ class kSFS():
         if folded:
             x += x[::-1]   # fold the data spectrum
             if self.n % 2 == 0:
-                x[self.n // 2 - 1] /= 2
+                x[self.n // 2 - 1] //= 2
             if mask is None:
                 mask = onp.array([True for _ in range(self.n - 1)])
             mask = onp.logical_and(mask, mask[::-1])  # fold the mask
