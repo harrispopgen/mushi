@@ -7,6 +7,15 @@ import numpy as np
 
 ksfs = mushi.kSFS(file='ksf.tsv')
 
+# reference eta for ancestral fusion
+if ${ref_pop}:
+    ref_pop = pickle.load(open('dat.ref.pkl', 'rb'))[2]
+    eta_ref = ref_pop.eta
+    mu_ref = ref_pop.mu
+else:
+    eta_ref = None
+    mu_ref = None
+
 # sorts the columns of the ksfs
 sorted_triplets = [f'{a5}{a}{a3}>{a5}{d}{a3}' for a in 'AC'
                    for d in 'ACGT' if d != a
@@ -28,19 +37,13 @@ freq_mask = np.array([True if (clip_low <= i < ksfs.n - clip_high - 1) else Fals
                       for i in range(ksfs.n - 1)])
 
 convergence_params = dict(tol=1e-16, max_iter=2000)
-
 alpha_params = dict(alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge})
-ksfs.infer_history(change_points, mu0,
-                   infer_mu=False, folded=True,
-                   loss='prf',
-                   **alpha_params,
-                   **convergence_params)
-
-beta_params = dict(beta_tv=${beta_tv}, beta_spline=${beta_spline}, beta_ridge=${beta_ridge})
-ksfs.infer_history(change_points, mu0,
-                   loss='prf', mask=freq_mask,
-                   infer_eta=False,
-                   **beta_params,
-                   **convergence_params)
+beta_params = dict(beta_tv=${beta_tv}, beta_spline=${beta_spline}, beta_ridge=${beta_ridge}, beta_rank=${beta_rank})
+ksfs.infer_history(change_points, mu0, loss='prf', mask=(None if ${folded} else freq_mask),
+                   eta_ref=eta_ref, infer_mu=False, folded=${folded},
+                   **alpha_params, **convergence_params)
+ksfs.infer_history(change_points, mu0, loss='prf', mask=freq_mask,
+                   mu_ref=mu_ref, infer_eta=False,
+                   **beta_params, **convergence_params)
 
 pickle.dump([alpha_params, beta_params, ksfs, '${population}'], open('dat.pkl', 'wb'))

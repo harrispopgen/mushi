@@ -185,119 +185,159 @@ process ksfs_total {
   """
 }
 
-ksfs_total_ch.into { ksfs_total_ch_1; ksfs_total_ch_2; ksfs_total_ch_3; ksfs_total_ch_4 }
+ksfs_total_ch.into { ksfs_total_ch_1; ksfs_total_ch_2; ksfs_total_ch_3; ksfs_total_ch_4; ksfs_total_ch_5; ksfs_total_ch_6; ksfs_total_ch_7 }
 
-// alpha_tv = [0] + (0..4.5).by(0.5).collect { 10**it }
-// alpha_spline = [0] + (1..5.5).by(0.5).collect { 10**it }
-// alpha_ridge = 1e-4
-//
-// beta_tv = 7e1
-// beta_spline = 0
-// beta_ridge = 1e-4
-//
-// process eta_sweep {
-//
-//   executor 'sge'
-//   memory '500 MB'
-//   time '10m'
-//   scratch true
-//   conda "${CONDA_PREFIX}/envs/1KG"
-//   publishDir "$params.outdir/eta_sweep/${alpha_tv}_${alpha_spline}/${population}", mode: 'copy'
-//
-//   input:
-//   tuple population, 'ksf.tsv' from ksfs_total_ch_1.filter { it[0].split('_')[1] == 'CEU' }
-//   file 'masked_size.tsv' from masked_size_total_ch
-//   each alpha_tv from alpha_tv
-//   each alpha_spline from alpha_spline
-//   val alpha_ridge
-//   val beta_tv
-//   val beta_spline
-//   val beta_ridge
-//
-//   output:
-//   file 'dat.pkl' into eta_sweep_ch
-//
-//   script:
-//   template 'infer.py'
-// }
-//
-// alpha_tv = 1e2
-// alpha_spline = 3e3
-// alpha_ridge = 1e-4
-//
-// beta_tv = [0] + (0..3).by(0.5).collect { 10**it }
-// beta_spline = [0] + (0..5.5).by(0.5).collect { 10**it }
-// beta_ridge = 1e-4
-//
-// process mu_sweep {
-//
-//   executor 'sge'
-//   memory '500 MB'
-//   time '10m'
-//   scratch true
-//   conda "${CONDA_PREFIX}/envs/1KG"
-//   publishDir "$params.outdir/mu_sweep/${beta_tv}_${beta_spline}/${population}", mode: 'copy'
-//
-//   input:
-//   tuple population, 'ksf.tsv' from ksfs_total_ch_2.filter { it[0].split('_')[1] == 'CEU' }
-//   file 'masked_size.tsv' from masked_size_total_ch
-//   val alpha_tv
-//   val alpha_spline
-//   val alpha_ridge
-//   each beta_tv from beta_tv
-//   each beta_spline from beta_spline
-//   each beta_ridge from beta_ridge
-//
-//   output:
-//   file 'dat.pkl' into mu_sweep_ch
-//
-//   script:
-//   template 'infer.py'
-// }
-//
-// alpha_tv = 1e2
-// alpha_spline = 3e3
-// alpha_ridge = 1e-4
-//
-// beta_tv = 7e1
-// beta_spline = 0
-// beta_ridge = 1e-4
-//
-// process europulse {
-//
-//   executor 'sge'
-//   memory '500 MB'
-//   time '10m'
-//   scratch true
-//   conda "${CONDA_PREFIX}/envs/1KG"
-//   publishDir "$params.outdir/europulse/${population}", mode: 'copy'
-//
-//   input:
-//   tuple population, 'ksf.tsv' from ksfs_total_ch_3.filter { it[0].split('_')[0] == 'EUR' }
-//   file 'masked_size.tsv' from masked_size_total_ch
-//   val alpha_tv
-//   val alpha_spline
-//   val alpha_ridge
-//   val beta_tv
-//   val beta_spline
-//   val beta_ridge
-//
-//   output:
-//   file 'dat.pkl' into europulse_ch
-//
-//   script:
-//   template 'infer.py'
-// }
+alpha_tv = [0] + (0..4.5).by(0.5).collect { 10**it }
+alpha_spline = [0] + (1..5.5).by(0.5).collect { 10**it }
+alpha_ridge = 1e-4
+
+beta_tv = 7e1
+beta_spline = 0
+beta_ridge = 1e-4
+beta_rank = 0
+
+ref_pop = 'False'
+folded = 'False'
+
+process eta_sweep {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/eta_sweep/${alpha_tv}_${alpha_spline}/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_1.filter { it[0] == 'EUR_CEU' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  each alpha_tv from alpha_tv
+  each alpha_spline from alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val beta_rank
+  val ref_pop
+  val folded
+
+  output:
+  file 'dat.pkl' into eta_sweep_ch
+
+  script:
+  template 'infer.py'
+}
+
+alpha_tv = 1e2
+alpha_spline = 3e3
+
+beta_tv = [0] + (0..3).by(0.5).collect { 10**it }
+beta_spline = [0] + (0..5.5).by(0.5).collect { 10**it }
+
+process mu_sweep {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/mu_sweep/${beta_tv}_${beta_spline}/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_2.filter { it[0] == 'EUR_CEU' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  each beta_tv from beta_tv
+  each beta_spline from beta_spline
+  each beta_ridge from beta_ridge
+  val beta_rank
+  val ref_pop
+  val folded
+
+  output:
+  file 'dat.pkl' into mu_sweep_ch
+
+  script:
+  template 'infer.py'
+}
+
+alpha_tv = 1e2
+alpha_spline = 3e3
+
+beta_tv = 7e1
+beta_spline = 0
+
+process europulse {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/europulse/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_3.filter { it[0].split('_')[0] == 'EUR' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val beta_rank
+  val ref_pop
+  val folded
+
+  output:
+  file 'dat.pkl' into europulse_ch
+
+  script:
+  template 'infer.py'
+}
 
 // same as above, but all populations and softer mutation spectrum history
 alpha_tv = 1e2
 alpha_spline = 3e3
-alpha_ridge = 1e-4
 
 beta_tv = 0
 beta_spline = 5e4
-beta_ridge = 1e-4
+beta_rank=1e2
 
+process mush_ref {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/mush/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_4.first { it[0] == 'AFR_YRI' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val beta_rank
+  val ref_pop
+  val folded
+
+  output:
+  file 'dat.pkl' into mush_ref_ch
+
+  script:
+  template 'infer.py'
+}
+
+alpha_ridge = 1e4
+beta_ridge = 1e4
+ref_pop = 'True'
 process mush {
 
   executor 'sge'
@@ -308,7 +348,7 @@ process mush {
   publishDir "$params.outdir/mush/${population}", mode: 'copy'
 
   input:
-  tuple population, 'ksf.tsv' from ksfs_total_ch_4
+  tuple population, 'ksf.tsv' from ksfs_total_ch_5.filter { it[0] != 'AFR_YRI' }
   file 'masked_size.tsv' from masked_size_total_ch
   val alpha_tv
   val alpha_spline
@@ -316,9 +356,80 @@ process mush {
   val beta_tv
   val beta_spline
   val beta_ridge
+  val beta_rank
+  val ref_pop
+  file 'dat.ref.pkl' from mush_ref_ch
+  val folded
 
   output:
   file 'dat.pkl' into mush_ch
+
+  script:
+  template 'infer.py'
+}
+
+// same as previous two, but folded
+alpha_ridge = 1e-4
+beta_ridge = 1e-4
+ref_pop = 'False'
+folded = 'True'
+process mush_ref_folded {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/mush_folded/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_6.first { it[0] == 'AFR_YRI' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val beta_rank
+  val ref_pop
+  val folded
+
+  output:
+  file 'dat.pkl' into mush_ref_folded_ch
+
+  script:
+  template 'infer.py'
+}
+
+alpha_ridge = 1e4
+beta_ridge = 1e4
+ref_pop = 'True'
+process mush_folded {
+
+  executor 'sge'
+  memory '500 MB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/1KG"
+  publishDir "$params.outdir/mush_folded/${population}", mode: 'copy'
+
+  input:
+  tuple population, 'ksf.tsv' from ksfs_total_ch_7.filter { it[0] != 'AFR_YRI' }
+  file 'masked_size.tsv' from masked_size_total_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val beta_rank
+  val ref_pop
+  file 'dat.ref.pkl' from mush_ref_folded_ch
+  val folded
+
+  output:
+  file 'dat.pkl' into mush_folded_ch
 
   script:
   template 'infer.py'
