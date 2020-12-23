@@ -506,7 +506,7 @@ class kSFS():
         if folded:
             x += x[::-1]   # fold the data spectrum
             if self.n % 2 == 0:
-                x[self.n // 2 - 1] /= 2
+                x[self.n // 2 - 1] //= 2
             plt.plot(range(1, self.n // 2 + 1), x[:self.n // 2], **kwargs)
         else:
             plt.plot(range(1, self.n), x, **kwargs)
