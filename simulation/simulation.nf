@@ -12,7 +12,7 @@ process histories {
   time '1m'
   // scratch true
   conda "${CONDA_PREFIX}/envs/simulation"
-  publishDir "$params.outdir", pattern: '*.pdf', mode: 'copy'
+  publishDir "$params.outdir", mode: 'copy'
 
   output:
   tuple 'eta.pkl', 'mu.pkl' into histories_ch
@@ -91,9 +91,9 @@ process ksfs {
   tuple 'eta.pkl', 'mu.pkl' from histories_ch
 
   output:
-  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' into ksfs_ch
-  tuple 'ksfs.pdf', 'n_trees.txt', 'n_variants.txt', 'tmrca_cdf.pdf', 'mu0.txt' into ksfs_summary_ch
-  stdout ksfs_out
+  file 'ksfs.pkl' into ksfs_ch
+  tuple 'sfs.pdf', 'ksfs.pdf', 'n_trees.txt', 'n_variants.txt', 'tmrca_cdf.pdf', 'mu0.txt' into ksfs_summary_ch
+  file 'mu0.pkl' into mu0_ch
 
   """
   #!/usr/bin/env python
@@ -132,7 +132,7 @@ process ksfs {
   # - iterate over mutation types and epochs
   # - compute component of k-SFS for each iterate
 
-  X = np.zeros((n - 1, mu.Z.shape[1]))
+  X = np.zeros((n - 1, mu.Z.shape[1]), dtype=int)
   for start_time, end_time, mutation_rate in mu.epochs():
       mutation_rate_total = mutation_rate.sum()
       print(f'epoch boundaries: ({start_time:.2f}, {end_time:.2f}), μ: {mutation_rate_total:.2f}     ',
@@ -160,6 +160,7 @@ process ksfs {
                   fill_kwargs=dict(color='C0', alpha=0.1))
   plt.xscale('log')
   plt.yscale('log')
+  plt.savefig('sfs.pdf')
 
   plt.figure(figsize=(4, 3))
   ksfs.plot(range(2, mu.Z.shape[1]), clr=True, kwargs=dict(alpha=0.1, ls='', marker='.', c='C0'))
@@ -185,10 +186,9 @@ process ksfs {
   # Estimate constant total mutation rate using most recent time point (introducing a misspecification)
   mu0 = mu.Z[0, :].sum()
   print(mu0, file=open('mu0.txt', 'w'))
+  pickle.dump(mu0, file=open('mu0.pkl', 'wb'))
   """
 }
-
-ksfs_ch.into { ksfs_ch_1; ksfs_ch_2 }
 
 alpha_tv = [0] + (0..4.5).by(0.5).collect{ 10**it }
 alpha_spline = [0] + (1..5.5).by(0.5).collect{ 10**it }
@@ -197,6 +197,9 @@ alpha_ridge = 1e-4
 beta_tv = 1e2
 beta_spline = 1e3
 beta_ridge = 1e-4
+
+folded = 'False'
+freq_mask = 'False'
 
 process eta_sweep {
 
@@ -208,13 +211,16 @@ process eta_sweep {
   publishDir "$params.outdir/eta_sweep/${alpha_tv}_${alpha_spline}", mode: 'copy'
 
   input:
-  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' from ksfs_ch_1
+  file 'ksfs.pkl' from ksfs_ch
+  file 'mu0.pkl' from mu0_ch
   each alpha_tv from alpha_tv
   each alpha_spline from alpha_spline
   val alpha_ridge
   val beta_tv
   val beta_spline
   val beta_ridge
+  val folded
+  val freq_mask
 
   output:
   file 'dat.pkl' into eta_sweep_ch
@@ -241,16 +247,96 @@ process mu_sweep {
   publishDir "$params.outdir/mu_sweep/${beta_tv}_${beta_spline}", mode: 'copy'
 
   input:
-  tuple 'ksfs.pkl', 'eta.pkl', 'mu.pkl' from ksfs_ch_2
+  file 'ksfs.pkl' from ksfs_ch
+  file 'mu0.pkl' from mu0_ch
   val alpha_tv
   val alpha_spline
   val alpha_ridge
   each beta_tv from beta_tv
   each beta_spline from beta_spline
   val beta_ridge
+  val folded
+  val freq_mask
 
   output:
   file 'dat.pkl' into mu_sweep_ch
+
+  script:
+  template 'infer.py'
+}
+
+p_misid = [0.00, 0.01, 0.05, 0.10]
+
+process ksfs_misid {
+
+  executor 'sge'
+  memory '100 MB'
+  time '5m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/simulation"
+
+  input:
+  file 'ksfs.pkl' from ksfs_ch
+  each p_misid from p_misid
+
+  output:
+  tuple p_misid, 'ksfs_misid.pkl' into ksfs_misid_ch
+
+  """
+  #!/usr/bin/env python
+
+  import pickle
+  import mushi
+  from numpy.random import binomial
+
+  # Load ksfs and true histories
+  ksfs = pickle.load(open('ksfs.pkl', 'rb'))
+  X = ksfs.X
+  X_misid = binomial(X, ${p_misid})
+  # assume first two mutation types are misidentification partners
+  X[:, 0] = X[:, 0] - X_misid[:, 0] + X_misid[::-1, 1]
+  X[:, 1] = X[:, 1] - X_misid[:, 1] + X_misid[::-1, 0]
+  X[:, 2:] = X[:, 2:] - X_misid[:, 2:] + X_misid[::-1, 2:]
+  ksfs = mushi.kSFS(X=X)
+
+  pickle.dump(ksfs, open('ksfs_misid.pkl', 'wb'))
+  """
+}
+
+alpha_tv = 2e0
+alpha_spline = 1e3
+alpha_ridge = 1e-4
+
+beta_tv = 1e2
+beta_spline = 1e3
+beta_ridge = 1e-4
+
+folded = ['False', 'True']
+freq_mask = 'True'
+
+process mush {
+
+  executor 'sge'
+  memory '1 GB'
+  time '10m'
+  scratch true
+  conda "${CONDA_PREFIX}/envs/simulation"
+  publishDir "$params.outdir/mush/folded_${folded}/${p_misid}", mode: 'copy'
+
+  input:
+  tuple p_misid, 'ksfs.pkl' from ksfs_misid_ch
+  each folded from folded
+  file 'mu0.pkl' from mu0_ch
+  val alpha_tv
+  val alpha_spline
+  val alpha_ridge
+  val beta_tv
+  val beta_spline
+  val beta_ridge
+  val freq_mask
+
+  output:
+  file 'dat.pkl' into mush_ch
 
   script:
   template 'infer.py'
