@@ -31,15 +31,18 @@ change_points = np.logspace(np.log10(1), np.log10(200000), 200)
 u = 1.25e-8
 mu0 = u * masked_genome_size['count'].sum()
 
-clip_low = 0
-clip_high = 10
-freq_mask = np.array([True if (clip_low <= i < ksfs.n - clip_high - 1) else False
-                      for i in range(ksfs.n - 1)])
+if not ${folded}:
+    clip_low = 0
+    clip_high = 10
+    freq_mask = np.array([True if (clip_low <= i < ksfs.n - clip_high - 1) else False
+                          for i in range(ksfs.n - 1)])
+else:
+    freq_mask = None
 
 convergence_params = dict(tol=1e-16, max_iter=2000)
 alpha_params = dict(alpha_tv=${alpha_tv}, alpha_spline=${alpha_spline}, alpha_ridge=${alpha_ridge})
 beta_params = dict(beta_tv=${beta_tv}, beta_spline=${beta_spline}, beta_ridge=${beta_ridge}, beta_rank=${beta_rank})
-ksfs.infer_history(change_points, mu0, loss='prf', mask=(None if ${folded} else freq_mask),
+ksfs.infer_history(change_points, mu0, loss='prf', mask=freq_mask,
                    eta_ref=eta_ref, infer_mu=False, folded=${folded},
                    **alpha_params, **convergence_params)
 ksfs.infer_history(change_points, mu0, loss='prf', mask=freq_mask,

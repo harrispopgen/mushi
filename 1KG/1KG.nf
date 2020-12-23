@@ -203,7 +203,7 @@ process eta_sweep {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/eta_sweep/${alpha_tv}_${alpha_spline}/${population}", mode: 'copy'
@@ -238,7 +238,7 @@ process mu_sweep {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/mu_sweep/${beta_tv}_${beta_spline}/${population}", mode: 'copy'
@@ -273,7 +273,7 @@ process europulse {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/europulse/${population}", mode: 'copy'
@@ -310,7 +310,7 @@ process mush_ref {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/mush/${population}", mode: 'copy'
@@ -342,7 +342,7 @@ process mush {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/mush/${population}", mode: 'copy'
@@ -377,7 +377,7 @@ process mush_ref_folded {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/mush_folded/${population}", mode: 'copy'
@@ -409,7 +409,7 @@ process mush_folded {
 
   executor 'sge'
   memory '500 MB'
-  time '10m'
+  time '1h'
   scratch true
   conda "${CONDA_PREFIX}/envs/1KG"
   publishDir "$params.outdir/mush_folded/${population}", mode: 'copy'
