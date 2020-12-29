@@ -107,17 +107,12 @@ venv.bak/
 .sconsign.dblite
 
 # nextflow build
-1KG/work
-1KG/.nextflow*
-1KG/report.html*
-1KG/dag.html*
-1KG/timeline.html*
-simulation/work
-simulation/.nextflow*
-simulation/report.html*
-simulation/dag.html*
-simulation/timeline.html*
+pipelines/*/work
+pipelines/*/output
+pipelines/*/.nextflow*
+pipelines/*/report.html*
+pipelines/*/dag.html*
+pipelines/*/timeline.html*
 
 
 .DS_Store
-data
