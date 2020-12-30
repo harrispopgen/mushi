@@ -164,7 +164,7 @@ class kSFS():
                       beta_ridge: np.float64 = 0,
                       max_iter: int = 1000,
                       s0: int = 1,
-                      max_line_iter=100,
+                      max_line_iter: int = 100,
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 0,
                       loss: str = 'prf',

@@ -106,9 +106,13 @@ venv.bak/
 # scons
 .sconsign.dblite
 
-# tex builds
-manuscript/_build
-scons_output*
+# nextflow build
+pipelines/*/work
+pipelines/*/output
+pipelines/*/.nextflow*
+pipelines/*/report.html*
+pipelines/*/dag.html*
+pipelines/*/timeline.html*
+
 
 .DS_Store
-data
