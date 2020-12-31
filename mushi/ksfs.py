@@ -10,6 +10,7 @@ import numpy as onp
 import jax.numpy as np
 from jax import jit, grad
 from jax.ops import index, index_update
+from jax.scipy.special import expit, logit
 from scipy.stats import poisson
 import prox_tv as ptv
 from typing import Union, List, Dict
@@ -74,14 +75,24 @@ class kSFS():
                 self.mutation_types = pd.Index(range(self.X.shape[1]),
                                                name='mutation type')
         elif n is None:
-            raise ValueError('either X or n must be specified')
+            raise ValueError('either file, or X, or n must be specified')
         else:
             self.n = n
+            self.X = None
         self.C = utils.C(self.n)
         self.η = None
         self.μ = None
         self.M = None
         self.L = None
+
+        # ancestral state misidentification
+        # misidentification rate
+        self.r = None
+        # frequency misidentification operator
+        self.AM_freq = np.eye(self.n - 1)[::-1]
+        # mutation type misidentification operator
+        if self.X is not None and self.X.shape[1] > 1:
+            self.AM_mut = utils.mutype_misid(self.mutation_types)
 
     @property
     def eta(self) -> hst.eta:
@@ -125,13 +136,15 @@ class kSFS():
         return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
 
     def simulate(self, eta: hst.eta, mu: Union[hst.mu, np.float64],
+                 r: np.float64 = 0,
                  seed: int = None) -> None:
-        r"""Simulate a SFS under the Poisson random field model (no linkage)
-        assigns simulated SFS to ``X`` attribute
+        r"""Simulate a :math:`k`-SFS under the Poisson random field model
+        (no linkage), assign to ``X`` attribute
 
         Args:
             eta: demographic history
             mu: mutation spectrum history (or constant rate)
+            r: ancestral state misidentification rate (default 0)
             seed: random seed
         """
         onp.random.seed(seed)
@@ -143,8 +156,13 @@ class kSFS():
                 raise ValueError('η(t) and μ(t) must use the same time grid')
         else:
             mu = hst.mu(eta.change_points, mu * np.ones_like(y))
-        self.X = poisson.rvs(L @ mu.Z)
+        Ξ = L @ mu.Z
         self.mutation_types = mu.mutation_types
+        if len(self.mutation_types) == 1:
+            self.AM_mut = np.array([[1]])
+        else:
+            self.AM_mut = utils.mutype_misid(self.mutation_types)
+        self.X = poisson.rvs((1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut)
 
     def infer_history(self,  # noqa: C901
                       change_points: np.array,
@@ -168,7 +186,6 @@ class kSFS():
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 0,
                       loss: str = 'prf',
-                      mask: np.array = None,
                       verbose: bool = False,
                       folded: bool = False
                       ) -> None:
@@ -188,8 +205,6 @@ class kSFS():
             infer_mu: perform :math:`\mu` inference if ``True``
             loss: loss function, 'prf' for Poisson random field, 'kl' for
                   Kullback-Leibler divergence, 'lsq' for least-squares
-            mask: array of bools, with False indicating exclusion of that
-                  frequency
             alpha_tv: total variation penalty on :math:`\eta(t)`
             alpha_spline: L2 on first differences penalty on :math:`\eta(t)`
             alpha_ridge: L2 for strong convexity penalty on :math:`\eta(t)`
@@ -210,8 +225,11 @@ class kSFS():
         """
         if folded is True and infer_mu is not False:
             raise ValueError('infer_mu=False is required for folded=True')
+        assert self.X is not None, 'use simulate() to generate data first'
+        if self.X is None:
+            raise ValueError('use simulate() to generate data first')
 
-        # pithify reg paramter names
+        # pithify regularization parameter names
         α_tv = alpha_tv
         α_spline = alpha_spline
         α_ridge = alpha_ridge
@@ -221,24 +239,12 @@ class kSFS():
         β_rank = beta_rank
         β_ridge = beta_ridge
 
-        assert self.X is not None, 'use simulate() to generate data first'
-        if self.X is None:
-            raise ValueError('use simulate() to generate data first')
-        if mask is not None:
-            assert len(mask) == self.X.shape[0], 'mask must have n-1 elements'
-
         # ininitialize with MLE constant η and μ
-        x = self.X.sum(1, keepdims=True)
+        x = self.X.sum(1)
 
-        # fold the spectrum and mask, if inference is on folded SFS
+        # fold the spectrum if inference is on folded SFS
         if folded:
-            x += x[::-1]   # fold the data spectrum
-            if self.n % 2 == 0:
-                x[self.n // 2 - 1] //= 2
-            if mask is None:
-                mask = onp.array([True for _ in range(self.n - 1)])
-            mask = onp.logical_and(mask, mask[::-1])  # fold the mask
-            mask[self.n // 2:] = False  # mask entries with AF > 0.5
+            x = utils.fold(x)
 
         μ_total = hst.mu(change_points,
                          mu0 * np.ones((len(change_points) + 1, 1)))
@@ -267,8 +273,7 @@ class kSFS():
 
         # badness of fit
         if loss == 'prf':
-            def loss(*args, **kwargs):
-                return -utils.prf(*args, **kwargs)
+            loss = utils.prf
         elif loss == 'kl':
             loss = utils.d_kl
         elif loss == 'lsq':
@@ -301,57 +306,53 @@ class kSFS():
                 Γ = np.diag(-np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
             logy_ref = np.log(eta_ref.y)
 
+            # In the following, the parameter vector params will contain the
+            # misid rate in params[0], and logy in params[1:]
             @jit
-            def g(logy):
+            def g(params):
                 """differentiable piece of objective in η problem"""
+                logy = params[1:]
                 L = self.C @ utils.M(self.n, t, np.exp(logy))
-                # if folded, we fold the model matrix
+                ξ = L @ z
                 if folded:
-                    if self.n % 2 == 1:
-                        L += L[::-1][self.n // 2 - 1]
-                    else:
-                        L += L[::-1][self.n // 2 - 2]
-                if mask is not None:
-                    loss_term = loss(z, x[mask, :], L[mask, :])
+                    ξ = utils.fold(ξ)
                 else:
-                    loss_term = loss(z, x, L)
+                    r = expit(params[0])
+                    ξ = (1 - r) * ξ + r * self.AM_freq @ ξ
+                loss_term = loss(np.squeeze(ξ), x)
                 spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
                 # generalized Tikhonov
                 logy_delta = logy - logy_ref
                 ridge_term = (α_ridge / 2) * (logy_delta.T @ Γ @ logy_delta)
                 return loss_term + spline_term + ridge_term
 
-            if α_tv > 0:
-                @jit
-                def h(logy):
-                    """nondifferentiable piece of objective in η problem"""
-                    return α_tv * np.abs(D1 @ logy).sum()
+            @jit
+            def h(params):
+                """nondifferentiable piece of objective in η problem"""
+                logy = params[1:]
+                return α_tv * np.abs(D1 @ logy).sum()
 
-                def prox(logy, s):
-                    """total variation prox operator"""
-                    return ptv.tv1_1d(logy, s * α_tv)
-            else:
-                @jit
-                def h(logy):
-                    return 0
-
-                def prox(logy, s):
-                    return logy
+            def prox(params, s):
+                """total variation prox operator (no jit due to ptv module)"""
+                if α_tv > 0:
+                    params = index_update(params, index[1:],
+                                          ptv.tv1_1d(params[1:], s * α_tv))
+                return params
 
             # initial iterate
-            logy = np.log(self.η.y)
+            params = np.concatenate((np.array([logit(1e-3)]), np.log(self.η.y)))
 
-            logy = opt.acc_prox_grad_method(logy, g, jit(grad(g)), h,
-                                            prox,
-                                            tol=tol,
-                                            max_iter=max_iter,
-                                            s0=s0,
-                                            max_line_iter=max_line_iter,
-                                            gamma=gamma,
-                                            verbose=verbose)
-
-            y = np.exp(logy)
-
+            params = opt.acc_prox_grad_method(params, g, jit(grad(g)), h,
+                                              prox,
+                                              tol=tol,
+                                              max_iter=max_iter,
+                                              s0=s0,
+                                              max_line_iter=max_line_iter,
+                                              gamma=gamma,
+                                              verbose=verbose)
+            if not folded:
+                self.r = expit(params[0])
+            y = np.exp(params[1:])
             self.η = hst.eta(self.η.change_points, y)
             self.M = utils.M(self.n, t, y)
             self.L = self.C @ self.M
@@ -380,12 +381,8 @@ class kSFS():
             @jit
             def g(Z):
                 """differentiable piece of objective in μ problem"""
-                if mask is not None:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
-                                     self.X[mask, :], self.L[mask, :])
-                else:
-                    loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
-                                     self.X, self.L)
+                loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
+                                 self.X, self.L)
                 spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
                 # generalized Tikhonov
                 Z_delta = Z - Z_ref
@@ -504,12 +501,8 @@ class kSFS():
         """
         x = self.X.sum(1, keepdims=True)
         if folded:
-            x += x[::-1]   # fold the data spectrum
-            if self.n % 2 == 0:
-                x[self.n // 2 - 1] //= 2
-            plt.plot(range(1, self.n // 2 + 1), x[:self.n // 2], **kwargs)
-        else:
-            plt.plot(range(1, self.n), x, **kwargs)
+            x = utils.fold(x)
+        plt.plot(range(1, len(x) + 1), x, **kwargs)
         if self.η is not None:
             if 'label' in kwargs:
                 del kwargs['label']
@@ -519,23 +512,18 @@ class kSFS():
                 z = np.ones_like(self.η.y)
             ξ = self.L.dot(z)
             if folded:
-                ξ = onp.array(ξ)
-                ξ += ξ[::-1]
-                if self.n % 2 == 0:
-                    ξ[self.n // 2 - 1] /= 2
-                plt.plot(range(1, self.n // 2 + 1), ξ[:self.n // 2], **line_kwargs)
+                ξ = utils.fold(onp.array(ξ))
             else:
-                plt.plot(range(1, self.n), ξ, **line_kwargs)
+                if self.r is None:
+                    raise ValueError('ancestral state misidentification rate '
+                                     'is not inferred, do you want '
+                                     'folded=True?')
+                ξ = (1 - self.r) * ξ + self.r * self.AM_freq @ ξ
+            plt.plot(range(1, len(ξ) + 1), ξ, **line_kwargs)
             ξ_lower = poisson.ppf(.025, ξ)
             ξ_upper = poisson.ppf(.975, ξ)
-            if folded:
-                plt.fill_between(range(1, self.n // 2 + 1),
-                                 ξ_lower[:self.n // 2],
-                                 ξ_upper[:self.n // 2],
-                                 **fill_kwargs)
-            else:
-                plt.fill_between(range(1, self.n),
-                                 ξ_lower, ξ_upper, **fill_kwargs)
+            plt.fill_between(range(1, len(ξ) + 1),
+                             ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
         plt.ylabel(r'variant count')
         plt.tight_layout()
@@ -554,6 +542,7 @@ class kSFS():
         """
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
+            Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
         if clr:
             X = cmp.clr(self.X)
             if self.μ is not None:
