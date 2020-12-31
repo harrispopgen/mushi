@@ -381,8 +381,10 @@ class kSFS():
             @jit
             def g(Z):
                 """differentiable piece of objective in μ problem"""
-                loss_term = loss(mu0 * cmp.ilr_inv(Z, basis),
-                                 self.X, self.L)
+                Ξ = self.L @ (mu0 * cmp.ilr_inv(Z, basis))
+                if self.r is not None:
+                    Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
+                loss_term = loss(Ξ, self.X)
                 spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
                 # generalized Tikhonov
                 Z_delta = Z - Z_ref
