@@ -12,7 +12,6 @@ from jax import jit, grad
 from jax.ops import index, index_update
 from jax.scipy.special import expit, logit
 from scipy.stats import poisson
-import prox_tv as ptv
 from typing import Union, List, Dict
 from matplotlib import pyplot as plt
 import pandas as pd
@@ -165,63 +164,75 @@ class kSFS():
         self.X = poisson.rvs((1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut)
 
     def infer_history(self,  # noqa: C901
-                      change_points: np.array,
                       mu0: np.float64,
+                      pts: np.float64 = 100,
+                      ta: np.float64 = None,
+                      infer_eta: bool = True,
+                      folded: bool = False,
+                      alpha0: np.float64 = 0,
+                      alpha1: np.float64 = 0,
+                      alpha2: np.float64 = 0,
+                      alpha_ridge: np.float64 = 0,
+                      log_transform: bool = True,
                       eta: hst.eta = None,
                       eta_ref: hst.eta = None,
-                      mu_ref: hst.mu = None,
-                      infer_eta: bool = True,
                       infer_mu: bool = True,
-                      alpha_tv: np.float64 = 0,
-                      alpha_spline: np.float64 = 0,
-                      alpha_ridge: np.float64 = 0,
-                      beta_tv: np.float64 = 0,
-                      beta_spline: np.float64 = 0,
+                      beta0: np.float64 = 0,
+                      beta1: np.float64 = 0,
+                      beta2: np.float64 = 0,
                       beta_rank: np.float64 = 0,
                       hard: bool = False,
                       beta_ridge: np.float64 = 0,
+                      mu_ref: hst.mu = None,
+                      loss: str = 'prf',
                       max_iter: int = 1000,
                       s0: int = 1,
                       max_line_iter: int = 100,
                       gamma: np.float64 = 0.8,
                       tol: np.float64 = 0,
-                      loss: str = 'prf',
                       verbose: bool = False,
-                      folded: bool = False
+                      trend_kwargs: Dict = {}
                       ) -> None:
         r"""Perform sequential inference to fit :math:`\eta(t)` and
         :math:`\mu(t)`
 
         Args:
-            change_points: epoch change points (ordered times > 0)
             mu0: total mutation rate (per genome per generation)
+            pts: number of points for time discretization
+            ta: time (in WF generations ago) of oldest change point in time
+                discretization. If ``None``, set automatically based on
+                10 * E[TMRCA] under MLE constant demography
+            infer_eta: perform :math:`\eta` inference if ``True``
+            folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
+                    ``True``, can only be used with ``infer_mu=False``, and
+                    infer :math:`\eta(t)` using folded SFS.
+            alpha0: 0th order trend filtering penalty on :math:`\eta(t)`
+            alpha1: 1st order trend filtering penalty on :math:`\eta(t)`
+            alpha2: 2nd order trend filtering penalty on :math:`\eta(t)`
+            alpha_ridge: ridge penalty on :math:`\eta(t)`
+            log_transform: fit :math:`\log\eta(t)`
             eta: initial demographic history. By default, a
                  constant MLE is computed
             eta_ref: reference demographic history for ridge penalty. If
                      ``None``, the constant MLE is used
+            infer_mu: perform :math:`\mu` inference if ``True``
+            beta0: 0th order trend filtering penalty on :math:`\mu(t)`
+            beta1: 1st order trend filtering penalty on :math:`\mu(t)`
+            beta2: 2nd order trend filtering penalty on :math:`\mu(t)`
+            beta_rank: rank penalty on :math:`\mu(t)`
+            hard: hard rank penalty on :math:`\mu(t)` (non-convex)
+            beta_ridge: L2 penalty on :math:`\mu(t)`
             mu_ref: reference MuSH for ridge penalty. If None, the constant
                     MLE is used
-            infer_eta: perform :math:`\eta` inference if ``True``
-            infer_mu: perform :math:`\mu` inference if ``True``
-            loss: loss function, 'prf' for Poisson random field, 'kl' for
-                  Kullback-Leibler divergence, 'lsq' for least-squares
-            alpha_tv: total variation penalty on :math:`\eta(t)`
-            alpha_spline: L2 on first differences penalty on :math:`\eta(t)`
-            alpha_ridge: L2 for strong convexity penalty on :math:`\eta(t)`
-            hard: hard rank penalty on :math:`\mu(t)` (non-convex)
-            beta_tv: total variation penalty on :math:`\mu(t)`
-            beta_spline: penalty on :math:`\mu(t)`
-            beta_rank: rank penalty on :math:`\mu(t)`
-            beta_ridge: L2 penalty on :math:`\mu(t)`
-            max_iter: maximum number of proximal gradient steps
+            loss: loss function, ``'prf'`` for Poisson random field, ``'kl'`` for
+                  Kullback-Leibler divergence, ``'lsq'`` for least-squares
+            max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             s0: max step size
             max_line_iter: maximum number of line search steps
             gamma: step size shrinkage rate for line search
             verbose: print verbose messages if ``True``
-            folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
-                    ``True``, can only be used with ``infer_mu=False``, and infer
-                    :math:`\eta(t)` using folded SFS.
+            trend_kwargs: keyword arguments for trend filtering solver
         """
         if folded is True and infer_mu is not False:
             raise ValueError('infer_mu=False is required for folded=True')
@@ -230,35 +241,46 @@ class kSFS():
             raise ValueError('use simulate() to generate data first')
 
         # pithify regularization parameter names
-        α_tv = alpha_tv
-        α_spline = alpha_spline
+        α0 = alpha0
+        α1 = alpha1
+        α2 = alpha2
         α_ridge = alpha_ridge
 
-        β_tv = beta_tv
-        β_spline = beta_spline
+        β0 = beta0
+        β1 = beta1
+        β2 = beta2
         β_rank = beta_rank
         β_ridge = beta_ridge
 
-        # ininitialize with MLE constant η and μ
+        # total SFS
         x = self.X.sum(1)
-
         # fold the spectrum if inference is on folded SFS
         if folded:
             x = utils.fold(x)
 
+        # number of segregating variants in each mutation type
+        S = self.X.sum(0, keepdims=True)
+
+        # constant MLE
+        # Harmonic number
+        H = (1 / np.arange(1, self.n - 1)).sum()
+        N_const = (S.sum() / 2 / H / mu0)
+
+        if ta is None:
+            tmrca_exp = 4 * N_const * (1 - 1 / self.n)
+            ta = 10 * tmrca_exp
+        change_points = np.logspace(0, np.log10(ta), pts)
+
+        # ininitialize with MLE constant η and μ
+
         μ_total = hst.mu(change_points,
                          mu0 * np.ones((len(change_points) + 1, 1)))
         t, z = μ_total.arrays()
-        # number of segregating variants in each mutation type
-        S = self.X.sum(0, keepdims=True)
 
         if eta is not None:
             self.η = eta
         elif self.η is None:
-            # Harmonic number
-            H = (1 / np.arange(1, self.n - 1)).sum()
-            # constant MLE
-            y = (S.sum() / 2 / H / mu0) * np.ones(len(z))
+            y = N_const * np.ones(len(z))
             self.η = hst.eta(change_points, y)
 
         μ_const = hst.mu(self.η.change_points,
@@ -281,14 +303,6 @@ class kSFS():
         else:
             raise ValueError(f'unrecognized loss argument {loss}')
 
-        # some matrices we'll need for the first difference penalties
-        D = (np.eye(self.η.m, k=0) - np.eye(self.η.m, k=-1))
-        # W matrix deals with boundary condition
-        W = np.eye(self.η.m)
-        W = index_update(W, index[0, 0], 0)
-        D1 = W @ D  # 1st difference matrix
-        # D2 = D1.T @ D1  # 2nd difference matrix
-
         if infer_eta:
             if verbose:
                 print('inferring η(t)', flush=True)
@@ -304,15 +318,19 @@ class kSFS():
             else:
                 # - log(1 - CDF)
                 Γ = np.diag(-np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
-            logy_ref = np.log(eta_ref.y)
+            y_ref = np.log(eta_ref.y) if log_transform else eta_ref.y
 
             # In the following, the parameter vector params will contain the
-            # misid rate in params[0], and logy in params[1:]
+            # misid rate in params[0], and y in params[1:]
             @jit
             def g(params):
                 """differentiable piece of objective in η problem"""
-                logy = params[1:]
-                L = self.C @ utils.M(self.n, t, np.exp(logy))
+                y = params[1:]
+                if log_transform:
+                    M = utils.M(self.n, t, np.exp(y))
+                else:
+                    M = utils.M(self.n, t, y)
+                L = self.C @ M
                 ξ = L @ z
                 if folded:
                     ξ = utils.fold(ξ)
@@ -320,30 +338,42 @@ class kSFS():
                     r = expit(params[0])
                     ξ = (1 - r) * ξ + r * self.AM_freq @ ξ
                 loss_term = loss(np.squeeze(ξ), x)
-                spline_term = (α_spline / 2) * ((D1 @ logy) ** 2).sum()
-                # generalized Tikhonov
-                logy_delta = logy - logy_ref
-                ridge_term = (α_ridge / 2) * (logy_delta.T @ Γ @ logy_delta)
-                return loss_term + spline_term + ridge_term
+                y_delta = y - y_ref
+                ridge_term = (α_ridge / 2) * (y_delta.T @ Γ @ y_delta)
+                return loss_term + ridge_term
 
             @jit
             def h(params):
                 """nondifferentiable piece of objective in η problem"""
-                logy = params[1:]
-                return α_tv * np.abs(D1 @ logy).sum()
+                y = params[1:]
+                d1 = np.diff(y)
+                d2 = np.diff(d1)
+                d3 = np.diff(d2)
+                return sum(α * np.linalg.norm(d, 1)
+                           for α, d in zip([α0, α1, α2], [d1, d2, d3]))
 
             def prox(params, s):
-                """total variation prox operator (no jit due to ptv module)"""
-                if α_tv > 0:
+                """trend filtering prox operator (no jit due to ptv module)"""
+                if any((α0, α1, α2)):
+                    k, λ = zip(*[(k, λ)
+                                 for k, λ in enumerate([s * α0, s * α1, s * α2])
+                                 if λ > 0])
                     params = index_update(params, index[1:],
-                                          ptv.tv1_1d(params[1:], s * α_tv))
-                return params
+                                          opt.trend_filter(params[1:], k, λ,
+                                                           **trend_kwargs))
+                if log_transform:
+                    return params
+                # else:
+                # clip to minimum population size of 1
+                return np.clip(params, 1)
 
             # initial iterate
-            params = np.concatenate((np.array([logit(1e-3)]), np.log(self.η.y)))
+            params = np.concatenate((np.array([logit(1e-3)]),
+                                     np.log(self.η.y) if log_transform else self.η.y))
 
-            params = opt.acc_prox_grad_method(params, g, jit(grad(g)), h,
-                                              prox,
+            params = opt.acc_prox_grad_method(params,
+                                              g, jit(grad(g)),
+                                              h, prox,
                                               tol=tol,
                                               max_iter=max_iter,
                                               s0=s0,
@@ -352,7 +382,7 @@ class kSFS():
                                               verbose=verbose)
             if not folded:
                 self.r = expit(params[0])
-            y = np.exp(params[1:])
+            y = np.exp(params[1:]) if log_transform else params[1:]
             self.η = hst.eta(self.η.change_points, y)
             self.M = utils.M(self.n, t, y)
             self.L = self.C @ self.M
@@ -385,88 +415,65 @@ class kSFS():
                 if self.r is not None:
                     Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
                 loss_term = loss(Ξ, self.X)
-                spline_term = (β_spline / 2) * ((D1 @ Z) ** 2).sum()
-                # generalized Tikhonov
                 Z_delta = Z - Z_ref
-                ridge_term = (β_ridge / 2) * np.trace(Z_delta.T @ Γ @ Z_delta)
-                return loss_term + spline_term + ridge_term
+                ridge_term = (β_ridge / 2) * np.sum(Z_delta * (Γ @ Z_delta))
+                return loss_term + ridge_term
 
-            if β_tv and β_rank:
-                @jit
-                def h1(Z):
-                    """1st nondifferentiable piece of objective in μ problem"""
-                    return β_tv * np.abs(D1 @ Z).sum()
+            @jit
+            def h_trend(Z):
+                """trend filtering penalty"""
+                d1 = np.diff(Z, axis=0)
+                d2 = np.diff(d1, axis=0)
+                d3 = np.diff(d2, axis=0)
+                return sum(β * np.linalg.norm(d, 1, axis=0).sum()
+                           for β, d in zip([β0, β1, β2], [d1, d2, d3]))
 
-                shape = Z.T.shape
-                w = β_tv * onp.ones(shape)
-                w[:, -1] = 0
-                w = w.flatten()[:-1]
+            def prox_trend(Z, s):
+                """trend filtering prox operator (no jit due to ptv module)"""
+                if any((β0, β1, β2)):
+                    k, λ = zip(*[(k, λ)
+                                 for k, λ in enumerate([s * β0, s * β1, s * β2])
+                                 if λ > 0])
+                    Z = opt.trend_filter(Z, k, λ, **trend_kwargs)
+                return Z
 
-                def prox1(Z, s):
-                    """total variation prox operator on row dimension
-                    """
-                    return ptv.tv1w_1d(Z.T, s * w).reshape(shape).T
+            @jit
+            def h_rank(Z):
+                """2nd nondifferentiable piece of objective in μ problem"""
+                if hard:
+                    return β_rank * np.linalg.matrix_rank(Z - Z_const)
+                # else:
+                return β_rank * np.linalg.norm(Z - Z_const, 'nuc')
 
-                @jit
-                def h2(Z):
-                    """2nd nondifferentiable piece of objective in μ problem"""
-                    σ = np.linalg.svd(Z - Z_const, compute_uv=False)
-                    return β_rank * np.linalg.norm(σ, 0 if hard else 1)
+            @jit
+            def prox_rank(Z, s):
+                """singular value thresholding"""
+                U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
+                if hard:
+                    σ = index_update(σ, index[σ <= s * β_rank], 0)
+                else:
+                    σ = np.maximum(0, σ - s * β_rank)
+                Σ = np.diag(σ)
+                return Z_const + U @ Σ @ Vt
 
-                def prox2(Z, s):
-                    """singular value thresholding"""
-                    U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
-                    if hard:
-                        σ = index_update(σ, index[σ <= s * β_rank], 0)
-                    else:
-                        σ = np.maximum(0, σ - s * β_rank)
-                    Σ = np.diag(σ)
-                    return Z_const + U @ Σ @ Vt
-
-                Z = opt.three_op_prox_grad_method(Z, g, jit(grad(g)),
-                                                  h1, prox1,
-                                                  h2, prox2,
+            if any((β0, β1, β2)) and β_rank:
+                Z = opt.three_op_prox_grad_method(Z,
+                                                  g, jit(grad(g)),
+                                                  h_trend, prox_trend,
+                                                  h_rank, prox_rank,
                                                   tol=tol,
                                                   max_iter=max_iter,
                                                   s0=s0,
                                                   max_line_iter=max_line_iter,
                                                   gamma=gamma, ls_tol=0,
                                                   verbose=verbose)
-
             else:
-                if β_tv:
-                    @jit
-                    def h(Z):
-                        """nondifferentiable piece of objective in μ problem"""
-                        return β_tv * np.abs(D1 @ Z).sum()
-
-                    shape = Z.T.shape
-                    w = β_tv * onp.ones(shape)
-                    w[:, -1] = 0
-                    w = w.flatten()[:-1]
-
-                    def prox(Z, s):
-                        """total variation prox operator on row dimension
-                        """
-                        return ptv.tv1w_1d(Z.T, s * w).reshape(shape).T
-
+                if any((β0, β1, β2)):
+                    h = h_trend
+                    prox = prox_trend
                 elif β_rank:
-                    @jit
-                    def h(Z):
-                        """nondifferentiable piece of objective in μ problem"""
-                        σ = np.linalg.svd(Z - Z_const, compute_uv=False)
-                        return β_rank * np.linalg.norm(σ, 0 if hard else 1)
-
-                    def prox(Z, s):
-                        """singular value thresholding"""
-                        U, σ, Vt = np.linalg.svd(Z - Z_const,
-                                                 full_matrices=False)
-                        if hard:
-                            σ = index_update(σ, index[σ <= s * β_rank], 0)
-                        else:
-                            σ = np.maximum(0, σ - s * β_rank)
-                        Σ = np.diag(σ)
-                        return Z_const + U @ Σ @ Vt
+                    h = h_trend
+                    prox = prox_trend
                 else:
                     @jit
                     def h(Z):
@@ -476,8 +483,9 @@ class kSFS():
                     def prox(Z, s):
                         return Z
 
-                Z = opt.acc_prox_grad_method(Z, g, jit(grad(g)), h,
-                                             prox,
+                Z = opt.acc_prox_grad_method(Z,
+                                             g, jit(grad(g)),
+                                             h, prox,
                                              tol=tol,
                                              max_iter=max_iter,
                                              s0=s0,
