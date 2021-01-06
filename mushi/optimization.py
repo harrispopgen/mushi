@@ -238,9 +238,8 @@ def three_op_prox_grad_method(x: np.ndarray,  # noqa: C901
     return x
 
 
-warm_start = None
 def trend_filter(y: np.ndarray, k: Tuple[np.float64], λ: Tuple[np.float64],
-                       n_iter=100) -> np.ndarray:
+                       n_iter=100, ρ: Tuple[np.float64] = None) -> np.ndarray:
     r"""Mixed trend filtering via specialized ADMM as in [3]_, section 5.2.
 
     The optimization problem solved is:
@@ -251,10 +250,11 @@ def trend_filter(y: np.ndarray, k: Tuple[np.float64], λ: Tuple[np.float64],
     where :math:`r` is the number of elements of k.
 
     Args:
-        y: input signal vector or matrix of column signals
+        y: input signal vector, or matrix of column signals
         k: tuple of integer trend filter orders
         λ: tuple of penalties corresponding to each k
         n_iter: number of iterations of ADMM
+        ρ: ADMM convergence parameter
 
     Returns:
         trend filtered solution
@@ -264,64 +264,57 @@ def trend_filter(y: np.ndarray, k: Tuple[np.float64], λ: Tuple[np.float64],
                Fast and flexible admm algorithms for trend filtering.
                Journal of Computational and Graphical Statistics 25.3 (2016): 839-858.
     """
+    if y.ndim == 1:
+        y = y[:, np.newaxis]
 
     # default ADMM parameters used in referenced paper
-    ρ = λ
+    if ρ is None:
+        ρ = λ
 
     r = len(k)
     n = len(y)
 
-    D, DT, DTD = D_DT_DTD(n, k)
+    D, DTD = D_DTD(n, k)
     c = choleskify(n, k, ρ)
 
-    if len(y.shape) == 1:
-        prox = ptv.tv1_1d
-    else:
-        def prox(Y, a):
-            shape = Y.shape[::-1]
-            w = np.ones(shape)
-            w[:, -1] = 0
-            w = w.flatten()[:-1]
-            return ptv.tv1w_1d(Y.T, a * w).reshape(shape).T
-
+    # initialize solution point
+    β = np.zeros_like(y)
     # initialize Lagrangian dual variables
-    global warm_start
-    if warm_start is not None and warm_start[0] == k and warm_start[1].shape == y.shape:
-        α, u = warm_start[2:]
-    else:
-        α = [np.zeros(y.shape)[:(n - k)] for k in k]
-        u = [np.zeros(y.shape)[:(n - k)] for k in k]
+    α = [np.zeros_like(y)[:(n - k)] for k in k]
+    u = [np.zeros_like(y)[:(n - k)] for k in k]
 
     # ADMM iterations
-    for _ in range(n_iter):
+    for iter in range(n_iter):
         β = cho_solve_banded((c, False),
-                             y + sum(ρ[l] * DT[l] @ (α[l] + u[l]) for l in range(r)))
+                             y + sum(ρ[l] * D[l].T @ (α[l] + u[l]) for l in range(r)),
+                             check_finite=False)
+        if iter + 1 == n_iter:
+            break
         for l in range(r):
-            α[l] = prox(D[l] @ β - u[l], λ[l] / ρ[l])
-            u[l] += α[l] - D[l] @ β
+            Dβ = D[l] @ β
+            for j in range(β.shape[1]):
+                α[l][:, j] = ptv.tv1_1d(Dβ[:, j] - u[l][:, j], λ[l] / ρ[l])
+            u[l] += α[l] - Dβ
 
-    warm_start = k, β, α, u
-    return β
+    # squeeze out singleton dimension if input is a vector
+    return np.squeeze(β)
 
 
-# Some cached helper functions for trend filtering
-@lru_cache(None)
-def D_DT_DTD(n, k):
-    # difference operator for each order in k
+# cached helper functions for trend filtering
+@lru_cache()
+def D_DTD(n, k):
+    """difference operator for each order in k"""
     D = np.eye(n, k=0) - np.eye(n, k=-1)
     D = tuple(np.linalg.matrix_power(D, k)[k:] for k in k)
 
-    return tuple(zip(*((D[l], D[l].T, D[l].T @ D[l]) for l in range(len(k)))))
+    return tuple(zip(*((D[l], D[l].T @ D[l]) for l in range(len(k)))))
 
 
-@lru_cache(None)
-def Ab(n, k, ρ):
-    # A is a banded Hermitian positive definite matrix with upper/lower bandwidth bw
-    # express A in upper diagonal ordered form Ab
-
-    DTD = D_DT_DTD(n, k)[-1]
-
-    A = (np.eye(n) + sum(ρ[l] * DTD[l] for l in range(len(k))))
+@lru_cache(maxsize=None)
+def choleskify(n, k, ρ):
+    """cholesky decomposition needed for linear solves in trend estimate"""
+    DTD = D_DTD(n, k)[1]
+    A = np.eye(n) + sum(ρ[l] * DTD[l] for l in range(len(k)))
     # A is a banded Hermitian positive definite matrix with upper/lower bandwidth bw
     # express in upper diagonal ordered form
     bw = max(k)
@@ -329,10 +322,4 @@ def Ab(n, k, ρ):
     for u in range(bw + 1):
         Ab[-(1 + u), u:] = np.diag(A, k=u)
 
-    return Ab
-
-
-@lru_cache(None)
-def choleskify(n, k, ρ):
-    # Cholesky decomposition solver
-    return cholesky_banded(Ab(n, k, ρ))
+    return cholesky_banded(Ab, check_finite=False)

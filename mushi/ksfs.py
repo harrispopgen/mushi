@@ -9,7 +9,6 @@ from jax.config import config
 import numpy as onp
 import jax.numpy as np
 from jax import jit, grad
-from jax.ops import index, index_update
 from jax.scipy.special import expit, logit
 from scipy.stats import poisson
 from typing import Union, List, Dict
@@ -63,7 +62,7 @@ class kSFS():
 
         elif X is not None:
             # if 1D SFS, make a column vector
-            if len(X.shape) == 1:
+            if X.ndim == 1:
                 X = X[:, np.newaxis]
             self.X = X
             self.n = len(X) + 1
@@ -358,9 +357,8 @@ class kSFS():
                     k, λ = zip(*[(k, λ)
                                  for k, λ in enumerate([s * α0, s * α1, s * α2])
                                  if λ > 0])
-                    params = index_update(params, index[1:],
-                                          opt.trend_filter(params[1:], k, λ,
-                                                           **trend_kwargs))
+                    params = params.at[1:].set(opt.trend_filter(params[1:], k, λ,
+                                                                **trend_kwargs))
                 if log_transform:
                     return params
                 # else:
@@ -430,12 +428,10 @@ class kSFS():
 
             def prox_trend(Z, s):
                 """trend filtering prox operator (no jit due to ptv module)"""
-                if any((β0, β1, β2)):
-                    k, λ = zip(*[(k, λ)
-                                 for k, λ in enumerate([s * β0, s * β1, s * β2])
-                                 if λ > 0])
-                    Z = opt.trend_filter(Z, k, λ, **trend_kwargs)
-                return Z
+                k, λ = zip(*[(k, λ)
+                             for k, λ in enumerate([s * β0, s * β1, s * β2])
+                             if λ > 0])
+                return opt.trend_filter(Z, k, λ, **trend_kwargs)
 
             @jit
             def h_rank(Z):
@@ -450,7 +446,7 @@ class kSFS():
                 """singular value thresholding"""
                 U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
                 if hard:
-                    σ = index_update(σ, index[σ <= s * β_rank], 0)
+                    σ = σ.at[σ <= s * β_rank].set(0)
                 else:
                     σ = np.maximum(0, σ - s * β_rank)
                 Σ = np.diag(σ)
