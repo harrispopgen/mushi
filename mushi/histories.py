@@ -57,12 +57,14 @@ class History():
             value = self.vals[i]
             yield (start_time, end_time, value)
 
-    def check_grid(self, other: int):
-        """test if time grid is the same as another instance"""
-        if any(self.change_points != other.change_points):
-            return False
-        else:
-            return True
+    def check_grid(self, other: 'History'):
+        """test if time grid is the same as another instance
+
+        Args:
+            other: another History object
+        """
+        if not np.array_equal(self.change_points, other.change_points):
+            raise ValueError('η(t) and μ(t) must use the same time grid')
 
     def plot(self, t_gen: np.float = None, types=None,
              **kwargs) -> List[mpl.lines.Line2D]:
