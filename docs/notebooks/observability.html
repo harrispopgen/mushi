@@ -40,7 +40,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Public API: mushi package" href="../mushi.html" />
-    <link rel="prev" title="Inferring demography and mutation spectrum history for human populations" href="1KG.html" /> 
+    <link rel="prev" title="Simple simulation" href="simulation_simple.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,8 +95,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation_simple.html">Simple simulation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Observability toward the coalescent horizon</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Define-a-simple-bottleneck-demography-\eta(t)">Define a simple bottleneck demography <span class="math notranslate nohighlight">\(\eta(t)\)</span></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Singular-value-spectrum-of-\mathbf{L}(\mathbf-y)-with-n=200">Singular value spectrum of <span class="math notranslate nohighlight">\(\mathbf{L}(\mathbf y)\)</span> with <span class="math notranslate nohighlight">\(n=200\)</span></a></li>
@@ -437,7 +436,7 @@ div.rendered_html tbody tr:hover {
 <h1>Observability toward the coalescent horizon<a class="headerlink" href="#Observability-toward-the-coalescent-horizon" title="Permalink to this headline">¶</a></h1>
 <p>Spectral analysis of the <span class="math notranslate nohighlight">\(\mathcal{L}(\eta)\)</span> operator</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -454,7 +453,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -466,8 +465,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Define-a-simple-bottleneck-demography-\eta(t)">
 <h2>Define a simple bottleneck demography <span class="math notranslate nohighlight">\(\eta(t)\)</span><a class="headerlink" href="#Define-a-simple-bottleneck-demography-\eta(t)" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -485,17 +484,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_observability_4_0.svg" src="../_images/notebooks_observability_4_0.svg" /></div>
-</div>
 </div>
 <div class="section" id="Singular-value-spectrum-of-\mathbf{L}(\mathbf-y)-with-n=200">
 <h2>Singular value spectrum of <span class="math notranslate nohighlight">\(\mathbf{L}(\mathbf y)\)</span> with <span class="math notranslate nohighlight">\(n=200\)</span><a class="headerlink" href="#Singular-value-spectrum-of-\mathbf{L}(\mathbf-y)-with-n=200" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -505,18 +498,9 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
-  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
-</pre></div></div>
-</div>
 <p>Top few right singular vectors</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -533,8 +517,8 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -551,17 +535,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_observability_9_0.svg" src="../_images/notebooks_observability_9_0.svg" /></div>
-</div>
 </div>
 <div class="section" id="Eigenfunction-amplitudes">
 <h2>Eigenfunction amplitudes<a class="headerlink" href="#Eigenfunction-amplitudes" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -589,12 +567,6 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_observability_11_0.svg" src="../_images/notebooks_observability_11_0.svg" /></div>
-</div>
 </div>
 </div>
 
@@ -609,7 +581,7 @@ div.rendered_html tbody tr:hover {
         <a href="../mushi.html" class="btn btn-neutral float-right" title="Public API: mushi package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="1KG.html" class="btn btn-neutral float-left" title="Inferring demography and mutation spectrum history for human populations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="simulation_simple.html" class="btn btn-neutral float-left" title="Simple simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

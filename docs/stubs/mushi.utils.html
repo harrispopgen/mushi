@@ -95,8 +95,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation_simple.html">Simple simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
@@ -224,16 +223,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.M" title="mushi.utils.M"><code class="xref py py-obj docutils literal notranslate"><span class="pre">M</span></code></a>(n, t, y)</p></td>
 <td><p>The M matrix defined in the paper’s appendix</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.d_kl" title="mushi.utils.d_kl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_kl</span></code></a>(Z, X, L)</p></td>
-<td><p>generalized Kullback-Liebler divergence (a Bregman divergence) between normalized SFS and its expectation under history (ignores constant term)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.fold" title="mushi.utils.fold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fold</span></code></a>(x)</p></td>
+<td><p>transform SFS to folded SFS</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.lsq" title="mushi.utils.lsq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lsq</span></code></a>(Z, X, L)</p></td>
-<td><p>Least-squares loss between SFS and its expectation under history</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.misid_partners" title="mushi.utils.misid_partners"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misid_partners</span></code></a>(mutation_types)</p></td>
+<td><p>ancestral state misidentification indices</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.prf" title="mushi.utils.prf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prf</span></code></a>(Z, X, L)</p></td>
-<td><p>Poisson random field log-likelihood of history (neglecting constant terms)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.mutype_misid" title="mushi.utils.mutype_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mutype_misid</span></code></a>(mutation_types)</p></td>
+<td><p>mutation type misidentification operator</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a>(t, y, n)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.revcomp" title="mushi.utils.revcomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revcomp</span></code></a>(mutation_type)</p></td>
+<td><p>reverse complement mutation type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a>(t, y, n)</p></td>
 <td><p>The survival function of the TMRCA at each time point</p></td>
 </tr>
 </tbody>

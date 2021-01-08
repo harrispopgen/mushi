@@ -19,8 +19,7 @@ to infer these histories from data without model specification.
   :maxdepth: 1
   :caption: Notebooks
 
-  notebooks/simulation
-  notebooks/1KG
+  notebooks/simulation_simple
   notebooks/observability
 
 .. todo:: set up Google collab for notebooks

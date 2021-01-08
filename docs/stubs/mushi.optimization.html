@@ -95,8 +95,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation_simple.html">Simple simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
@@ -211,18 +210,27 @@
 <div class="section" id="module-mushi.optimization">
 <span id="mushi-optimization"></span><h1>mushi.optimization<a class="headerlink" href="#module-mushi.optimization" title="Permalink to this headline">¶</a></h1>
 <p>Optimization functions.</p>
-<p class="rubric">Functions</p>
+<p class="rubric">Classes</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.acc_prox_grad_method" title="mushi.optimization.acc_prox_grad_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">acc_prox_grad_method</span></code></a>(x, g, grad_g, h, prox)</p></td>
-<td><p>Nesterov accelerated proximal gradient method with backtracking line search <a href="#id3"><span class="problematic" id="id1">[1]_</span></a>.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.AccProxGrad" title="mushi.optimization.AccProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccProxGrad</span></code></a>(g, grad_g, h, prox[, verbose])</p></td>
+<td><p>Nesterov accelerated proximal gradient method with backtracking line search <a href="#id4"><span class="problematic" id="id1">[1]_</span></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.three_op_prox_grad_method" title="mushi.optimization.three_op_prox_grad_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">three_op_prox_grad_method</span></code></a>(x, g, grad_g, h1, …)</p></td>
-<td><p>Three operator splitting proximal gradient method with backtracking line search <a href="#id4"><span class="problematic" id="id2">[2]_</span></a>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LineSearcher</span></code></a>([s0, max_line_iter, gamma, verbose])</p></td>
+<td><p>Abstract class for an optimizer with Armijo line search</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.Optimizer" title="mushi.optimization.Optimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Optimizer</span></code></a>([verbose])</p></td>
+<td><p>Abstract base class for optimizers</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.ThreeOpProxGrad" title="mushi.optimization.ThreeOpProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThreeOpProxGrad</span></code></a>(g, grad_g, h1, prox1, h2, prox2)</p></td>
+<td><p>Three operator splitting proximal gradient method with backtracking line search <a href="#id5"><span class="problematic" id="id2">[2]_</span></a>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.TrendFilter" title="mushi.optimization.TrendFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrendFilter</span></code></a>(ks, lambdas[, rhos, verbose])</p></td>
+<td><p>Mixed trend filtering via specialized ADMM as in <a href="#id6"><span class="problematic" id="id3">[3]_</span></a>, section 5.2.</p></td>
 </tr>
 </tbody>
 </table>

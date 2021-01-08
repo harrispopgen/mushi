@@ -15,10 +15,13 @@ mushi.kSFS
    
       ~kSFS.__init__
       ~kSFS.as_df
+      ~kSFS.check_eta
       ~kSFS.clear_eta
       ~kSFS.clear_mu
       ~kSFS.clustermap
-      ~kSFS.infer_history
+      ~kSFS.infer_eta
+      ~kSFS.infer_mush
+      ~kSFS.loss
       ~kSFS.plot
       ~kSFS.plot_total
       ~kSFS.simulate
