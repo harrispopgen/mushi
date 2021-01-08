@@ -66,40 +66,6 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
         @ np.diag(y)
 
 
-def prf(E: np.ndarray, X: np.ndarray) -> np.float64:
-    r"""Poisson random field loss
-
-    Args:
-        E: expectation :math:`E[X]`
-        X: data
-
-    """
-    return (E - X * np.log(E)).sum()
-
-
-def d_kl(E: np.ndarray, X: np.ndarray) -> np.float64:
-    r"""generalized Kullback-Liebler divergence, a Bregman divergence (ignores
-    constant term)
-
-    Args:
-        E: expectation :math:`E[X]`
-        X: data
-
-    """
-    return (X * np.log(X / E) - X + E).sum()
-
-
-def lsq(E: np.ndarray, X: np.ndarray) -> np.float64:
-    r"""Least-squares loss
-
-    Args:
-        E: expectation :math:`E[X]`
-        X: data
-
-    """
-    return (1 / 2) * ((E - X) ** 2).sum()
-
-
 def tmrca_sf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     """The survival function of the TMRCA at each time point
 
@@ -200,6 +166,14 @@ def mutype_misid(mutation_types: List[str]):
 
 def fold(x: np.ndarray) -> np.ndarray:
     """transform SFS to folded SFS"""
+    """Loss under current history
+
+    Args:
+        func: loss function name from loss_functions module
+
+    Returns:
+        loss
+    """
     n = len(x) + 1
     x = (x + x[::-1])[:(n // 2)]
     if n % 2 == 0:
