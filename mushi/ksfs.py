@@ -204,9 +204,9 @@ class kSFS():
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             line_search_kwargs: line search keyword arguments,
-                                see :py:class:`optimization.LineSearcher`
+                                see :py:meth:`mushi.optimization.LineSearcher`
             trend_kwargs: keyword arguments for trend filtering,
-                          see :py:fun:`optimization.TrendFilter.run`
+                          see :py:meth:`mushi.optimization.TrendFilter.run`
             verbose: print verbose messages if ``True``
         """
         if self.X is None:
@@ -338,9 +338,9 @@ class kSFS():
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             line_search_kwargs: line search keyword arguments,
-                                see :py:class:`optimization.LineSearcher`
+                                see :py:class:`mushi.optimization.LineSearcher`
             trend_kwargs: keyword arguments for trend filtering,
-                          see :py:fun:`optimization.TrendFilter.run`
+                          see :py:meth:`mushi.optimization.TrendFilter.run`
             verbose: print verbose messages if ``True``
         """
         if self.X is None:

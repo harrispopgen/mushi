@@ -123,7 +123,7 @@ class AccProxGrad(LineSearcher):
         prox: proximal operator corresponding to h
         verbose: flag to print convergence messages
         line_search_kwargs: line search keyword arguments,
-                            see :py:class:`optimization.LineSearcher`
+                            see :py:class:`mushi.optimization.LineSearcher`
 
     References
     ----------
@@ -214,7 +214,7 @@ class ThreeOpProxGrad(AccProxGrad):
         prox2: proximal operator corresponding to h2
         verbose: print convergence messages
         line_search_kwargs: line search keyword arguments,
-                            see :py:class:`optimization.LineSearcher`
+                            see :py:class:`mushi.optimization.LineSearcher`
 
     References:
         .. [2] Pedregosa, Gidel, Adaptive Three Operator Splitting in
