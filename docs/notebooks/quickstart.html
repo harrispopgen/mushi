@@ -567,8 +567,8 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Demographic-inference">
 <h2>Demographic inference<a class="headerlink" href="#Demographic-inference" title="Permalink to this headline">¶</a></h2>
 <p>With SFS data defined, we can attempt to infer demographic history, and ask if it resembles the true history we used to simulate the data.</p>
-<p>Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties. ### Regularization parameters - The most important regularization penalties are <code class="docutils literal notranslate"><span class="pre">trend_penalties</span></code>, a list containing pairs <code class="docutils literal notranslate"><span class="pre">[(k,</span> <span class="pre">λ),</span> <span class="pre">...]</span></code>. Each pair indicates a trend penalty of order <code class="docutils literal notranslate"><span class="pre">k</span></code> and strength <code class="docutils literal notranslate"><span class="pre">λ</span></code>. Inference will favor piece-wise polynomial solutions, with pieces of order <code class="docutils literal notranslate"><span class="pre">k</span></code>. For example using only a 0th order penalty (as we do below) will favor piece-wise constant
-solutions. Also using a 1st order penalty would allow some pieces to be linear, and a 2nd order penalty would allow quadratic pieces, etc. - An additional <code class="docutils literal notranslate"><span class="pre">ridge_penalty</span></code> parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p>
+<p>Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties. ### Regularization parameters - The most important regularization parameter is the trend penalty, a tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code>. This indicates a trend penalty of order <code class="docutils literal notranslate"><span class="pre">k</span></code> and strength <code class="docutils literal notranslate"><span class="pre">λ</span></code>. Inference will favor piece-wise polynomial solutions, with pieces of order <code class="docutils literal notranslate"><span class="pre">k</span></code>. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty
+would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which will result in solutions that are a mix of pieces of difference orders. - An additional <code class="docutils literal notranslate"><span class="pre">ridge_penalty</span></code> parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p>
 <p>We use a single 0th order trend penalty, to favor piecewise constant solutions. The choice of which trend orders to use is a model selection choice that should be judiciously chosen, possible based on domain knowledge about the population under study.</p>
 <p>We also can specify the number of iterations (if we want more than the default), and a verbosity level to print info about progress.</p>
 <div class="nbinput docutils container">
@@ -577,7 +577,7 @@ solutions. Also using a 1st order penalty would allow some pieces to be linear, 
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
-               <span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>  <span class="c1"># &lt;-- trend penalty</span>
                <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
                <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -646,9 +646,9 @@ DeviceArray(0.02018256, dtype=float64)
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
-               <span class="n">folded</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-               <span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>
                <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+               <span class="n">folded</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
@@ -746,7 +746,7 @@ maximum iteration 300 reached with relative change in objective function 1.5e-09
 <span></span><span class="n">mu0</span> <span class="o">=</span> <span class="n">Z</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
 <span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
-               <span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>
                <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -783,7 +783,7 @@ maximum iteration 300 reached with relative change in objective function 9.4e-09
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="c1"># &lt;-- mixed trend penalties</span>
                 <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 

@@ -675,14 +675,16 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">folded</span> <span class="o">=</span> <span class="kc">False</span>
+<span></span><span class="n">trend_penalties</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">))</span>
+
+<span class="n">folded</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="n">ksfs</span><span class="o">.</span><span class="n">clear_eta</span><span class="p">()</span>
 <span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
 <span class="n">ksfs</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
-               <span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">5e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">)],</span>
+               <span class="o">*</span><span class="n">trend_penalties</span><span class="p">,</span>
                <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
                <span class="n">pts</span><span class="o">=</span><span class="n">pts</span><span class="p">,</span> <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folded</span><span class="o">=</span><span class="n">folded</span><span class="p">)</span>
 
@@ -735,7 +737,9 @@ inferred ancestral misidentification rate: 0.020
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
 
-<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span> <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+<span class="n">trend_penalties</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">))</span>
+
+<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="o">*</span><span class="n">trend_penalties</span><span class="p">,</span> <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
@@ -771,6 +775,15 @@ maximum iteration 100 reached with relative change in objective function 1.2e-10
 </div>
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_simulation_21_1.svg" src="../_images/notebooks_simulation_21_1.svg" /></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>

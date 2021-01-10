@@ -345,9 +345,9 @@
 
 <div class="viewcode-block" id="kSFS.infer_eta"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.infer_eta">[docs]</a>    <span class="k">def</span> <span class="nf">infer_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                   <span class="n">mu0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-                  <span class="n">folded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                  <span class="n">trend_penalties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+                  <span class="o">*</span><span class="n">trend_penalty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                   <span class="n">ridge_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="n">folded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                   <span class="n">pts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
                   <span class="n">ta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                   <span class="n">log_transform</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -360,16 +360,16 @@
                   <span class="n">trend_kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span>
                   <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
                   <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;infer demographic history :math:`\eta(t)`</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Infer demographic history :math:`\eta(t)`</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            mu0: total mutation rate (per genome per generation)</span>
+<span class="sd">            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty</span>
+<span class="sd">                             (can pass multiple for mixed trends)</span>
+<span class="sd">            ridge_penalty: ridge penalty</span>
 <span class="sd">            folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If</span>
 <span class="sd">                    ``True``, can only be used with ``infer_mu=False``, and</span>
 <span class="sd">                    infer :math:`\eta(t)` using folded SFS.</span>
-<span class="sd">            trend_penalties: list of tuples (k, λ) for kth order trend</span>
-<span class="sd">                             penalties</span>
-<span class="sd">            ridge_penalty: ridge penalty</span>
 <span class="sd">            pts: number of points for time discretization</span>
 <span class="sd">            ta: time (in WF generations ago) of oldest change point in time</span>
 <span class="sd">                discretization. If ``None``, set automatically based on</span>
@@ -464,12 +464,12 @@
         <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;nondifferentiable piece of objective in η problem&quot;&quot;&quot;</span>
             <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">λ</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">k</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalties</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalty</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">prox</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;trend filtering prox operator (no jit due to ptv module)&quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">trend_penalties</span><span class="p">:</span>
-                <span class="n">k</span><span class="p">,</span> <span class="n">sλ</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalties</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">trend_penalty</span><span class="p">:</span>
+                <span class="n">k</span><span class="p">,</span> <span class="n">sλ</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalty</span><span class="p">))</span>
                 <span class="n">trend_filterer</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">TrendFilter</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sλ</span><span class="p">)</span>
                 <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trend_filterer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
                                                               <span class="o">**</span><span class="n">trend_kwargs</span><span class="p">))</span>
@@ -497,7 +497,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span></div>
 
 <div class="viewcode-block" id="kSFS.infer_mush"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.infer_mush">[docs]</a>    <span class="k">def</span> <span class="nf">infer_mush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                   <span class="n">trend_penalties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+                   <span class="o">*</span><span class="n">trend_penalty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                    <span class="n">ridge_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                    <span class="n">rank_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                    <span class="n">hard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -512,8 +512,8 @@
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Infer mutation spectrum history :math:`\mu(t)`</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            trend_penalties: list of tuples (k, λ) for kth order trend</span>
-<span class="sd">                             penalties</span>
+<span class="sd">            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty</span>
+<span class="sd">                             (can pass multiple for mixed trends)</span>
 <span class="sd">            ridge_penalty: ridge penalty</span>
 <span class="sd">            rank_penalty: rank penalty</span>
 <span class="sd">            hard: hard rank penalty (non-convex)</span>
@@ -582,11 +582,11 @@
         <span class="k">def</span> <span class="nf">h_trend</span><span class="p">(</span><span class="n">Z</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;trend filtering penalty&quot;&quot;&quot;</span>
             <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">λ</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalties</span><span class="p">)</span>
+                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalty</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">prox_trend</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;trend filtering prox operator (no jit due to ptv module)&quot;&quot;&quot;</span>
-            <span class="n">k</span><span class="p">,</span> <span class="n">sλ</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalties</span><span class="p">))</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">sλ</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="n">λ</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="n">trend_penalty</span><span class="p">))</span>
             <span class="n">trend_filterer</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">TrendFilter</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sλ</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">trend_filterer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="o">**</span><span class="n">trend_kwargs</span><span class="p">)</span>
 
@@ -610,14 +610,14 @@
             <span class="k">return</span> <span class="n">Z_const</span> <span class="o">+</span> <span class="n">U</span> <span class="o">@</span> <span class="n">Σ</span> <span class="o">@</span> <span class="n">Vt</span>
 
         <span class="c1"># optimizer</span>
-        <span class="k">if</span> <span class="n">trend_penalties</span> <span class="ow">and</span> <span class="n">rank_penalty</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">trend_penalty</span> <span class="ow">and</span> <span class="n">rank_penalty</span><span class="p">:</span>
             <span class="n">optimizer</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">ThreeOpProxGrad</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">jit</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">g</span><span class="p">)),</span>
                                             <span class="n">h_trend</span><span class="p">,</span> <span class="n">prox_trend</span><span class="p">,</span>
                                             <span class="n">h_rank</span><span class="p">,</span> <span class="n">prox_rank</span><span class="p">,</span>
                                             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                                             <span class="o">**</span><span class="n">line_search_kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">trend_penalties</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">trend_penalty</span><span class="p">:</span>
                 <span class="n">h</span> <span class="o">=</span> <span class="n">h_trend</span>
                 <span class="n">prox</span> <span class="o">=</span> <span class="n">prox_trend</span>
             <span class="k">elif</span> <span class="n">rank_penalty</span><span class="p">:</span>
