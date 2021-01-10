@@ -294,12 +294,12 @@ class kSFS():
         def h(params):
             """nondifferentiable piece of objective in η problem"""
             return sum(λ * np.linalg.norm(np.diff(params[1:], k), 1)
-                       for k, λ in trend_penalty)
+                       for k, λ in trend_penalty if λ > 0)
 
         def prox(params, s):
             """trend filtering prox operator (no jit due to ptv module)"""
             if trend_penalty:
-                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
+                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
                 trend_filterer = opt.TrendFilter(k, sλ)
                 params = params.at[1:].set(trend_filterer.run(params[1:],
                                                               **trend_kwargs))
@@ -412,11 +412,11 @@ class kSFS():
         def h_trend(Z):
             """trend filtering penalty"""
             return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
-                       for k, λ in trend_penalty)
+                       for k, λ in trend_penalty if λ > 0)
 
         def prox_trend(Z, s):
             """trend filtering prox operator (no jit due to ptv module)"""
-            k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
+            k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
             trend_filterer = opt.TrendFilter(k, sλ)
             return trend_filterer.run(Z, **trend_kwargs)
 
