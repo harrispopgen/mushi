@@ -194,8 +194,8 @@ class kSFS():
 
         Args:
             mu0: total mutation rate (per genome per generation)
-            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty
-                             (can pass multiple for mixed trends)
+            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend
+                           penalty (can pass multiple for mixed trends)
             ridge_penalty: ridge penalty
             folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
                     ``True``, can only be used with ``infer_mu=False``, and
@@ -220,6 +220,9 @@ class kSFS():
         """
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
+
+        # filter zeros from trend penalties
+        trend_penalty = tuple((k, λ) for k, λ in trend_penalty if λ > 0)
 
         # total SFS
         if self.X.ndim == 1:
@@ -294,12 +297,12 @@ class kSFS():
         def h(params):
             """nondifferentiable piece of objective in η problem"""
             return sum(λ * np.linalg.norm(np.diff(params[1:], k), 1)
-                       for k, λ in trend_penalty if λ > 0)
+                       for k, λ in trend_penalty)
 
         def prox(params, s):
             """trend filtering prox operator (no jit due to ptv module)"""
             if trend_penalty:
-                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
+                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
                 params = params.at[1:].set(trend_filterer.run(params[1:],
                                                               **trend_kwargs))
@@ -342,8 +345,8 @@ class kSFS():
         r"""Infer mutation spectrum history :math:`\mu(t)`
 
         Args:
-            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty
-                             (can pass multiple for mixed trends)
+            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend
+                           penalty (can pass multiple for mixed trends)
             ridge_penalty: ridge penalty
             rank_penalty: rank penalty
             hard: hard rank penalty (non-convex)
@@ -363,6 +366,9 @@ class kSFS():
         self.check_eta()
         if self.mutation_types is None:
             raise ValueError('k-SFS must contain multiple mutation types')
+
+        # filter zeros from trend penalties
+        trend_penalty = tuple((k, λ) for k, λ in trend_penalty if λ > 0)
 
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
@@ -414,11 +420,11 @@ class kSFS():
             def h_trend(Z):
                 """trend filtering penalty"""
                 return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
-                           for k, λ in trend_penalty if λ > 0)
+                           for k, λ in trend_penalty)
 
             def prox_trend(Z, s):
                 """trend filtering prox operator (no jit due to ptv module)"""
-                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
+                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
                 return trend_filterer.run(Z, **trend_kwargs)
 
