@@ -34,6 +34,9 @@ extensions = [
     "sphinx.ext.todo"
 ]
 
+# sort autodoc :members: content by source instead of alphabetically
+autodoc_member_order = 'bysource'
+
 todo_include_todos = True
 
 intersphinx_mapping = {
