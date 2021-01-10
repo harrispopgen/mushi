@@ -175,9 +175,9 @@ class kSFS():
 
     def infer_eta(self,
                   mu0: np.float64,
-                  folded: bool = False,
-                  trend_penalties: List[Tuple[int, np.float64]] = [],
+                  *trend_penalty: Tuple[int, np.float64],
                   ridge_penalty: np.float64 = 0,
+                  folded: bool = False,
                   pts: np.float64 = 100,
                   ta: np.float64 = None,
                   log_transform: bool = True,
@@ -190,16 +190,16 @@ class kSFS():
                   trend_kwargs: Dict = {},
                   verbose: bool = False
                   ) -> None:
-        r"""infer demographic history :math:`\eta(t)`
+        r"""Infer demographic history :math:`\eta(t)`
 
         Args:
             mu0: total mutation rate (per genome per generation)
+            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty
+                             (can pass multiple for mixed trends)
+            ridge_penalty: ridge penalty
             folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
                     ``True``, can only be used with ``infer_mu=False``, and
                     infer :math:`\eta(t)` using folded SFS.
-            trend_penalties: list of tuples (k, λ) for kth order trend
-                             penalties
-            ridge_penalty: ridge penalty
             pts: number of points for time discretization
             ta: time (in WF generations ago) of oldest change point in time
                 discretization. If ``None``, set automatically based on
@@ -294,12 +294,12 @@ class kSFS():
         def h(params):
             """nondifferentiable piece of objective in η problem"""
             return sum(λ * np.linalg.norm(np.diff(params[1:], k), 1)
-                       for k, λ in trend_penalties)
+                       for k, λ in trend_penalty)
 
         def prox(params, s):
             """trend filtering prox operator (no jit due to ptv module)"""
-            if trend_penalties:
-                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalties))
+            if trend_penalty:
+                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
                 params = params.at[1:].set(trend_filterer.run(params[1:],
                                                               **trend_kwargs))
@@ -327,7 +327,7 @@ class kSFS():
         self.L = self.C @ self.M
 
     def infer_mush(self,
-                   trend_penalties: List[Tuple[int, np.float64]] = [],
+                   *trend_penalty: Tuple[int, np.float64],
                    ridge_penalty: np.float64 = 0,
                    rank_penalty: np.float64 = 0,
                    hard: bool = False,
@@ -342,8 +342,8 @@ class kSFS():
         r"""Infer mutation spectrum history :math:`\mu(t)`
 
         Args:
-            trend_penalties: list of tuples (k, λ) for kth order trend
-                             penalties
+            trend_penalty: tuple ``(k, λ)`` for :math:`k`-th order trend penalty
+                             (can pass multiple for mixed trends)
             ridge_penalty: ridge penalty
             rank_penalty: rank penalty
             hard: hard rank penalty (non-convex)
@@ -412,11 +412,11 @@ class kSFS():
         def h_trend(Z):
             """trend filtering penalty"""
             return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
-                       for k, λ in trend_penalties)
+                       for k, λ in trend_penalty)
 
         def prox_trend(Z, s):
             """trend filtering prox operator (no jit due to ptv module)"""
-            k, sλ = zip(*((k, s * λ) for k, λ in trend_penalties))
+            k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
             trend_filterer = opt.TrendFilter(k, sλ)
             return trend_filterer.run(Z, **trend_kwargs)
 
@@ -440,14 +440,14 @@ class kSFS():
             return Z_const + U @ Σ @ Vt
 
         # optimizer
-        if trend_penalties and rank_penalty:
+        if trend_penalty and rank_penalty:
             optimizer = opt.ThreeOpProxGrad(g, jit(grad(g)),
                                             h_trend, prox_trend,
                                             h_rank, prox_rank,
                                             verbose=verbose,
                                             **line_search_kwargs)
         else:
-            if trend_penalties:
+            if trend_penalty:
                 h = h_trend
                 prox = prox_trend
             elif rank_penalty:
