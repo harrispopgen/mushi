@@ -408,36 +408,40 @@ class kSFS():
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
             return loss_term + ridge_term
 
-        @jit
-        def h_trend(Z):
-            """trend filtering penalty"""
-            return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
-                       for k, λ in trend_penalty if λ > 0)
+        if trend_penalty:
 
-        def prox_trend(Z, s):
-            """trend filtering prox operator (no jit due to ptv module)"""
-            k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
-            trend_filterer = opt.TrendFilter(k, sλ)
-            return trend_filterer.run(Z, **trend_kwargs)
+            @jit
+            def h_trend(Z):
+                """trend filtering penalty"""
+                return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
+                           for k, λ in trend_penalty if λ > 0)
 
-        @jit
-        def h_rank(Z):
-            """2nd nondifferentiable piece of objective in μ problem"""
-            if hard:
-                return rank_penalty * np.linalg.matrix_rank(Z - Z_const)
-            # else:
-            return rank_penalty * np.linalg.norm(Z - Z_const, 'nuc')
+            def prox_trend(Z, s):
+                """trend filtering prox operator (no jit due to ptv module)"""
+                k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty if λ > 0))
+                trend_filterer = opt.TrendFilter(k, sλ)
+                return trend_filterer.run(Z, **trend_kwargs)
 
-        @jit
-        def prox_rank(Z, s):
-            """singular value thresholding"""
-            U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
-            if hard:
-                σ = σ.at[σ <= s * rank_penalty].set(0)
-            else:
-                σ = np.maximum(0, σ - s * rank_penalty)
-            Σ = np.diag(σ)
-            return Z_const + U @ Σ @ Vt
+        if rank_penalty:
+
+            @jit
+            def h_rank(Z):
+                """2nd nondifferentiable piece of objective in μ problem"""
+                if hard:
+                    return rank_penalty * np.linalg.matrix_rank(Z - Z_const)
+                # else:
+                return rank_penalty * np.linalg.norm(Z - Z_const, 'nuc')
+
+            @jit
+            def prox_rank(Z, s):
+                """singular value thresholding"""
+                U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
+                if hard:
+                    σ = σ.at[σ <= s * rank_penalty].set(0)
+                else:
+                    σ = np.maximum(0, σ - s * rank_penalty)
+                Σ = np.diag(σ)
+                return Z_const + U @ Σ @ Vt
 
         # optimizer
         if trend_penalty and rank_penalty:
