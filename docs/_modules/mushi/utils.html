@@ -93,8 +93,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../notebooks/simulation_simple.html">Simple simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/simulation.html">Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -318,6 +317,7 @@
         <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">pair_idxs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mutation_types</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">pair_idxs</span></div>
 
+
 <div class="viewcode-block" id="mutype_misid"><a class="viewcode-back" href="../../mushi.html#mushi.utils.mutype_misid">[docs]</a><span class="k">def</span> <span class="nf">mutype_misid</span><span class="p">(</span><span class="n">mutation_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
     <span class="sd">&quot;&quot;&quot;mutation type misidentification operator</span>
 
@@ -334,6 +334,7 @@
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">misid_partners</span><span class="p">(</span><span class="n">mutation_types</span><span class="p">)):</span>
             <span class="n">AM_mut</span> <span class="o">=</span> <span class="n">index_update</span><span class="p">(</span><span class="n">AM_mut</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">AM_mut</span></div>
+
 
 <div class="viewcode-block" id="fold"><a class="viewcode-back" href="../../mushi.html#mushi.utils.fold">[docs]</a><span class="k">def</span> <span class="nf">fold</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;transform SFS to folded SFS&quot;&quot;&quot;</span>

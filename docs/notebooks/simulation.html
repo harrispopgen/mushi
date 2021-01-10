@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Simple simulation &mdash; mushi  documentation</title>
+  <title>Testing with msprime simulations &mdash; mushi  documentation</title>
   
 
   
@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Observability toward the coalescent horizon" href="observability.html" />
+    <link rel="next" title="Public API: mushi package" href="../mushi.html" />
     <link rel="prev" title="Citing mushi" href="../cite.html" /> 
 </head>
 
@@ -95,18 +95,22 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Simple simulation</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Time-grid">Time grid</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Define-true-demographic-history">Define true demographic history</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Mutation-rate-history-\mu(t)">Mutation rate history <span class="math notranslate nohighlight">\(\mu(t)\)</span></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#Simulate-a-k-SFS">Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#TMRCA-CDF">TMRCA CDF</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Infer-\eta(t)-and-\boldsymbol\mu(t)">Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TMRCA-CDF">TMRCA CDF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Inference">Inference</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convergence-parameters-and-time-grid">convergence parameters and time grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-\eta(t)">Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-\boldsymbol\mu(t)">Infer <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -163,13 +167,13 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Simple simulation</li>
+      <li>Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/notebooks/simulation_simple.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/notebooks/simulation.ipynb.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -437,11 +441,11 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Simple-simulation">
-<h1>Simple simulation<a class="headerlink" href="#Simple-simulation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Testing-with-msprime-simulations">
+<h1>Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations<a class="headerlink" href="#Testing-with-msprime-simulations" title="Permalink to this headline">¶</a></h1>
 <p>A notebook for testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code>’s ability to invert data simulated under the forward model</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -459,7 +463,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Time-grid">
 <h2>Time grid<a class="headerlink" href="#Time-grid" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -471,8 +475,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Define-true-demographic-history">
 <h2>Define true demographic history<a class="headerlink" href="#Define-true-demographic-history" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -489,12 +493,18 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_5_0.svg" src="../_images/notebooks_simulation_5_0.svg" /></div>
+</div>
 </div>
 <div class="section" id="Mutation-rate-history-\mu(t)">
 <h2>Mutation rate history <span class="math notranslate nohighlight">\(\mu(t)\)</span><a class="headerlink" href="#Mutation-rate-history-\mu(t)" title="Permalink to this headline">¶</a></h2>
 <p>A 96 dimensional history with a mixture of two latent signature: constant and pulse.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -524,9 +534,24 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
+  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_7_1.svg" src="../_images/notebooks_simulation_7_1.svg" /></div>
+</div>
 <p>Estimate the total mutation rate using <span class="math notranslate nohighlight">\(t=0\)</span></p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -535,14 +560,22 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+83.11894862750988
+</pre></div></div>
+</div>
 <div class="section" id="Simulate-a-k-SFS">
 <h3>Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS<a class="headerlink" href="#Simulate-a-k-SFS" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p>We’ll sample 200 haplotypes</p></li>
 <li><p>note that this simulation will have a slightly varying total mutation rate</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -562,9 +595,21 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_11_0.svg" src="../_images/notebooks_simulation_11_0.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_11_1.svg" src="../_images/notebooks_simulation_11_1.svg" /></div>
+</div>
 <p>Number of segregating sites</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -572,12 +617,21 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+8249776
+</pre></div></div>
+</div>
 </div>
 </div>
 <div class="section" id="TMRCA-CDF">
 <h2>TMRCA CDF<a class="headerlink" href="#TMRCA-CDF" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -591,12 +645,20 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
 </div>
-<div class="section" id="Infer-\eta(t)-and-\boldsymbol\mu(t)">
-<h2>Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-\eta(t)-and-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
-<p>Run inference</p>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_15_0.svg" src="../_images/notebooks_simulation_15_0.svg" /></div>
+</div>
+<div class="section" id="Inference">
+<h3>Inference<a class="headerlink" href="#Inference" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="convergence-parameters-and-time-grid">
+<h2>convergence parameters and time grid<a class="headerlink" href="#convergence-parameters-and-time-grid" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -605,8 +667,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</div>
+<div class="section" id="Infer-\eta(t)">
+<h2>Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span><a class="headerlink" href="#Infer-\eta(t)" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -643,14 +708,34 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -8.835709e+07
+iteration 100, objective -8.850e+07, relative change 5.638e-07
+maximum iteration 100 reached with relative change in objective function 5.6e-07
+inferred ancestral misidentification rate: 0.020
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_19_1.svg" src="../_images/notebooks_simulation_19_1.svg" /></div>
+</div>
+</div>
+<div class="section" id="Infer-\boldsymbol\mu(t)">
+<h2>Infer <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
 
-<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">)],</span> <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="n">trend_penalties</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)],</span> <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
@@ -671,14 +756,21 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -5.169483e+07
+iteration 100, objective -5.170e+07, relative change 1.245e-10
+maximum iteration 100 reached with relative change in objective function 1.2e-10
+</pre></div></div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_21_1.svg" src="../_images/notebooks_simulation_21_1.svg" /></div>
 </div>
 </div>
 </div>
@@ -691,7 +783,7 @@ div.rendered_html tbody tr:hover {
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="observability.html" class="btn btn-neutral float-right" title="Observability toward the coalescent horizon" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../mushi.html" class="btn btn-neutral float-right" title="Public API: mushi package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../cite.html" class="btn btn-neutral float-left" title="Citing mushi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

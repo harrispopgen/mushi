@@ -94,8 +94,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/simulation_simple.html">Simple simulation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/simulation.html">Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -176,8 +175,10 @@
  <a href="#_"><strong>_</strong></a>
  | <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
@@ -214,6 +215,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History.arrays">arrays() (mushi.histories.History method)</a>
+</li>
       <li><a href="mushi.html#mushi.kSFS.as_df">as_df() (mushi.kSFS method)</a>
 </li>
   </ul></td>
@@ -224,6 +227,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.utils.C">C() (in module mushi.utils)</a>
 </li>
+      <li><a href="mushi.html#mushi.histories.History.check_grid">check_grid() (mushi.histories.History method)</a>
+</li>
       <li><a href="mushi.html#mushi.optimization.Optimizer.check_x">check_x() (mushi.optimization.Optimizer method)</a>
 </li>
       <li><a href="mushi.html#mushi.kSFS.clear_eta">clear_eta() (mushi.kSFS method)</a>
@@ -232,21 +237,35 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.kSFS.clear_mu">clear_mu() (mushi.kSFS method)</a>
 </li>
-      <li><a href="mushi.html#mushi.kSFS.clustermap">clustermap() (mushi.kSFS method)</a>
+      <li><a href="mushi.html#mushi.histories.mu.clustermap">clustermap() (mushi.histories.mu method)</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.kSFS.clustermap">(mushi.kSFS method)</a>
+</li>
         <li><a href="mushi.html#mushi.mu.clustermap">(mushi.mu method)</a>
 </li>
       </ul></li>
   </ul></td>
 </tr></table>
 
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.loss_functions.dkl">dkl() (in module mushi.loss_functions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History.epochs">epochs() (mushi.histories.History method)</a>
+</li>
       <li><a href="mushi.html#mushi.eta">eta (class in mushi)</a>, <a href="stubs/mushi.eta.html#mushi.eta">[1]</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.eta">(class in mushi.histories)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.eta">(mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.eta">[1]</a>
 </li>
       </ul></li>
@@ -273,6 +292,14 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.utils.fold">fold() (in module mushi.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History">History (class in mushi.histories)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -314,6 +341,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.kSFS.loss">loss() (mushi.kSFS method)</a>
 </li>
+      <li><a href="mushi.html#mushi.loss_functions.lsq">lsq() (in module mushi.loss_functions)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -330,6 +359,10 @@
       <ul>
         <li><a href="stubs/mushi.composition.html#module-mushi.composition">mushi.composition</a>
 </li>
+        <li><a href="mushi.html#module-mushi.histories">mushi.histories</a>, <a href="stubs/mushi.histories.html#module-mushi.histories">[1]</a>
+</li>
+        <li><a href="mushi.html#module-mushi.loss_functions">mushi.loss_functions</a>
+</li>
         <li><a href="mushi.html#module-mushi.optimization">mushi.optimization</a>, <a href="stubs/mushi.optimization.html#module-mushi.optimization">[1]</a>
 </li>
         <li><a href="mushi.html#module-mushi.utils">mushi.utils</a>, <a href="stubs/mushi.utils.html#module-mushi.utils">[1]</a>
@@ -338,18 +371,34 @@
       <li><a href="mushi.html#mushi.mu">mu (class in mushi)</a>, <a href="stubs/mushi.mu.html#mushi.mu">[1]</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.mu">(class in mushi.histories)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.mu">(mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.mu">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#id1">mu() (mushi.kSFS property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     mushi.composition
 
       <ul>
         <li><a href="stubs/mushi.composition.html#module-mushi.composition">module</a>
+</li>
+      </ul></li>
+      <li>
+    mushi.histories
+
+      <ul>
+        <li><a href="mushi.html#module-mushi.histories">module</a>, <a href="stubs/mushi.histories.html#module-mushi.histories">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    mushi.loss_functions
+
+      <ul>
+        <li><a href="mushi.html#module-mushi.loss_functions">module</a>
 </li>
       </ul></li>
       <li>
@@ -395,6 +444,12 @@
       <li><a href="mushi.html#mushi.eta.plot">plot() (mushi.eta method)</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.eta.plot">(mushi.histories.eta method)</a>
+</li>
+        <li><a href="mushi.html#mushi.histories.History.plot">(mushi.histories.History method)</a>
+</li>
+        <li><a href="mushi.html#mushi.histories.mu.plot">(mushi.histories.mu method)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.plot">(mushi.kSFS method)</a>
 </li>
         <li><a href="mushi.html#mushi.mu.plot">(mushi.mu method)</a>
@@ -402,9 +457,15 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.mu.plot_cumulative">plot_cumulative() (mushi.mu method)</a>
+      <li><a href="mushi.html#mushi.histories.mu.plot_cumulative">plot_cumulative() (mushi.histories.mu method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.mu.plot_cumulative">(mushi.mu method)</a>
 </li>
+      </ul></li>
       <li><a href="mushi.html#mushi.kSFS.plot_total">plot_total() (mushi.kSFS method)</a>
+</li>
+      <li><a href="mushi.html#mushi.loss_functions.prf">prf() (in module mushi.loss_functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -475,15 +536,23 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.eta.y">y() (mushi.eta property)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.histories.eta.y">(mushi.histories.eta property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.mu.Z">Z() (mushi.mu property)</a>
+      <li><a href="mushi.html#mushi.histories.mu.Z">Z() (mushi.histories.mu property)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.mu.Z">(mushi.mu property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

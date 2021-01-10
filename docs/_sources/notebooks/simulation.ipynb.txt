@@ -4,7 +4,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Simple simulation\n",
+    "Testing with `msprime` simulations\n",
     "==\n",
     "\n",
     "A notebook for testing `mushi`'s ability to invert data simulated under the forward model"
@@ -233,14 +233,9 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "### Infer $\\eta(t)$ and $\\boldsymbol\\mu(t)$"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {},
-   "source": [
-    "Run inference"
+    "## Inference\n",
+    "\n",
+    "### convergence parameters and time grid"
    ]
   },
   {
@@ -251,6 +246,13 @@
    "source": [
     "convergence = dict(tol=0, max_iter=100, trend_kwargs=dict(max_iter=10))\n",
     "pts = 100"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Infer $\\eta(t)$"
    ]
   },
   {
@@ -294,6 +296,17 @@
    ]
   },
   {
+   "cell_type": "markdown",
+   "metadata": {
+    "slideshow": {
+     "slide_type": "-"
+    }
+   },
+   "source": [
+    "### Infer $\\boldsymbol\\mu(t)$"
+   ]
+  },
+  {
    "cell_type": "code",
    "execution_count": null,
    "metadata": {
@@ -303,7 +316,7 @@
    "source": [
     "ksfs.clear_mu()\n",
     "\n",
-    "ksfs.infer_mush(trend_penalties=[(0, 1e2), (2, 1e3)], ridge_penalty=1e-4,\n",
+    "ksfs.infer_mush(trend_penalties=[(0, 1e2), (1, 1e2)], ridge_penalty=1e-4,\n",
     "                **convergence, verbose=True)\n",
     "\n",
     "plt.figure(figsize=(8, 4))\n",
@@ -322,13 +335,6 @@
     "plt.tight_layout()\n",
     "plt.show()"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
@@ -348,7 +354,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.7.8"
+   "version": "3.7.6"
   }
  },
  "nbformat": 4,
