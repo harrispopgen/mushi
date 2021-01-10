@@ -1,9 +1,6 @@
 """Loss functions"""
 
-import numpy as onp
 import jax.numpy as np
-from jax.ops import index, index_update
-from typing import List
 
 
 def prf(E: np.ndarray, X: np.ndarray) -> np.float64:

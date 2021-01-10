@@ -110,12 +110,11 @@ class eta(History):
         super().__post_init__()
         assert len(self.y.shape) == 1, self.y.shape
 
-    def plot(self, **kwargs) -> List[mpl.lines.Line2D]:
-        lines = super().plot(**kwargs)
+    def plot(self, **kwargs) -> None:
+        super().plot(**kwargs)
         plt.ylabel('$\\eta(t)$')
         plt.yscale('log')
         plt.tight_layout()
-        return lines
 
 
 @dataclass
@@ -151,7 +150,7 @@ class mu(History):
                                        name='mutation type')
 
     def plot(self, types: List[str] = None, clr: bool = False,
-             **kwargs) -> List[mpl.lines.Line2D]:
+             **kwargs) -> None:
         """
         types: list of mutation types to plot (default all)
         clr: flag to normalize to total mutation intensity and display as
@@ -176,7 +175,6 @@ class mu(History):
         else:
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
-        return lines
 
     def plot_cumulative(self, t_gen: np.float = None, clr: bool = False,
                         **kwargs) -> None:

@@ -147,6 +147,7 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
         assert set(pair_idxs) == set(range(len(mutation_types)))
         return pair_idxs
 
+
 def mutype_misid(mutation_types: List[str]):
     """mutation type misidentification operator
 
@@ -163,6 +164,7 @@ def mutype_misid(mutation_types: List[str]):
         for j, i in enumerate(misid_partners(mutation_types)):
             AM_mut = index_update(AM_mut, index[i, j], 1)
     return AM_mut
+
 
 def fold(x: np.ndarray) -> np.ndarray:
     """transform SFS to folded SFS"""

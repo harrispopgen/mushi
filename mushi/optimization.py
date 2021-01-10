@@ -6,7 +6,6 @@ import abc
 import numpy as np
 from typing import Callable, Tuple
 import prox_tv as ptv
-from typing import Tuple
 from scipy.linalg import cholesky_banded, cho_solve_banded
 from functools import lru_cache
 
@@ -20,6 +19,7 @@ class Optimizer(metaclass=abc.ABCMeta):
     Args:
         verbose: flag to print convergence messages
     """
+
     def __init__(self, verbose: bool = False):
         self.verbose = verbose
         self.x = None
@@ -45,7 +45,7 @@ class Optimizer(metaclass=abc.ABCMeta):
         pass
 
     def run(self, x: np.ndarray,
-            tol: np.float64 = 1e-10, max_iter: int = 100) -> np.ndarray:
+            tol: np.float64 = 1e-6, max_iter: int = 100) -> np.ndarray:
         """Optimize until convergence criteria are met
 
         Args:
@@ -76,7 +76,8 @@ class Optimizer(metaclass=abc.ABCMeta):
                       end='        \r', flush=True)
             if rel_change < tol:
                 if self.verbose:
-                    print(f'\nrelative change in objective function {rel_change:.2g} '
+                    print('\nrelative change in objective function '
+                          f'{rel_change:.2g} '
                           f'is within tolerance {tol} after {k} iterations',
                           flush=True)
                 return self.x
@@ -96,6 +97,7 @@ class LineSearcher(Optimizer):
         gamma: step size shrinkage rate for line search
         verbose: flag to print convergence messages
     """
+
     def __init__(self, s0: np.float64 = 1, max_line_iter: int = 100,
                  gamma: np.float64 = 0.8, verbose: bool = False):
         self.s0 = s0
@@ -127,9 +129,11 @@ class AccProxGrad(LineSearcher):
 
     References
     ----------
-    .. [1] https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+    .. [1]
+    https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
 
     """
+
     def __init__(self,
                  g: Callable[[np.ndarray], np.float64],
                  grad_g: Callable[[np.ndarray], np.float64],
@@ -174,8 +178,9 @@ class AccProxGrad(LineSearcher):
             # G_s(q) as in the notes linked above
             G = (1 / self.s) * (self.q - self.x)
             # test g(q - sG_s(q)) for sufficient decrease
-            if self.g(self.q - self.s * G) <= (g1 - self.s * (grad_g1 * G).sum()
-                                + (self.s / 2) * (G ** 2).sum()):
+            if self.g(self.q - self.s * G) <= (
+                                            g1 - self.s * (grad_g1 * G).sum()
+                                            + (self.s / 2) * (G ** 2).sum()):
                 # Armijo satisfied
                 break
             else:
@@ -194,8 +199,8 @@ class AccProxGrad(LineSearcher):
 
 
 class ThreeOpProxGrad(AccProxGrad):
-    r"""Three operator splitting proximal gradient method with backtracking line
-    search [2]_.
+    r"""Three operator splitting proximal gradient method with backtracking
+    line search [2]_.
 
     The optimization problem solved is:
 
@@ -223,6 +228,7 @@ class ThreeOpProxGrad(AccProxGrad):
                Krause, Eds. (PMLR, 2018), pp. 4085–4094.
 
     """
+
     def __init__(self,
                  g: Callable[[np.ndarray], np.float64],
                  grad_g: Callable[[np.ndarray], np.float64],
@@ -232,7 +238,8 @@ class ThreeOpProxGrad(AccProxGrad):
                  prox2: Callable[[np.ndarray, np.float64], np.float64],
                  verbose: bool = False,
                  **line_search_kwargs):
-        super().__init__(g, grad_g, h1, prox1, verbose=verbose, **line_search_kwargs)
+        super().__init__(g, grad_g, h1, prox1, verbose=verbose,
+                         **line_search_kwargs)
         self.h2 = h2
         self.prox2 = prox2
 
@@ -258,8 +265,8 @@ class ThreeOpProxGrad(AccProxGrad):
             self.x = self.prox(self.q - self.s * (self.u + grad_g1), self.s)
             # quadratic approximation of objective
             Q = (g1 + (grad_g1 * (self.x - self.q)).sum()
-                    + ((self.x - self.q) ** 2).sum() / (2 * s))
-            if g(self.x) - Q <= 0:
+                    + ((self.x - self.q) ** 2).sum() / (2 * self.s))
+            if self.g(self.x) - Q <= 0:
                 # sufficient decrease satisfied
                 break
             else:
@@ -284,7 +291,8 @@ class TrendFilter(Optimizer):
     The optimization problem solved is:
 
     .. math::
-        \arg\min_{\beta \in \mathbb{R}} \frac{1}{2} \|y - \beta\|_2^2 + \sum_{\ell=1}^r \lambda_\ell \| D^{k_\ell + 1} \beta \|_1
+        \arg\min_{\beta \in \mathbb{R}} \frac{1}{2} \|y - \beta\|_2^2
+        + \sum_{\ell=1}^r \lambda_\ell \| D^{k_\ell + 1} \beta \|_1
 
     where :math:`r` is the number of elements of k.
 
@@ -297,8 +305,10 @@ class TrendFilter(Optimizer):
     References:
         .. [3] Aaditya Ramdas and Ryan J. Tibshirani.
                Fast and flexible admm algorithms for trend filtering.
-               Journal of Computational and Graphical Statistics 25.3 (2016): 839-858.
+               Journal of Computational and Graphical Statistics
+               25.3 (2016): 839-858.
     """
+
     def __init__(self, ks: Tuple[int], lambdas: Tuple[np.float64],
                  rhos: Tuple[np.float64] = None, verbose: bool = False):
         self.k = ks
@@ -338,15 +348,17 @@ class TrendFilter(Optimizer):
         self.c = self._choleskify(self.n, self.k, self.ρ)
 
     def step(self):
-        self.x = cho_solve_banded((self.c, False),
-                                  self.y + sum(self.ρ[l] * self.D[l].T @ (self.α[l] + self.u[l])
-                                               for l in range(self.r)),
-                                  check_finite=False)
-        for l in range(self.r):
-            Dx = self.D[l] @ self.x
+        self.x = cho_solve_banded(
+            (self.c, False),
+            self.y + sum(self.ρ[i] * self.D[i].T @ (self.α[i] + self.u[i])
+                         for i in range(self.r)),
+            check_finite=False)
+        for i in range(self.r):
+            Dx = self.D[i] @ self.x
             for j in range(self.x.shape[1]):
-                self.α[l][:, j] = ptv.tv1_1d(Dx[:, j] - self.u[l][:, j], self.λ[l] / self.ρ[l])
-            self.u[l] += self.α[l] - Dx
+                self.α[i][:, j] = ptv.tv1_1d(Dx[:, j] - self.u[i][:, j],
+                                             self.λ[i] / self.ρ[i])
+            self.u[i] += self.α[i] - Dx
 
     def run(self, *args, **kwargs) -> np.ndarray:
         # squeeze out singleton dimension if input is a vector
@@ -354,7 +366,8 @@ class TrendFilter(Optimizer):
 
     @staticmethod
     @lru_cache()
-    def _D_DTD(n: int, k: Tuple[int]) -> Tuple[Tuple[np.ndarray], Tuple[np.ndarray]]:
+    def _D_DTD(n: int, k: Tuple[int]) -> Tuple[Tuple[np.ndarray],
+                                               Tuple[np.ndarray]]:
         """difference operator for each order in k
 
         Args:
@@ -368,7 +381,7 @@ class TrendFilter(Optimizer):
         D = np.eye(n, k=0) - np.eye(n, k=-1)
         D = tuple(np.linalg.matrix_power(D, k)[k:] for k in k)
 
-        return tuple(zip(*((D[l], D[l].T @ D[l]) for l in range(len(k)))))
+        return tuple(zip(*((D[i], D[i].T @ D[i]) for i in range(len(k)))))
 
     @staticmethod
     @lru_cache(maxsize=1024)
@@ -384,9 +397,9 @@ class TrendFilter(Optimizer):
             Cholesky decomposition
         """
         DTD = TrendFilter._D_DTD(n, k)[1]
-        A = np.eye(n) + sum(ρ[l] * DTD[l] for l in range(len(k)))
-        # A is a banded Hermitian positive definite matrix with upper/lower bandwidth bw
-        # express in upper diagonal ordered form
+        A = np.eye(n) + sum(ρ[i] * DTD[i] for i in range(len(k)))
+        # A is a banded Hermitian positive definite matrix with upper/lower
+        # bandwidth bw. Express in upper diagonal ordered form
         bw = max(k)
         Ab = np.zeros((bw + 1, A.shape[1]))
         for u in range(bw + 1):

@@ -13,11 +13,13 @@ from jax.scipy.special import expit, logit
 from scipy.stats import poisson
 from typing import Union, List, Dict, Tuple
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import seaborn as sns
 
 config.update('jax_enable_x64', True)
 # config.update('jax_debug_nans', True)
+
 
 class kSFS():
     r"""The core :math:`k`-SFS class for simulation and inference
@@ -60,22 +62,25 @@ class kSFS():
                                            name='mutation type')
 
         elif X is not None:
-            # if 1D SFS, make a column vector
-            if X.ndim == 1:
-                X = X[:, np.newaxis]
             self.X = X
             self.n = len(X) + 1
-            if mutation_types is not None:
-                self.mutation_types = pd.Index(mutation_types,
-                                               name='mutation type')
-            else:
-                self.mutation_types = pd.Index(range(self.X.shape[1]),
-                                               name='mutation type')
+            if self.X.ndim == 2:
+                if mutation_types is not None:
+                    if len(mutation_types) != self.X.shape[1]:
+                        raise ValueError('inconsistent number of mutation '
+                                         f'types {len(mutation_types)} for X '
+                                         f'with {self.X.shape[1]} columns')
+                    self.mutation_types = pd.Index(mutation_types,
+                                                   name='mutation type')
+                else:
+                    self.mutation_types = pd.Index(range(self.X.shape[1]),
+                                                   name='mutation type')
         elif n is None:
             raise TypeError('either file, or X, or n must be specified')
         else:
             self.n = n
             self.X = None
+            self.mutation_types = None
         self.C = utils.C(self.n)
         self.η = None
         self.μ = None
@@ -88,7 +93,7 @@ class kSFS():
         # frequency misidentification operator
         self.AM_freq = np.eye(self.n - 1)[::-1]
         # mutation type misidentification operator
-        if self.X is not None and self.X.shape[1] > 1:
+        if self.X is not None and self.X.ndim == 2:
             self.AM_mut = utils.mutype_misid(self.mutation_types)
 
     @property
@@ -110,8 +115,12 @@ class kSFS():
     def as_df(self) -> pd.DataFrame:
         r"""Return a pandas DataFrame representation
         """
-        return pd.DataFrame(self.X, index=range(1, self.n),
-                            columns=self.mutation_types)
+        index = pd.Index(range(1, self.n), name='sample frequency')
+        if self.X.ndim == 1:
+            return pd.Series(self.X, index=index, name='SFS')
+        elif self.X.ndim == 2:
+            return pd.DataFrame(self.X, index=index, name='k-SFS',
+                                columns=self.mutation_types)
 
     def clear_eta(self) -> None:
         r"""Clear demographic history attribute η
@@ -155,15 +164,14 @@ class kSFS():
         L = self.C @ M
         if type(mu) == hst.mu:
             eta.check_grid(mu)
-        else:
-            mu = hst.mu(eta.change_points, mu * np.ones_like(y))
-        Ξ = L @ mu.Z
-        self.mutation_types = mu.mutation_types
-        if len(self.mutation_types) == 1:
-            self.AM_mut = np.array([[1]])
-        else:
+            Ξ = L @ mu.Z
+            self.mutation_types = mu.mutation_types
             self.AM_mut = utils.mutype_misid(self.mutation_types)
-        self.X = poisson.rvs((1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut)
+            self.X = poisson.rvs((1 - r) * Ξ
+                                 + r * self.AM_freq @ Ξ @ self.AM_mut)
+        else:
+            ξ = mu * L.sum(1)
+            self.X = poisson.rvs((1 - r) * ξ + r * self.AM_freq @ ξ)
 
     def infer_eta(self,
                   mu0: np.float64,
@@ -176,7 +184,7 @@ class kSFS():
                   eta: hst.eta = None,
                   eta_ref: hst.eta = None,
                   loss: str = 'prf',
-                  max_iter: int = 1000,
+                  max_iter: int = 100,
                   tol: np.float64 = 0,
                   line_search_kwargs: Dict = {},
                   trend_kwargs: Dict = {},
@@ -189,7 +197,8 @@ class kSFS():
             folded: if ``False``, infer :math:`\eta(t)` using unfolded SFS. If
                     ``True``, can only be used with ``infer_mu=False``, and
                     infer :math:`\eta(t)` using folded SFS.
-            trend_penalties: list of tuples (k, λ) for kth order trend penalties
+            trend_penalties: list of tuples (k, λ) for kth order trend
+                             penalties
             ridge_penalty: ridge penalty
             pts: number of points for time discretization
             ta: time (in WF generations ago) of oldest change point in time
@@ -213,7 +222,10 @@ class kSFS():
             raise TypeError('use simulate() to generate data first')
 
         # total SFS
-        x = self.X.sum(1)
+        if self.X.ndim == 1:
+            x = self.X
+        else:
+            x = self.X.sum(1)
         # fold the spectrum if inference is on folded SFS
         if folded:
             x = utils.fold(x)
@@ -298,10 +310,12 @@ class kSFS():
             return np.clip(params, 1)
 
         # optimizer
-        optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox, verbose=verbose, **line_search_kwargs)
+        optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
+                                    verbose=verbose, **line_search_kwargs)
         # initial point
         params = np.concatenate((np.array([logit(1e-3)]),
-                                 np.log(self.η.y) if log_transform else self.η.y))
+                                 np.log(self.η.y)
+                                 if log_transform else self.η.y))
         # run optimization
         params = optimizer.run(params, tol=tol, max_iter=max_iter)
 
@@ -319,7 +333,7 @@ class kSFS():
                    hard: bool = False,
                    mu_ref: hst.mu = None,
                    loss: str = 'prf',
-                   max_iter: int = 1000,
+                   max_iter: int = 100,
                    tol: np.float64 = 0,
                    line_search_kwargs: Dict = {},
                    trend_kwargs: Dict = {},
@@ -328,7 +342,8 @@ class kSFS():
         r"""Infer mutation spectrum history :math:`\mu(t)`
 
         Args:
-            trend_penalties: list of tuples (k, λ) for kth order trend penalties
+            trend_penalties: list of tuples (k, λ) for kth order trend
+                             penalties
             ridge_penalty: ridge penalty
             rank_penalty: rank penalty
             hard: hard rank penalty (non-convex)
@@ -346,7 +361,7 @@ class kSFS():
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
         self.check_eta()
-        if len(self.mutation_types) < 2:
+        if self.mutation_types is None:
             raise ValueError('k-SFS must contain multiple mutation types')
 
         # number of segregating variants in each mutation type
@@ -354,7 +369,7 @@ class kSFS():
         # ininitialize with MLE constant μ
         μ_const = hst.mu(self.η.change_points,
                          self.mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                        self.X.shape[1])),
+                                                             self.X.shape[1])),
                          mutation_types=self.mutation_types.values)
         if self.μ is None:
             self.μ = μ_const
@@ -418,7 +433,7 @@ class kSFS():
             """singular value thresholding"""
             U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
             if hard:
-                σ = σ.at[σ <= s * β_rank].set(0)
+                σ = σ.at[σ <= s * rank_penalty].set(0)
             else:
                 σ = np.maximum(0, σ - s * rank_penalty)
             Σ = np.diag(σ)
@@ -469,7 +484,10 @@ class kSFS():
             fill_kwargs: keyword arguments for marginal fill
             folded: if ``True``, plot the folded SFS and fit
         """
-        x = self.X.sum(1, keepdims=True)
+        if self.X.ndim == 1:
+            x = self.X
+        else:
+            x = self.X.sum(1)
         if folded:
             x = utils.fold(x)
         plt.plot(range(1, len(x) + 1), x, **kwargs)
@@ -496,6 +514,7 @@ class kSFS():
             plt.fill_between(range(1, len(ξ) + 1),
                              ξ_lower, ξ_upper, **fill_kwargs)
         plt.xlabel('sample frequency')
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.ylabel(r'variant count')
         plt.tight_layout()
 
@@ -533,6 +552,7 @@ class kSFS():
             plt.gca().set_prop_cycle(None)
             plt.plot(range(1, self.n), Ξ, **line_kwargs)
         plt.xlabel('sample frequency')
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.xscale('log')
         plt.tight_layout()
 
@@ -567,9 +587,9 @@ class kSFS():
         loss = getattr(loss_functions, func)
         if self.μ is None:
             ξ = self.mu0 * self.L.sum(1)
-            if folded:
+            if self.r is not None:
                 ξ = utils.fold(ξ)
-                x = utils.fold(X.sum(1))
+                x = utils.fold(self.X.sum(1))
             else:
                 ξ = (1 - self.r) * ξ + self.r * self.AM_freq @ ξ
             return loss(np.squeeze(ξ), np.squeeze(x))
