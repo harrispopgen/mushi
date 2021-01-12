@@ -100,17 +100,16 @@ def tmrca_sf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     return result
 
 
-def revcomp(mutation_type: str) -> str:
+complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+
+
+def revcomp(seq: str) -> str:
     """reverse complement mutation type
 
     Args:
-        mutation_type: mutation type string, e.g. AAA>ACA
+        seq: nucleotide string (all caps ACGT)
     """
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
-    anc, der = mutation_type.split('>')
-    anc = ''.join(complement[b] for b in reversed(anc))
-    der = ''.join(complement[b] for b in reversed(der))
-    return anc + '>' + der
+    return ''.join(complement[b] for b in reversed(seq))
 
 
 def misid_partners(mutation_types: List[str]) -> List[int]:
@@ -123,14 +122,17 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
     to_pair = list(enumerate(mutation_types))
     pair_idxs = [-1] * len(to_pair)
     while to_pair:
+        print(to_pair)
         i, mutype1 = to_pair[0]
+        anc1, der1 = mutype1.split('>')
         match = False
         match_revcomp = False
         for j, mutype2 in to_pair[1:]:
-            if mutype1.split('>') == mutype2.split('>')[::-1]:
+            anc2, der2 = mutype2.split('>')
+            if (anc1, der1) == (der2, anc2):
                 match = True
                 j_match = j
-            elif mutype1.split('>') == mutype2.split('>')[::-1]:
+            elif (anc1, der1) == (revcomp(der2), revcomp(anc2)):
                 match_revcomp = True
                 j_match_revcomp = j
         if match:
@@ -142,10 +144,10 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
                              f'for mutation type {mutype1}')
         pair_idxs[i] = j
         pair_idxs[j] = i
-        del to_pair[i]
-        del to_pair[j]
-        assert set(pair_idxs) == set(range(len(mutation_types)))
-        return pair_idxs
+        del to_pair[j - i]
+        del to_pair[0]
+    assert set(pair_idxs) == set(range(len(mutation_types)))
+    return pair_idxs
 
 
 def mutype_misid(mutation_types: List[str]):
