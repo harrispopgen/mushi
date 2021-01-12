@@ -173,6 +173,18 @@ class kSFS():
             ξ = mu * L.sum(1)
             self.X = poisson.rvs((1 - r) * ξ + r * self.AM_freq @ ξ)
 
+    def set_eta(self, eta: hst.eta):
+        r"""Set pre-specified demographic history :math:`\eta(t)`
+
+        Args:
+            eta: demographic history object
+        """
+        self.η = eta
+        t = self.η.arrays()[0]
+        self.M = utils.M(self.n, t, self.η.y)
+        self.L = self.C @ self.M
+        self.r = 0
+
     def infer_eta(self,
                   mu0: np.float64,
                   *trend_penalty: Tuple[int, np.float64],
@@ -245,15 +257,13 @@ class kSFS():
 
         # ininitialize with MLE constant η
         if eta is not None:
-            self.η = eta
+            self.set_eta(eta)
         elif self.η is None:
             y = N_const * np.ones(change_points.size + 1)
             self.η = hst.eta(change_points, y)
         t = self.η.arrays()[0]
 
         self.mu0 = mu0
-        self.M = utils.M(self.n, t, self.η.y)
-        self.L = self.C @ self.M
 
         # badness of fit
         loss = getattr(loss_functions, loss)
