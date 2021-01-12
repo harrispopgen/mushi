@@ -62,6 +62,7 @@ class Optimizer(metaclass=abc.ABCMeta):
         f = self.f()
         if self.verbose:
             print(f'initial objective {f:.6e}', flush=True)
+        k = 0
         for k in range(1, max_iter + 1):
             self.step()
             if not np.all(np.isfinite(self.x)):
@@ -81,7 +82,7 @@ class Optimizer(metaclass=abc.ABCMeta):
                           f'is within tolerance {tol} after {k} iterations',
                           flush=True)
                 return self.x
-        if self.verbose:
+        if self.verbose and k > 0:
             print(f'\nmaximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}',
                   flush=True)
