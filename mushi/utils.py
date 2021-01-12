@@ -122,30 +122,22 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
     to_pair = list(enumerate(mutation_types))
     pair_idxs = [-1] * len(to_pair)
     while to_pair:
-        print(to_pair)
         i, mutype1 = to_pair[0]
         anc1, der1 = mutype1.split('>')
         match = False
-        match_revcomp = False
-        for j, mutype2 in to_pair[1:]:
+        for new_idx, (j, mutype2) in enumerate(to_pair):
             anc2, der2 = mutype2.split('>')
-            if (anc1, der1) == (der2, anc2):
+            if (anc1, der1) in ((der2, anc2), (revcomp(der2), revcomp(anc2))):
                 match = True
-                j_match = j
-            elif (anc1, der1) == (revcomp(der2), revcomp(anc2)):
-                match_revcomp = True
-                j_match_revcomp = j
-        if match:
-            j = j_match
-        elif match_revcomp:
-            j = j_match_revcomp
-        else:
+                break
+        if not match:
             raise ValueError('no ancestral misidentification partner found '
                              f'for mutation type {mutype1}')
         pair_idxs[i] = j
         pair_idxs[j] = i
-        del to_pair[j - i]
-        del to_pair[0]
+        del to_pair[new_idx]
+        if new_idx != 0:
+            del to_pair[0]
     assert set(pair_idxs) == set(range(len(mutation_types)))
     return pair_idxs
 
