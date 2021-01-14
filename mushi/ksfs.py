@@ -233,9 +233,6 @@ class kSFS():
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
 
-        # filter zeros from trend penalties
-        trend_penalty = tuple((k, λ) for k, λ in trend_penalty if λ > 0)
-
         # total SFS
         if self.X.ndim == 1:
             x = self.X
@@ -271,6 +268,11 @@ class kSFS():
         # Accelerated proximal gradient method: our objective function
         # decomposes as f = g + h, where g is differentiable and h is not.
         # https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+
+        # rescale trend penalties to be comparable between orders and time grids
+        # filter zeros from trend penalties
+        trend_penalty = tuple((k, (self.η.m ** k / np.math.factorial(k)) * λ)
+                              for k, λ in trend_penalty if λ > 0)
 
         # Tikhonov matrix
         if eta_ref is None:
@@ -377,9 +379,6 @@ class kSFS():
         if self.mutation_types is None:
             raise ValueError('k-SFS must contain multiple mutation types')
 
-        # filter zeros from trend penalties
-        trend_penalty = tuple((k, λ) for k, λ in trend_penalty if λ > 0)
-
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
         # ininitialize with MLE constant μ
@@ -395,6 +394,11 @@ class kSFS():
 
         # badness of fit
         loss = getattr(loss_functions, loss)
+
+        # rescale trend penalties to be comparable between orders and time grids
+        # filter zeros from trend penalties
+        trend_penalty = tuple((k, (self.μ.m ** k / np.math.factorial(k)) * λ)
+                              for k, λ in trend_penalty if λ > 0)
 
         if mu_ref is None:
             mu_ref = μ_const
