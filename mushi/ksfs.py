@@ -554,9 +554,15 @@ class kSFS():
             kwargs: key word arguments passed to data scatter plot
             line_kwargs: key word arguments passed to expectation line plot
         """
+        if self.r is None:
+            print('warning: misidentification rate is not defined, perhaps due'
+                  ' to folded SFS inference, and will be set to 0 for plotting')
+            r = 0
+        else:
+            r = self.r
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
-            Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
+            Ξ = (1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut
         if clr:
             X = cmp.clr(self.X)
             if self.μ is not None:
