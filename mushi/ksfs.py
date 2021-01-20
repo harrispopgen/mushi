@@ -279,6 +279,7 @@ class kSFS():
             eta_ref = self.η
             Γ = np.diag(np.ones_like(eta_ref.y))
         else:
+            self.η.check_grid(eta_ref)
             # - log(1 - CDF)
             Γ = np.diag(-np.log(utils.tmrca_sf(t, eta_ref.y, self.n))[:-1])
         y_ref = np.log(eta_ref.y) if log_transform else eta_ref.y
@@ -405,6 +406,7 @@ class kSFS():
             # Tikhonov matrix
             Γ = np.diag(np.ones_like(self.η.y))
         else:
+            self.μ.check_grid(mu_ref)
             # - log(1 - CDF)
             Γ = np.diag(- np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
 

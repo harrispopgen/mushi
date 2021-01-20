@@ -64,7 +64,7 @@ class History():
             other: another History object
         """
         if not np.array_equal(self.change_points, other.change_points):
-            raise ValueError('η(t) and μ(t) must use the same time grid')
+            raise ValueError('histories have different time grids')
 
     def plot(self, t_gen: np.float = None, types=None,
              **kwargs) -> List[mpl.lines.Line2D]:
