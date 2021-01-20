@@ -454,7 +454,6 @@ class kSFS():
                 # else:
                 return rank_penalty * np.linalg.norm(Z - Z_const, 'nuc')
 
-            @jit
             def prox_rank(Z, s):
                 """singular value thresholding"""
                 U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
@@ -464,6 +463,9 @@ class kSFS():
                     σ = np.maximum(0, σ - s * rank_penalty)
                 Σ = np.diag(σ)
                 return Z_const + U @ Σ @ Vt
+
+            if not hard:
+                prox_rank = jit(prox_rank)
 
         # optimizer
         if trend_penalty and rank_penalty:
