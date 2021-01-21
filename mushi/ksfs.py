@@ -432,8 +432,7 @@ class kSFS():
             r = expit(params[0, :])
             Z = params[1:, :-1]
             Ξ = self.L @ (self.mu0 * cmp.ilr_inv(Z, basis))
-            AM_mut = self.AM_mut * r[:, np.newaxis]
-            Ξ =  Ξ @ np.diag(1 - r) + self.AM_freq @ Ξ @ AM_mut
+            Ξ =  Ξ * (1 - r) + self.AM_freq @ Ξ @ (self.AM_mut * r[:, np.newaxis])
             loss_term = loss(Ξ, self.X)
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
@@ -596,8 +595,7 @@ class kSFS():
             r = self.r
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
-            AM_mut = self.AM_mut * self.r_vector[:, np.newaxis]
-            Ξ = Ξ @ np.diag(1 - self.r_vector) + self.AM_freq @ Ξ @ AM_mut
+            Ξ = Ξ * (1 - self.r_vector) + self.AM_freq @ Ξ @ (self.AM_mut * self.r_vector[:, np.newaxis])
         if clr:
             X = cmp.clr(self.X)
             if self.μ is not None:
@@ -660,6 +658,5 @@ class kSFS():
             return loss(np.squeeze(ξ), np.squeeze(x))
         # else:
         Ξ = self.L @ self.μ.Z
-        AM_mut = self.AM_mut * self.r_vector[:, np.newaxis]
-        Ξ = Ξ @ np.diag(1 - self.r_vector) + self.AM_freq @ Ξ @ AM_mut
+        Ξ = Ξ * (1 - self.r_vector) + self.AM_freq @ Ξ @ (self.AM_mut * self.r_vector[:, np.newaxis])
         return onp.float64(loss(Ξ, self.X))
