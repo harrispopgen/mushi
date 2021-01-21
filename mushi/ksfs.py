@@ -382,6 +382,9 @@ class kSFS():
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
         self.check_eta()
+        if self.r is None or self.r == 0:
+            raise ValueError('ancestral misidentification rate has not been '
+                             'inferred, possibly due to folded SFS inference')
         if self.mutation_types is None:
             raise ValueError('k-SFS must contain multiple mutation types')
 
@@ -424,29 +427,26 @@ class kSFS():
         Z_const = cmp.ilr(μ_const.Z, basis)
         Z_ref = cmp.ilr(mu_ref.Z, basis)
 
-        # reference/aggregate misid rate, logit transformed
-        if self.r is not None and self.r > 0:
-            r_ref_logit = logit(self.r)
-        else:
-            r_ref_logit = logit(1e-2)
+        # weights for relating misid rates to aggregate misid rate from eta step
+        misid_weights = self.X.sum(0) / self.X.sum()
+        # reference composition for weighted misid (if all rates are equal)
+        misid_ref = cmp.ilr(misid_weights)
 
-        # In the following, params will hold the misid rates in the first row
-        # and the ilr mush in the remaining rows. Because the ilr loses a
-        # dimension, we have dummy zeros in the last column for all but the
-        # first row
+        # In the following, params will hold the weighted misid composition in
+        # the first row and the mush composition at each time in the remaining rows
 
         @jit
         def g(params):
             """differentiable piece of objective in μ problem"""
-            r = expit(params[0, :])
-            Z = params[1:, :-1]
+            r = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
+            Z = params[1:, :]
             Ξ = self.L @ (self.mu0 * cmp.ilr_inv(Z, basis))
             Ξ =  Ξ * (1 - r) + self.AM_freq @ Ξ @ (self.AM_mut * r[:, np.newaxis])
             loss_term = loss(Ξ, self.X)
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
-            misid_delta = params[0, :] - r_ref_logit
-            misid_ridge_term = misid_penalty * misid_delta @ misid_delta
+            misid_delta = params[0, :] - misid_ref
+            misid_ridge_term = misid_penalty * np.sum(misid_delta ** 2)
             return loss_term + ridge_term + misid_ridge_term
 
         if trend_penalty:
@@ -454,7 +454,7 @@ class kSFS():
             @jit
             def h_trend(params):
                 """trend filtering penalty"""
-                return sum(λ * np.linalg.norm(np.diff(params[1:, :-1], k,
+                return sum(λ * np.linalg.norm(np.diff(params[1:, :], k,
                                                       axis=0), 1)
                            for k, λ in trend_penalty)
 
@@ -462,8 +462,8 @@ class kSFS():
                 """trend filtering prox operator (no jit due to ptv module)"""
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
-                return params.at[1:, :-1].set(trend_filterer.run(params[1:, :-1],
-                                             **trend_kwargs))
+                return params.at[1:, :].set(trend_filterer.run(params[1:, :],
+                                              **trend_kwargs))
 
         if rank_penalty:
 
@@ -471,22 +471,22 @@ class kSFS():
             def h_rank(params):
                 """2nd nondifferentiable piece of objective in μ problem"""
                 if hard:
-                    return rank_penalty * np.linalg.matrix_rank(params[1:, :-1]
+                    return rank_penalty * np.linalg.matrix_rank(params[1:, :]
                                                                 - Z_const)
                 # else:
-                return rank_penalty * np.linalg.norm(params[1:, :-1] - Z_const,
+                return rank_penalty * np.linalg.norm(params[1:, :] - Z_const,
                                                      'nuc')
 
             def prox_rank(params, s):
                 """singular value thresholding"""
-                U, σ, Vt = np.linalg.svd(params[1:, :-1] - Z_const,
+                U, σ, Vt = np.linalg.svd(params[1:, :] - Z_const,
                                          full_matrices=False)
                 if hard:
                     σ = σ.at[σ <= s * rank_penalty].set(0)
                 else:
                     σ = np.maximum(0, σ - s * rank_penalty)
                 Σ = np.diag(σ)
-                return params.at[1:, :-1].set(Z_const + U @ Σ @ Vt)
+                return params.at[1:, :].set(Z_const + U @ Σ @ Vt)
 
             if not hard:
                 prox_rank = jit(prox_rank)
@@ -519,25 +519,23 @@ class kSFS():
 
         # initial point (note initial row is for misid rates)
         # ---------------------------------------------------
-        params = np.zeros((self.μ.m + 1, self.mutation_types.size))
+        params = np.zeros((self.μ.m + 1, self.mutation_types.size - 1))
         # misid rate for each mutation type
         if self.r_vector is not None:
             r = self.r_vector
-        elif self.r is not None and self.r > 0:
-            r = self.r * np.ones(self.mutation_types.size)
         else:
-            r = 1e-2 * np.ones(self.mutation_types.size)
-        params.at[0, :].set(logit(r))
+            r = self.r * np.ones(self.mutation_types.size)
+        params.at[0, :].set(cmp.ilr(misid_weights * r, basis))
         # ilr transformed mush
-        params.at[1:, :-1].set(cmp.ilr(self.μ.Z, basis))
+        params.at[1:, :].set(cmp.ilr(self.μ.Z, basis))
         # ---------------------------------------------------
 
         # run optimizer
         params = optimizer.run(params, tol=tol, max_iter=max_iter)
 
-        self.r_vector = expit(params[0])
+        self.r_vector = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
         self.μ = hst.mu(self.η.change_points,
-                        self.mu0 * cmp.ilr_inv(params[1:, :-1], basis),
+                        self.mu0 * cmp.ilr_inv(params[1:, :], basis),
                         mutation_types=self.mutation_types.values)
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
