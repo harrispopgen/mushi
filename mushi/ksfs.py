@@ -90,6 +90,8 @@ class kSFS():
         # ancestral state misidentification
         # misidentification rate
         self.r = None
+        # mutation type-wise misidentification rate
+        self.r_vector = None
         # frequency misidentification operator
         self.AM_freq = np.eye(self.n - 1)[::-1]
         # mutation type misidentification operator
@@ -329,7 +331,7 @@ class kSFS():
         optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
                                     verbose=verbose, **line_search_kwargs)
         # initial point
-        params = np.concatenate((np.array([logit(1e-3)]),
+        params = np.concatenate((np.array([logit(1e-2)]),
                                  np.log(self.η.y)
                                  if log_transform else self.η.y))
         # run optimization
@@ -414,17 +416,24 @@ class kSFS():
         # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
         #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
         basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
-        # initial iterate in inverse log-ratio transform
-        Z = cmp.ilr(self.μ.Z, basis)
+
+        # constand MLE and reference mush
         Z_const = cmp.ilr(μ_const.Z, basis)
         Z_ref = cmp.ilr(mu_ref.Z, basis)
 
+        # In the following, params will hold the misid rates in the first row
+        # and the ilr mush in the remaining rows. Because the ilr loses a
+        # dimension, we have dummy zeros in the last column for all but the
+        # first row
+
         @jit
-        def g(Z):
+        def g(params):
             """differentiable piece of objective in μ problem"""
+            r = expit(params[0, :])
+            Z = params[1:, :-1]
             Ξ = self.L @ (self.mu0 * cmp.ilr_inv(Z, basis))
-            if self.r is not None:
-                Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
+            AM_mut = self.AM_mut * r[:, np.newaxis]
+            Ξ =  Ξ @ np.diag(1 - r) + self.AM_freq @ Ξ @ AM_mut
             loss_term = loss(Ξ, self.X)
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
@@ -433,36 +442,41 @@ class kSFS():
         if trend_penalty:
 
             @jit
-            def h_trend(Z):
+            def h_trend(params):
                 """trend filtering penalty"""
-                return sum(λ * np.linalg.norm(np.diff(Z, k, axis=0), 1)
+                return sum(λ * np.linalg.norm(np.diff(params[1:, :-1], k,
+                                                      axis=0), 1)
                            for k, λ in trend_penalty)
 
-            def prox_trend(Z, s):
+            def prox_trend(params, s):
                 """trend filtering prox operator (no jit due to ptv module)"""
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
-                return trend_filterer.run(Z, **trend_kwargs)
+                return params.at[1:, :-1].set(trend_filterer.run(params[1:, :-1],
+                                             **trend_kwargs))
 
         if rank_penalty:
 
             @jit
-            def h_rank(Z):
+            def h_rank(params):
                 """2nd nondifferentiable piece of objective in μ problem"""
                 if hard:
-                    return rank_penalty * np.linalg.matrix_rank(Z - Z_const)
+                    return rank_penalty * np.linalg.matrix_rank(params[1:, :-1]
+                                                                - Z_const)
                 # else:
-                return rank_penalty * np.linalg.norm(Z - Z_const, 'nuc')
+                return rank_penalty * np.linalg.norm(params[1:, :-1] - Z_const,
+                                                     'nuc')
 
-            def prox_rank(Z, s):
+            def prox_rank(params, s):
                 """singular value thresholding"""
-                U, σ, Vt = np.linalg.svd(Z - Z_const, full_matrices=False)
+                U, σ, Vt = np.linalg.svd(params[1:, :-1] - Z_const,
+                                         full_matrices=False)
                 if hard:
                     σ = σ.at[σ <= s * rank_penalty].set(0)
                 else:
                     σ = np.maximum(0, σ - s * rank_penalty)
                 Σ = np.diag(σ)
-                return Z_const + U @ Σ @ Vt
+                return params.at[1:, :-1].set(Z_const + U @ Σ @ Vt)
 
             if not hard:
                 prox_rank = jit(prox_rank)
@@ -483,21 +497,37 @@ class kSFS():
                 prox = prox_trend
             else:
                 @jit
-                def h(Z):
+                def h(params):
                     return 0
 
                 @jit
-                def prox(Z, s):
-                    return Z
+                def prox(params, s):
+                    return params
 
             optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
                                         verbose=verbose, **line_search_kwargs)
 
-        # run optimizer
-        Z = optimizer.run(Z, tol=tol, max_iter=max_iter)
+        # initial point (note initial row is for misid rates)
+        # ---------------------------------------------------
+        params = np.zeros((self.μ.m + 1, self.mutation_types.size))
+        # misid rate for each mutation type
+        if self.r_vector is not None:
+            r = self.r_vector
+        elif self.r is not None and self.r > 0:
+            r = self.r * np.ones(self.mutation_types.size)
+        else:
+            r = 1e-2 * np.ones(self.mutation_types.size)
+        params.at[0, :].set(logit(r))
+        # ilr transformed mush
+        params.at[1:, :-1].set(cmp.ilr(self.μ.Z, basis))
+        # ---------------------------------------------------
 
+        # run optimizer
+        params = optimizer.run(params, tol=tol, max_iter=max_iter)
+
+        self.r_vector = expit(params[0])
         self.μ = hst.mu(self.η.change_points,
-                        self.mu0 * cmp.ilr_inv(Z, basis),
+                        self.mu0 * cmp.ilr_inv(params[1:, :-1], basis),
                         mutation_types=self.mutation_types.values)
 
     def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
@@ -558,7 +588,7 @@ class kSFS():
             kwargs: key word arguments passed to data scatter plot
             line_kwargs: key word arguments passed to expectation line plot
         """
-        if self.r is None:
+        if self.η is not None and self.r is None:
             print('warning: misidentification rate is not defined, perhaps due'
                   ' to folded SFS inference, and will be set to 0 for plotting')
             r = 0
@@ -566,7 +596,8 @@ class kSFS():
             r = self.r
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
-            Ξ = (1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut
+            AM_mut = self.AM_mut * self.r_vector[:, np.newaxis]
+            Ξ = Ξ @ np.diag(1 - self.r_vector) + self.AM_freq @ Ξ @ AM_mut
         if clr:
             X = cmp.clr(self.X)
             if self.μ is not None:
@@ -629,6 +660,6 @@ class kSFS():
             return loss(np.squeeze(ξ), np.squeeze(x))
         # else:
         Ξ = self.L @ self.μ.Z
-        if self.r is not None:
-            Ξ = (1 - self.r) * Ξ + self.r * self.AM_freq @ Ξ @ self.AM_mut
+        AM_mut = self.AM_mut * self.r_vector[:, np.newaxis]
+        Ξ = Ξ @ np.diag(1 - self.r_vector) + self.AM_freq @ Ξ @ AM_mut
         return onp.float64(loss(Ξ, self.X))
