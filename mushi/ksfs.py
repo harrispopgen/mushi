@@ -350,6 +350,7 @@ class kSFS():
                    rank_penalty: np.float64 = 0,
                    hard: bool = False,
                    mu_ref: hst.mu = None,
+                   misid_penalty: np.float64 = 1e-4,
                    loss: str = 'prf',
                    max_iter: int = 100,
                    tol: np.float64 = 0,
@@ -367,6 +368,8 @@ class kSFS():
             hard: hard rank penalty (non-convex)
             mu_ref: reference MuSH for ridge penalty. If None, the constant
                     MLE is used
+            misid_penalty: ridge parameter to shrink misid rates to aggregate
+                           rate
             loss: loss function from loss_functions module
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
@@ -421,6 +424,12 @@ class kSFS():
         Z_const = cmp.ilr(μ_const.Z, basis)
         Z_ref = cmp.ilr(mu_ref.Z, basis)
 
+        # reference/aggregate misid rate, logit transformed
+        if self.r is not None and self.r > 0:
+            r_ref_logit = logit(self.r)
+        else:
+            r_ref_logit = logit(1e-2)
+
         # In the following, params will hold the misid rates in the first row
         # and the ilr mush in the remaining rows. Because the ilr loses a
         # dimension, we have dummy zeros in the last column for all but the
@@ -436,7 +445,9 @@ class kSFS():
             loss_term = loss(Ξ, self.X)
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
-            return loss_term + ridge_term
+            misid_delta = params[0, :] - r_ref_logit
+            misid_ridge_term = misid_penalty * misid_delta @ misid_delta
+            return loss_term + ridge_term + misid_ridge_term
 
         if trend_penalty:
 
