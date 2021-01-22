@@ -187,6 +187,69 @@ class kSFS():
         self.L = self.C @ self.M
         self.r = 0
 
+    def infer_misid(self,
+                    mu0: np.float64,
+                    loss: str = 'prf',
+                    max_iter: int = 100,
+                    tol: np.float64 = 0,
+                    line_search_kwargs: Dict = {},
+                    verbose: bool = False
+                    ) -> None:
+        r"""Infer ancestral misidentification rate with :math:`\eta(t)` fixed.
+        This function is used for fitting with a pre-specified demography, after
+        using ``set_eta()``, instead of inferring :math:`\eta(t)` with
+        ``infer_eta()`` (which jointly infers misidentification rate).
+
+        Args:
+            mu0: total mutation rate (per genome per generation)
+            loss: loss function name from loss_functions module
+            max_iter: maximum number of optimization steps
+            tol: relative tolerance in objective function (if ``0``, not used)
+            line_search_kwargs: line search keyword arguments,
+                                see :py:meth:`mushi.optimization.LineSearcher`
+            verbose: print verbose messages if ``True``
+        """
+        self.check_eta()
+        if self.X is None:
+            raise TypeError('use simulate() to generate data first')
+
+        # total SFS
+        if self.X.ndim == 1:
+            x = self.X
+        else:
+            x = self.X.sum(1)
+
+        # badness of fit
+        loss = getattr(loss_functions, loss)
+
+        self.mu0 = mu0
+
+        @jit
+        def g(r_logit):
+            """differentiable piece of objective in η problem"""
+            ξ = self.mu0 * self.L.sum(1)
+            r = expit(r_logit)
+            ξ = (1 - r) * ξ + r * self.AM_freq @ ξ
+            return loss(np.squeeze(ξ), x)
+
+        @jit
+        def h(params):
+            return 0
+
+        @jit
+        def prox(params, s):
+            return params
+
+        # optimizer
+        optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
+                                    verbose=verbose, **line_search_kwargs)
+        # initial point
+        r_logit = np.array([logit(1e-2)])
+        # run optimization
+        r_logit = optimizer.run(r_logit, tol=tol, max_iter=max_iter)
+
+        self.r = expit(r_logit)
+
     def infer_eta(self,
                   mu0: np.float64,
                   *trend_penalty: Tuple[int, np.float64],
