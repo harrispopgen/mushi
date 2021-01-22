@@ -430,7 +430,7 @@ class kSFS():
         # weights for relating misid rates to aggregate misid rate from eta step
         misid_weights = self.X.sum(0) / self.X.sum()
         # reference composition for weighted misid (if all rates are equal)
-        misid_ref = cmp.ilr(misid_weights)
+        misid_ref = cmp.ilr(misid_weights, basis)
 
         # In the following, params will hold the weighted misid composition in
         # the first row and the mush composition at each time in the remaining rows
@@ -525,14 +525,15 @@ class kSFS():
             r = self.r_vector
         else:
             r = self.r * np.ones(self.mutation_types.size)
-        params.at[0, :].set(cmp.ilr(misid_weights * r, basis))
+        params = params.at[0, :].set(cmp.ilr(misid_weights * r, basis))
         # ilr transformed mush
-        params.at[1:, :].set(cmp.ilr(self.μ.Z, basis))
+        params = params.at[1:, :].set(cmp.ilr(self.μ.Z, basis))
         # ---------------------------------------------------
 
         # run optimizer
         params = optimizer.run(params, tol=tol, max_iter=max_iter)
 
+        # update attributes
         self.r_vector = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
         self.μ = hst.mu(self.η.change_points,
                         self.mu0 * cmp.ilr_inv(params[1:, :], basis),
