@@ -338,6 +338,10 @@ class TrendFilter(Optimizer):
         self.y = x
         if self.y.ndim == 1:
             self.y = self.y[:, np.newaxis]
+            # remember the signal was 1D
+            self.oneD = True
+        else:
+            self.oneD = False
         self.n = self.y.shape[0]
         # initialize solution point (β in the paper cited)
         self.x = np.zeros_like(self.y)
@@ -362,8 +366,12 @@ class TrendFilter(Optimizer):
             self.u[i] += self.α[i] - Dx
 
     def run(self, *args, **kwargs) -> np.ndarray:
-        # squeeze out singleton dimension if input is a vector
-        return np.squeeze(super().run(*args, **kwargs))
+        solution = super().run(*args, **kwargs)
+        # squeeze out singleton dimension if input was a 1D
+        if self.oneD:
+            return np.squeeze(solution)
+        # else:
+        return solution
 
     @staticmethod
     @lru_cache()
