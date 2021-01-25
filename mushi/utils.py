@@ -4,7 +4,6 @@ r"""Utility functions
 
 import numpy as onp
 import jax.numpy as np
-from jax.ops import index, index_update
 from typing import List
 
 
@@ -90,10 +89,9 @@ def tmrca_sf(t: np.ndarray, y: np.ndarray, n: int) -> np.ndarray:
     binom_vec = l * (l - 1) / 2
 
     result = np.zeros(len(t))
-    result = index_update(result, index[:-1],
-                          np.squeeze(A2[np.newaxis, :]
-                                     @ np.exp(np.cumsum(logu[np.newaxis, :-1],
-                                                        axis=1)) ** binom_vec))
+    result = result.at[:-1].set(np.squeeze(A2[np.newaxis, :]
+                                @ np.exp(np.cumsum(logu[np.newaxis, :-1],
+                                                   axis=1)) ** binom_vec))
 
     assert np.all(np.isfinite(result))
 
@@ -113,7 +111,8 @@ def revcomp(seq: str) -> str:
 
 
 def misid_partners(mutation_types: List[str]) -> List[int]:
-    """ancestral state misidentification indices
+    """Ancestral state misidentification partner indices. Mutation type ``None``
+    is self-partnered.
 
     Args:
         mutation_types: list of mutation type strings, e.g. [AAA>ACA, ...]
@@ -123,21 +122,25 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
     pair_idxs = [-1] * len(to_pair)
     while to_pair:
         i, mutype1 = to_pair[0]
-        anc1, der1 = mutype1.split('>')
-        match = False
-        for new_idx, (j, mutype2) in enumerate(to_pair):
-            anc2, der2 = mutype2.split('>')
-            if (anc1, der1) in ((der2, anc2), (revcomp(der2), revcomp(anc2))):
-                match = True
-                break
-        if not match:
-            raise ValueError('no ancestral misidentification partner found '
-                             f'for mutation type {mutype1}')
-        pair_idxs[i] = j
-        pair_idxs[j] = i
-        del to_pair[new_idx]
-        if new_idx != 0:
+        if mutype1 is None:
+            pair_idxs[i] = i
             del to_pair[0]
+        else:
+            anc1, der1 = mutype1.split('>')
+            match = False
+            for new_idx, (j, mutype2) in enumerate(to_pair):
+                anc2, der2 = mutype2.split('>')
+                if (anc1, der1) in ((der2, anc2), (revcomp(der2), revcomp(anc2))):
+                    match = True
+                    break
+            if not match:
+                raise ValueError('no ancestral misidentification partner found '
+                                 f'for mutation type {mutype1}')
+            pair_idxs[i] = j
+            pair_idxs[j] = i
+            del to_pair[new_idx]
+            if new_idx != 0:
+                del to_pair[0]
     assert set(pair_idxs) == set(range(len(mutation_types)))
     return pair_idxs
 
@@ -149,14 +152,8 @@ def mutype_misid(mutation_types: List[str]):
         mutation_types: list of mutation type strings, e.g. [AAA>ACA, ...]
     """
     AM_mut = np.zeros((len(mutation_types), len(mutation_types)))
-    if isinstance(mutation_types[0], int):
-        # assume consecutive pairs are misid partners if types are integers
-        for j in range(0, len(mutation_types), 2):
-            AM_mut = index_update(AM_mut, index[j + 1, j], 1)
-            AM_mut = index_update(AM_mut, index[j, j + 1], 1)
-    else:
-        for j, i in enumerate(misid_partners(mutation_types)):
-            AM_mut = index_update(AM_mut, index[i, j], 1)
+    for j, i in enumerate(misid_partners(mutation_types)):
+        AM_mut = AM_mut.at[i, j].set(1)
     return AM_mut
 
 
@@ -173,5 +170,5 @@ def fold(x: np.ndarray) -> np.ndarray:
     n = len(x) + 1
     x = (x + x[::-1])[:(n // 2)]
     if n % 2 == 0:
-        x = index_update(x, index[-1], x[-1] // 2)
+        x = x.at[-1].set(x[-1] // 2)
     return x

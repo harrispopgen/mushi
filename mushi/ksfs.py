@@ -65,16 +65,12 @@ class kSFS():
             self.X = X
             self.n = len(X) + 1
             if self.X.ndim == 2:
-                if mutation_types is not None:
-                    if len(mutation_types) != self.X.shape[1]:
-                        raise ValueError('inconsistent number of mutation '
-                                         f'types {len(mutation_types)} for X '
-                                         f'with {self.X.shape[1]} columns')
-                    self.mutation_types = pd.Index(mutation_types,
-                                                   name='mutation type')
-                else:
-                    self.mutation_types = pd.Index(range(self.X.shape[1]),
-                                                   name='mutation type')
+                if len(mutation_types) != self.X.shape[1]:
+                    raise ValueError('inconsistent number of mutation '
+                                     f'types {len(mutation_types)} for X '
+                                     f'with {self.X.shape[1]} columns')
+                self.mutation_types = pd.Index(mutation_types,
+                                               name='mutation type')
         elif n is None:
             raise TypeError('either file, or X, or n must be specified')
         else:
@@ -485,15 +481,16 @@ class kSFS():
         # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
         #       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform
         basis = cmp._gram_schmidt_basis(self.μ.Z.shape[1])
+        check_orth = True if self.μ.Z.shape[1] > 2 else False
 
         # constand MLE and reference mush
-        Z_const = cmp.ilr(μ_const.Z, basis)
-        Z_ref = cmp.ilr(mu_ref.Z, basis)
+        Z_const = cmp.ilr(μ_const.Z, basis, check_orth)
+        Z_ref = cmp.ilr(mu_ref.Z, basis, check_orth)
 
         # weights for relating misid rates to aggregate misid rate from eta step
         misid_weights = self.X.sum(0) / self.X.sum()
         # reference composition for weighted misid (if all rates are equal)
-        misid_ref = cmp.ilr(misid_weights, basis)
+        misid_ref = cmp.ilr(misid_weights, basis, check_orth)
 
         # In the following, params will hold the weighted misid composition in
         # the first row and the mush composition at each time in the remaining rows
@@ -529,6 +526,9 @@ class kSFS():
                                               **trend_kwargs))
 
         if rank_penalty:
+            if self.mutation_types.size < 3:
+                raise ValueError('kSFS must have more than 2 mutation types for'
+                                 ' rank penalization')
 
             @jit
             def h_rank(params):
@@ -588,9 +588,13 @@ class kSFS():
             r = self.r_vector
         else:
             r = self.r * np.ones(self.mutation_types.size)
-        params = params.at[0, :].set(cmp.ilr(misid_weights * r, basis))
+        params = params.at[0, :].set(cmp.ilr(misid_weights * r, basis, check_orth))
         # ilr transformed mush
-        params = params.at[1:, :].set(cmp.ilr(self.μ.Z, basis))
+        ilr_mush = cmp.ilr(self.μ.Z, basis, check_orth)
+        # make sure it's a column vector if only 2 mutation types
+        if ilr_mush.ndim == 1:
+            ilr_mush = ilr_mush[:, np.newaxis]
+        params = params.at[1:, :].set(ilr_mush)
         # ---------------------------------------------------
 
         # run optimizer
