@@ -56,13 +56,13 @@ class kSFS():
             df = pd.read_csv(file, sep='\t', index_col=0)
             assert np.all(df.values >= 0)
             n = df.shape[0] + 1
-            self.X = df.values
+            self.X = np.array(df.values) # NOTE: np is jax.numpy
             self.n = len(self.X) + 1
             self.mutation_types = pd.Index(df.columns,
                                            name='mutation type')
 
         elif X is not None:
-            self.X = X
+            self.X = np.array(X) # NOTE: np is jax.numpy
             self.n = len(X) + 1
             if self.X.ndim == 2:
                 if len(mutation_types) != self.X.shape[1]:
@@ -165,11 +165,12 @@ class kSFS():
             Ξ = L @ mu.Z
             self.mutation_types = mu.mutation_types
             self.AM_mut = utils.mutype_misid(self.mutation_types)
-            self.X = poisson.rvs((1 - r) * Ξ
-                                 + r * self.AM_freq @ Ξ @ self.AM_mut)
+            self.X = np.array(poisson.rvs((1 - r) * Ξ
+                                          + r * self.AM_freq @ Ξ @ self.AM_mut)
+                              )
         else:
             ξ = mu * L.sum(1)
-            self.X = poisson.rvs((1 - r) * ξ + r * self.AM_freq @ ξ)
+            self.X = np.array(poisson.rvs((1 - r) * ξ + r * self.AM_freq @ ξ))
 
     def set_eta(self, eta: hst.eta):
         r"""Set pre-specified demographic history :math:`\eta(t)`
@@ -635,7 +636,7 @@ class kSFS():
                 z = self.mu0 * np.ones_like(self.η.y)
             ξ = self.L.dot(z)
             if folded:
-                ξ = utils.fold(onp.array(ξ))
+                ξ = utils.fold(ξ)
             else:
                 if self.r is None:
                     raise TypeError('ancestral state misidentification rate '
