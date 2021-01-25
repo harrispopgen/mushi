@@ -56,13 +56,13 @@ class kSFS():
             df = pd.read_csv(file, sep='\t', index_col=0)
             assert np.all(df.values >= 0)
             n = df.shape[0] + 1
-            self.X = np.array(df.values) # NOTE: np is jax.numpy
+            self.X = np.array(df.values)  # NOTE: np is jax.numpy
             self.n = len(self.X) + 1
             self.mutation_types = pd.Index(df.columns,
                                            name='mutation type')
 
         elif X is not None:
-            self.X = np.array(X) # NOTE: np is jax.numpy
+            self.X = np.array(X)  # NOTE: np is jax.numpy
             self.n = len(X) + 1
             if self.X.ndim == 2:
                 if len(mutation_types) != self.X.shape[1]:
@@ -117,7 +117,7 @@ class kSFS():
         if self.X.ndim == 1:
             return pd.Series(self.X, index=index, name='SFS')
         elif self.X.ndim == 2:
-            return pd.DataFrame(self.X, index=index, name='k-SFS',
+            return pd.DataFrame(self.X, index=index,
                                 columns=self.mutation_types)
 
     def clear_eta(self) -> None:
