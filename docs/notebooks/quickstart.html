@@ -109,7 +109,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing with <code class="docutils literal notranslate"><span class="pre">msprime</span></code> simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing with simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -589,9 +589,9 @@ would allow linear pieces, and a 2nd order penalty would allow quadratic pieces,
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-initial objective -4.247110e+07
-iteration 300, objective -4.269e+07, relative change 3.444e-08
-maximum iteration 300 reached with relative change in objective function 3.4e-08
+initial objective -4.249421e+07
+iteration 300, objective -4.269e+07, relative change 2.524e-08
+maximum iteration 300 reached with relative change in objective function 2.5e-08
 </pre></div></div>
 </div>
 <p>We can now plot the fit to the SFS, as well as the inferred history alongside the true history. The inferred history is contained in the attribute <code class="docutils literal notranslate"><span class="pre">eta</span></code> of the <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object.</p>
@@ -634,7 +634,7 @@ maximum iteration 300 reached with relative change in objective function 3.4e-08
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-DeviceArray(0.02018256, dtype=float64)
+DeviceArray(0.02017785, dtype=float64)
 </pre></div></div>
 </div>
 <div class="section" id="Folded-SFS">
@@ -669,8 +669,8 @@ DeviceArray(0.02018256, dtype=float64)
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 initial objective -4.442544e+07
-iteration 300, objective -4.443e+07, relative change 1.504e-09
-maximum iteration 300 reached with relative change in objective function 1.5e-09
+iteration 300, objective -4.443e+07, relative change 2.147e-11
+maximum iteration 300 reached with relative change in objective function 2.1e-11
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -685,22 +685,33 @@ maximum iteration 300 reached with relative change in objective function 1.5e-09
 <h2>Mutation spectrum history (mush) inference<a class="headerlink" href="#Mutation-spectrum-history-(mush)-inference" title="Permalink to this headline">¶</a></h2>
 <p>We now consider data that is resolved into different mutation types (e.g. 96 triplet mutation types), and we have an SFS for each type as a separate column of a <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix. As described above, a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> can be instantiated from a numpy array, or loaded from a tsv file. Here we’ll again simulate one, so we first need to define a true mutation spectrum history.</p>
 <p>In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, the mush is denoted by a time dependent mutation rate history vector <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span> (“mu” of t), and can be constructed using the class <code class="docutils literal notranslate"><span class="pre">mushi.mu</span></code>. Each component of the vector is the mutation rate for one mutation type (e.g. one triplet type, like <code class="docutils literal notranslate"><span class="pre">AAA&gt;ACA</span></code>).</p>
-<p>We instantiate mush with a vector of times (into the past) when the mush changes, and a <em>matrix</em> of mutation rate vecotrs in each interval. Here we define a a 96 dimensional history where all are contant in time except two: a pulse and a monotonic ramp. Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration.</p>
+<p>We instantiate mush with a vector of times (into the past) when the mush changes, and a <em>matrix</em> of mutation rate vectors in each interval. Here we define a a 96 dimensional history where all are constant in time except two: a pulse and a monotonic ramp. Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">96</span><span class="p">))</span>
+<span></span><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="c1"># pulse</span>
 <span class="n">Z</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">70</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
 <span class="n">Z</span><span class="p">[:</span><span class="mi">40</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">1.2</span>
 <span class="n">Z</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
+
+<span class="c1"># ramp</span>
 <span class="n">Z</span><span class="p">[</span><span class="mi">25</span><span class="p">:</span><span class="mi">75</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 <span class="n">Z</span><span class="p">[:</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
 
-<span class="n">mu_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+<span class="c1"># flat</span>
+<span class="n">Z</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">94</span>
 
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># We model a TCC&gt;TTC, it&#39;s revertant type GAA&gt;GGA (for ancestral misidentification),</span>
+<span class="c1"># and aggregate category for the remainder of mutations</span>
+<span class="n">mutation_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+<span class="n">mu_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">)</span>
+
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -726,9 +737,7 @@ maximum iteration 300 reached with relative change in objective function 1.5e-09
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -767,9 +776,9 @@ maximum iteration 300 reached with relative change in objective function 1.5e-09
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-initial objective -8.876479e+07
-iteration 300, objective -8.918e+07, relative change 9.443e-09
-maximum iteration 300 reached with relative change in objective function 9.4e-09
+initial objective -8.880823e+07
+iteration 300, objective -8.918e+07, relative change 1.540e-08
+maximum iteration 300 reached with relative change in objective function 1.5e-08
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -783,18 +792,16 @@ maximum iteration 300 reached with relative change in objective function 9.4e-09
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="c1"># &lt;-- mixed trend penalties</span>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">),</span> <span class="c1"># &lt;-- mixed trend penalties</span>
                 <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
                 <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -803,9 +810,9 @@ maximum iteration 300 reached with relative change in objective function 9.4e-09
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-initial objective -5.007991e+07
-iteration 300, objective -5.008e+07, relative change 8.333e-11
-maximum iteration 300 reached with relative change in objective function 8.3e-11
+initial objective -8.770428e+07
+iteration 300, objective -8.771e+07, relative change 3.642e-09
+maximum iteration 300 reached with relative change in objective function 3.6e-09
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -813,6 +820,15 @@ maximum iteration 300 reached with relative change in objective function 8.3e-11
 </div>
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_quickstart_24_1.svg" src="../_images/notebooks_quickstart_24_1.svg" /></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>

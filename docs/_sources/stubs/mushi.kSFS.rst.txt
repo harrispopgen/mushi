@@ -20,10 +20,12 @@ mushi.kSFS
       ~kSFS.clear_mu
       ~kSFS.clustermap
       ~kSFS.infer_eta
+      ~kSFS.infer_misid
       ~kSFS.infer_mush
       ~kSFS.loss
       ~kSFS.plot
       ~kSFS.plot_total
+      ~kSFS.set_eta
       ~kSFS.simulate
       ~kSFS.tmrca_cdf
    

@@ -30,6 +30,5 @@ mushi.mu
    .. autosummary::
    
       ~mu.Z
-      ~mu.mutation_types
    
    
