@@ -567,8 +567,8 @@ class kSFS():
                 h = h_trend
                 prox = prox_trend
             elif rank_penalty:
-                h = h_trend
-                prox = prox_trend
+                h = h_rank
+                prox = prox_rank
             else:
                 @jit
                 def h(params):
