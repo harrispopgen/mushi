@@ -36,16 +36,15 @@ class kSFS():
 
         1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`
 
-        2) ``X``: k-SFS matrix
+        2) ``X`` and ``mutation_types``
 
         3) ``n``: number of haplotypes to initialize for simulation
 
     Args:
         ksfs_file: path to :math:`k`-SFS file, as ouput by ``mutyper ksfs``
         X: :math:`k`-SFS matrix
-        n: number of sampled haplotypes
         mutation_types: list of names of X columns
-                        (defaults to integer range)
+        n: number of sampled haplotypes
 
     """
 
@@ -62,6 +61,8 @@ class kSFS():
                                            name='mutation type')
 
         elif X is not None:
+            if mutation_types is None:
+                raise TypeError('must specify mutation_types')
             self.X = np.array(X)  # NOTE: np is jax.numpy
             self.n = len(X) + 1
             if self.X.ndim == 2:
