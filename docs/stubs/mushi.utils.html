@@ -39,8 +39,8 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Open source code repository" href="../developer.html" />
-    <link rel="prev" title="mushi.composition" href="mushi.composition.html" /> 
+    <link rel="next" title="mushi.composition" href="mushi.composition.html" />
+    <link rel="prev" title="mushi.histories" href="mushi.histories.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,9 +95,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing with simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
@@ -105,8 +103,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../mushi.html#classes">Classes</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
 </li>
 </ul>
@@ -224,16 +223,19 @@
 <tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.M" title="mushi.utils.M"><code class="xref py py-obj docutils literal notranslate"><span class="pre">M</span></code></a>(n, t, y)</p></td>
 <td><p>The M matrix defined in the paper’s appendix</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.d_kl" title="mushi.utils.d_kl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">d_kl</span></code></a>(Z, X, L)</p></td>
-<td><p>generalized Kullback-Liebler divergence (a Bregman divergence) between normalized SFS and its expectation under history (ignores constant term)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.fold" title="mushi.utils.fold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fold</span></code></a>(x)</p></td>
+<td><p>transform SFS to folded SFS</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.lsq" title="mushi.utils.lsq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lsq</span></code></a>(Z, X, L)</p></td>
-<td><p>Least-squares loss between SFS and its expectation under history</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.misid_partners" title="mushi.utils.misid_partners"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misid_partners</span></code></a>(mutation_types)</p></td>
+<td><p>Ancestral state misidentification partner indices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.prf" title="mushi.utils.prf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prf</span></code></a>(Z, X, L)</p></td>
-<td><p>Poisson random field log-likelihood of history (neglecting constant terms)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.mutype_misid" title="mushi.utils.mutype_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mutype_misid</span></code></a>(mutation_types)</p></td>
+<td><p>mutation type misidentification operator</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a>(t, y, n)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.revcomp" title="mushi.utils.revcomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revcomp</span></code></a>(seq)</p></td>
+<td><p>reverse complement mutation type</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a>(t, y, n)</p></td>
 <td><p>The survival function of the TMRCA at each time point</p></td>
 </tr>
 </tbody>
@@ -248,10 +250,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../developer.html" class="btn btn-neutral float-right" title="Open source code repository" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.composition.html" class="btn btn-neutral float-right" title="mushi.composition" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mushi.composition.html" class="btn btn-neutral float-left" title="mushi.composition" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mushi.histories.html" class="btn btn-neutral float-left" title="mushi.histories" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

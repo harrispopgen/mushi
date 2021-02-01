@@ -57,14 +57,16 @@ class History():
             value = self.vals[i]
             yield (start_time, end_time, value)
 
-    def check_grid(self, other: int):
-        """test if time grid is the same as another instance"""
-        if any(self.change_points != other.change_points):
-            return False
-        else:
-            return True
+    def check_grid(self, other: 'History'):
+        """test if time grid is the same as another instance
 
-    def plot(self, t_gen: np.float = None, types=None,
+        Args:
+            other: another History object
+        """
+        if not np.array_equal(self.change_points, other.change_points):
+            raise ValueError('histories have different time grids')
+
+    def plot(self, t_gen: float = None, types=None,
              **kwargs) -> List[mpl.lines.Line2D]:
         """plot the history
 
@@ -108,12 +110,11 @@ class eta(History):
         super().__post_init__()
         assert len(self.y.shape) == 1, self.y.shape
 
-    def plot(self, **kwargs) -> List[mpl.lines.Line2D]:
-        lines = super().plot(**kwargs)
+    def plot(self, **kwargs) -> None:
+        super().plot(**kwargs)
         plt.ylabel('$\\eta(t)$')
         plt.yscale('log')
         plt.tight_layout()
-        return lines
 
 
 @dataclass
@@ -123,9 +124,9 @@ class mu(History):
     change_points: epoch change points (times)
     Z: matrix of constant values for each epoch (rows) in each mutation type
        (columns)
-    mutation_types: list of mutation type names (default integer names)
+    mutation_types: list of mutation type names (optional ``None`` element)
     """
-    mutation_types: List[str] = None
+    mutation_types: List[str]
 
     @property
     def Z(self):
@@ -142,14 +143,12 @@ class mu(History):
         if len(self.Z.shape) == 1:
             self.Z = self.Z[:, np.newaxis]
         assert len(self.Z.shape) == 2, self.Z.shape
-        if self.mutation_types is None:
-            self.mutation_types = range(self.Z.shape[1])
         assert len(self.mutation_types) == self.Z.shape[1]
         self.mutation_types = pd.Index(self.mutation_types,
                                        name='mutation type')
 
     def plot(self, types: List[str] = None, clr: bool = False,
-             **kwargs) -> List[mpl.lines.Line2D]:
+             **kwargs) -> None:
         """
         types: list of mutation types to plot (default all)
         clr: flag to normalize to total mutation intensity and display as
@@ -174,9 +173,8 @@ class mu(History):
         else:
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
-        return lines
 
-    def plot_cumulative(self, t_gen: np.float = None, clr: bool = False,
+    def plot_cumulative(self, t_gen: float = None, clr: bool = False,
                         **kwargs) -> None:
         """plot the cumulative mutation rate, like a Muller plot
 
@@ -201,7 +199,7 @@ class mu(History):
         plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, t_gen: np.float = None, **kwargs) -> None:
+    def clustermap(self, t_gen: float = None, **kwargs) -> None:
         """clustermap of compositionally centralized MUSH
 
         t_gen: generation time in years (optional)

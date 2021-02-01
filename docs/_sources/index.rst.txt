@@ -20,10 +20,6 @@ to infer these histories from data without model specification.
   :caption: Notebooks
 
   notebooks/simulation
-  notebooks/1KG
-  notebooks/observability
-
-.. todo:: set up Google collab for notebooks
 
 .. toctree::
    :maxdepth: 1

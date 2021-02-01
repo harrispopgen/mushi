@@ -11,9 +11,10 @@ mushi.utils
    
       C
       M
-      d_kl
-      lsq
-      prf
+      fold
+      misid_partners
+      mutype_misid
+      revcomp
       tmrca_sf
    
    

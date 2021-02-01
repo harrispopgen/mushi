@@ -95,9 +95,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing with simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
@@ -220,7 +218,7 @@
 <dd><p><span class="math notranslate nohighlight">\(k\)</span>-SFS matrix (or 1D SFS vector)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.19)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -231,7 +229,7 @@
 <dd><p>demographic history</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="mushi.eta.html#mushi.eta" title="mushi.eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.eta</span></code></a></p>
+<dd class="field-odd"><p><a class="reference internal" href="../mushi.html#mushi.eta" title="mushi.eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.eta</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -242,7 +240,7 @@
 <dd><p>mutation spectrum history</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="mushi.mu.html#mushi.mu" title="mushi.mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.mu</span></code></a></p>
+<dd class="field-odd"><p><a class="reference internal" href="../mushi.html#mushi.mu" title="mushi.mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.mu</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -273,7 +271,7 @@
 <p>Three constructors:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">ksfs_file</span></code>: path to k-SFS file, as ouput by <cite>mutyper ksfs</cite></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">X</span></code>: k-SFS matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">X</span></code> and <code class="docutils literal notranslate"><span class="pre">mutation_types</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">n</span></code>: number of haplotypes to initialize for simulation</p></li>
 </ol>
 <dl class="field-list simple">
@@ -281,9 +279,8 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ksfs_file</strong> – path to <span class="math notranslate nohighlight">\(k\)</span>-SFS file, as ouput by <code class="docutils literal notranslate"><span class="pre">mutyper</span> <span class="pre">ksfs</span></code></p></li>
 <li><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix</p></li>
+<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of names of X columns</p></li>
 <li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of sampled haplotypes</p></li>
-<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of names of X columns
-(defaults to integer range)</p></li>
 </ul>
 </dd>
 </dl>
@@ -306,17 +303,29 @@
 <tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.as_df" title="mushi.kSFS.as_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_df</span></code></a>()</p></td>
 <td><p>Return a pandas DataFrame representation</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clear_eta" title="mushi.kSFS.clear_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_eta</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_eta</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clear_eta" title="mushi.kSFS.clear_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_eta</span></code></a>()</p></td>
 <td><p>Clear demographic history attribute η</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clear_mu" title="mushi.kSFS.clear_mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_mu</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clear_mu" title="mushi.kSFS.clear_mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_mu</span></code></a>()</p></td>
 <td><p>Clear μ attribute</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clustermap" title="mushi.kSFS.clustermap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustermap</span></code></a>(**kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.clustermap" title="mushi.kSFS.clustermap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustermap</span></code></a>(**kwargs)</p></td>
 <td><p>Clustermap of compositionally centralized k-SFS</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.infer_history" title="mushi.kSFS.infer_history"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_history</span></code></a>(change_points, mu0[, eta, …])</p></td>
-<td><p>Perform sequential inference to fit <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\mu(t)\)</span></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.infer_eta" title="mushi.kSFS.infer_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_eta</span></code></a>(mu0, *trend_penalty[, …])</p></td>
+<td><p>Infer demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.infer_misid" title="mushi.kSFS.infer_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_misid</span></code></a>(mu0[, loss, max_iter, tol, …])</p></td>
+<td><p>Infer ancestral misidentification rate with <span class="math notranslate nohighlight">\(\eta(t)\)</span> fixed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.infer_mush" title="mushi.kSFS.infer_mush"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_mush</span></code></a>(*trend_penalty[, ridge_penalty, …])</p></td>
+<td><p>Infer mutation spectrum history <span class="math notranslate nohighlight">\(\mu(t)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.loss" title="mushi.kSFS.loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loss</span></code></a>([func])</p></td>
+<td><p>Loss under current history</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.plot" title="mushi.kSFS.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([types, clr, kwargs, line_kwargs])</p></td>
 <td><p>Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS</p></td>
@@ -324,10 +333,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.plot_total" title="mushi.kSFS.plot_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_total</span></code></a>([kwargs, line_kwargs, …])</p></td>
 <td><p>Plot the SFS using matplotlib</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.simulate" title="mushi.kSFS.simulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate</span></code></a>(eta, mu[, seed])</p></td>
-<td><p>Simulate a SFS under the Poisson random field model (no linkage) assigns simulated SFS to <code class="docutils literal notranslate"><span class="pre">X</span></code> attribute</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.set_eta" title="mushi.kSFS.set_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_eta</span></code></a>(eta)</p></td>
+<td><p>Set pre-specified demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.tmrca_cdf" title="mushi.kSFS.tmrca_cdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_cdf</span></code></a>(eta)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.simulate" title="mushi.kSFS.simulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate</span></code></a>(eta, mu[, r, seed])</p></td>
+<td><p>Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS under the Poisson random field model (no linkage), assign to <code class="docutils literal notranslate"><span class="pre">X</span></code> attribute</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.kSFS.tmrca_cdf" title="mushi.kSFS.tmrca_cdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_cdf</span></code></a>([eta])</p></td>
 <td><p>The CDF of the TMRCA at each change point in <code class="docutils literal notranslate"><span class="pre">eta</span></code></p></td>
 </tr>
 </tbody>

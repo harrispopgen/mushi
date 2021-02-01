@@ -92,31 +92,24 @@
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Imports">Imports</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Load-k-SFS-data">Load <span class="math notranslate nohighlight">\(k\)</span>-SFS data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#3-SFS-for-1000-Genomes-FIN-population"><span class="math notranslate nohighlight">\(3\)</span>-SFS for 1000 Genomes FIN population</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Target-sizes">Target sizes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Normalized-variant-spectra">Normalized variant spectra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Reading-sample-frequency-spectrum-data">Reading sample frequency spectrum data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#1.-From-a-numpy-array">1. From a <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#2.-From-a-tsv-file">2. From a tsv file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#3.-By-simulation">3. By simulation</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Plot-the-SFS">Plot the SFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Plot-the-k-SFS">Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Basic-model-parameters">Basic model parameters</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Total-mutation-rate">Total mutation rate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Generation-time">Generation time</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Discrete-time-grid">Discrete time grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Demographic-inference">Demographic inference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Folded-SFS">Folded SFS</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#Jointly-infer-demography-and-mutation-spectrum-history">Jointly infer demography and mutation spectrum history</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Visualizing-inferred-histories">Visualizing inferred histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Mutation-spectrum-history-(mush)-inference">Mutation spectrum history (mush) inference</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../cite.html">Citing <code class="docutils literal notranslate"><span class="pre">mushi</span></code></a></li>
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulation.html">Testing with simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -449,11 +442,11 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="Quickstart">
 <h1>Quickstart<a class="headerlink" href="#Quickstart" title="Permalink to this headline">¶</a></h1>
-<p>This page demonstrates how to use the Python module <code class="docutils literal notranslate"><span class="pre">mushi</span></code> to infer mutation spectrum history and demography</p>
-<p>We use <code class="docutils literal notranslate"><span class="pre">mushi</span></code> to infer history of the mutation process, which we can think of as the mutation rate function over time for each triplet mutation type. In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, we use coalescent theory and optimization techniques to learn about this history from the <span class="math notranslate nohighlight">\(k\)</span>-SFS: a matrix whose columns are sample frequency spectra (SFS) for each mutation type.</p>
+<p>This page demonstrates how to use the Python module <code class="docutils literal notranslate"><span class="pre">mushi</span></code> to infer demographic history and mutation spectrum history</p>
+<p>We use <code class="docutils literal notranslate"><span class="pre">mushi</span></code> to infer effective population size history and history of the mutation process, which we can think of as the mutation rate function over time for each of many mutation types. In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, we use coalescent theory and optimization techniques to learn about this history from the <span class="math notranslate nohighlight">\(k\)</span>-SFS: a matrix whose columns are sample frequency spectra (SFS) for each mutation type (or just the standard SFS if we are only interested in inferring demographic history).</p>
 <div class="section" id="Imports">
 <h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
-<p>We first import the <code class="docutils literal notranslate"><span class="pre">ksfs</span></code> module from the <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package, and a few other standard packages.</p>
+<p>We first import the <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package, and a few other standard packages.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -468,21 +461,28 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 </div>
-<div class="section" id="Load-k-SFS-data">
-<h2>Load <span class="math notranslate nohighlight">\(k\)</span>-SFS data<a class="headerlink" href="#Load-k-SFS-data" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="3-SFS-for-1000-Genomes-FIN-population">
-<h3><span class="math notranslate nohighlight">\(3\)</span>-SFS for 1000 Genomes FIN population<a class="headerlink" href="#3-SFS-for-1000-Genomes-FIN-population" title="Permalink to this headline">¶</a></h3>
-<p>We load <span class="math notranslate nohighlight">\(3\)</span>-SFS data for the 1000 Genomes Finnish population, which we previously computed with the <code class="docutils literal notranslate"><span class="pre">mutyper</span></code> <a class="reference external" href="https://github.com/harrispopgen/mutyper">package</a> and saved in tabular format.</p>
+<div class="section" id="Reading-sample-frequency-spectrum-data">
+<h2>Reading sample frequency spectrum data<a class="headerlink" href="#Reading-sample-frequency-spectrum-data" title="Permalink to this headline">¶</a></h2>
+<p>The most important class in the <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package is the <code class="docutils literal notranslate"><span class="pre">kSFS</span></code>, which holds site frequency spectrum (SFS) data, or <span class="math notranslate nohighlight">\(k\)</span>-SFS data for multiple mutation types. There are several ways to instantiate a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object (for details read the API documentation):</p>
+<div class="section" id="1.-From-a-numpy-array">
+<h3>1. From a <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array<a class="headerlink" href="#1.-From-a-numpy-array" title="Permalink to this headline">¶</a></h3>
+<p>Here we demonstrate a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> instantiated from a numpy array, and then a plot of the resulting SFS.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;../example_data/3-SFS.EUR.FIN.tsv&#39;</span><span class="p">)</span>
+<span></span><span class="n">x</span> <span class="o">=</span> <span class="mf">1e6</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+<span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
+<div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area stderr docutils container">
@@ -491,39 +491,47 @@ div.rendered_html tbody tr:hover {
   warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
 </pre></div></div>
 </div>
-<p>Plot the population variant spectrum (summing the <span class="math notranslate nohighlight">\(k\)</span>-SFS over sample frequency)</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">as_df</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_6_0.svg" src="../_images/notebooks_quickstart_6_0.svg" /></div>
+<img alt="../_images/notebooks_quickstart_4_1.svg" src="../_images/notebooks_quickstart_4_1.svg" /></div>
 </div>
 </div>
-<div class="section" id="Target-sizes">
-<h3>Target sizes<a class="headerlink" href="#Target-sizes" title="Permalink to this headline">¶</a></h3>
-<p>We will also need the masked genome size for each mutation type, which we’ve also previously computed with <code class="docutils literal notranslate"><span class="pre">mutyper</span> <span class="pre">targets</span></code>. This defines mutational target sizes.</p>
+<div class="section" id="2.-From-a-tsv-file">
+<h3>2. From a tsv file<a class="headerlink" href="#2.-From-a-tsv-file" title="Permalink to this headline">¶</a></h3>
+<p>For example, suppose a file <code class="docutils literal notranslate"><span class="pre">ksfs.tsv</span></code> contains <span class="math notranslate nohighlight">\(k\)</span>-SFS data (in the format generated by the seperate <code class="docutils literal notranslate"><span class="pre">mutyper</span></code> package), or simply an SFS with sample frequencies in the first column and variant counts in the second. The <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> is instantiated as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;ksfs.tsv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="3.-By-simulation">
+<h3>3. By simulation<a class="headerlink" href="#3.-By-simulation" title="Permalink to this headline">¶</a></h3>
+<p>We can also instantiate by only specifying the number of number of sampled haplotypes <span class="math notranslate nohighlight">\(n\)</span>, then generating simulated SFS or <span class="math notranslate nohighlight">\(k\)</span>-SFS data by specifying a demographic history and a optionally a mutation spectrum history. We will proceed with this approach for this demonstration.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We now define a true demographic history for simulation (note that for inference on real data, this is not necessary). In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, the demographic history is denoted by the haploid effective population size history <span class="math notranslate nohighlight">\(\eta(t)\)</span> (“eta” of t), and can be constructed using the class <code class="docutils literal notranslate"><span class="pre">mushi.eta</span></code>.</p>
+<p><strong>Note that for diploids, :math:`eta(t)=2N(t)`.</strong></p>
+<p>We instantiate demographic history with a vector of times (into the past) when the population size changes, and a vector of population sizes in each interval. Here we define a simple bottleneck history, and plot it.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">masked_genome_size</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;../example_data/masked_size.tsv&#39;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">masked_genome_size</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;mutation type&#39;</span>
+<span></span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="mf">1e4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">60</span><span class="p">]</span> <span class="o">/=</span> <span class="mi">4</span>
 
-<span class="n">masked_genome_size</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;mutational target size (sites)&#39;</span><span class="p">);</span>
+<span class="n">eta_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -533,23 +541,18 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_quickstart_8_0.svg" src="../_images/notebooks_quickstart_8_0.svg" /></div>
 </div>
-</div>
-<div class="section" id="Normalized-variant-spectra">
-<h3>Normalized variant spectra<a class="headerlink" href="#Normalized-variant-spectra" title="Permalink to this headline">¶</a></h3>
-<p>With this we can compute the number of SNPs per target in each mutation type. Notice the enrichment of C&gt;T transitions at CpG sites.</p>
+<p>Now we simulate SFS data using this demographic history. We also specify a constant mutation rate (mutations per genome per generation), a rate of ancestral misidentification, and a random seed.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">normalized_hit_rates</span> <span class="o">=</span> <span class="n">ksfs</span><span class="o">.</span><span class="n">as_df</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;variant count&#39;</span><span class="p">)</span>
-<span class="n">normalized_hit_rates</span><span class="p">[</span><span class="s1">&#39;target size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">masked_genome_size</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">context</span><span class="p">])</span>
-                                       <span class="k">for</span> <span class="n">context</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">normalized_hit_rates</span><span class="p">[</span><span class="s1">&#39;variant count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">)]</span>
+<span></span><span class="n">mu0</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">eta_true</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="p">(</span><span class="n">normalized_hit_rates</span><span class="p">[</span><span class="s1">&#39;variant count&#39;</span><span class="p">]</span> <span class="o">/</span>
- <span class="n">normalized_hit_rates</span><span class="p">[</span><span class="s1">&#39;target size&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">legend</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;variants per target&#39;</span><span class="p">);</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -561,15 +564,23 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 </div>
-<div class="section" id="Plot-the-SFS">
-<h2>Plot the SFS<a class="headerlink" href="#Plot-the-SFS" title="Permalink to this headline">¶</a></h2>
-<p>The SFS is given by summing the rows of the <span class="math notranslate nohighlight">\(k\)</span>-SFS over mutation types</p>
+<div class="section" id="Demographic-inference">
+<h2>Demographic inference<a class="headerlink" href="#Demographic-inference" title="Permalink to this headline">¶</a></h2>
+<p>With SFS data defined, we can attempt to infer demographic history, and ask if it resembles the true history we used to simulate the data.</p>
+<p>Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties. ### Regularization parameters - The most important regularization parameter is the trend penalty, a tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code>. This indicates a trend penalty of order <code class="docutils literal notranslate"><span class="pre">k</span></code> and strength <code class="docutils literal notranslate"><span class="pre">λ</span></code>. Inference will favor piece-wise polynomial solutions, with pieces of order <code class="docutils literal notranslate"><span class="pre">k</span></code>. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty
+would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which will result in solutions that are a mix of pieces of difference orders. - An additional <code class="docutils literal notranslate"><span class="pre">ridge_penalty</span></code> parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p>
+<p>We use a single 0th order trend penalty, to favor piecewise constant solutions. The choice of which trend orders to use is a model selection choice that should be judiciously chosen, possible based on domain knowledge about the population under study.</p>
+<p>We also can specify the number of iterations (if we want more than the default), and a verbosity level to print info about progress.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>  <span class="c1"># &lt;-- trend penalty</span>
+               <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+               <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -577,17 +588,27 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_12_0.svg" src="../_images/notebooks_quickstart_12_0.svg" /></div>
+<div class="highlight"><pre>
+initial objective -4.249421e+07
+iteration 300, objective -4.269e+07, relative change 2.524e-08
+maximum iteration 300 reached with relative change in objective function 2.5e-08
+</pre></div></div>
 </div>
-<p>Plot on log scale instead of linear</p>
+<p>We can now plot the fit to the SFS, as well as the inferred history alongside the true history. The inferred history is contained in the attribute <code class="docutils literal notranslate"><span class="pre">eta</span></code> of the <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
@@ -597,166 +618,100 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <img alt="../_images/notebooks_quickstart_14_0.svg" src="../_images/notebooks_quickstart_14_0.svg" /></div>
 </div>
-</div>
-<div class="section" id="Plot-the-k-SFS">
-<h2>Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS<a class="headerlink" href="#Plot-the-k-SFS" title="Permalink to this headline">¶</a></h2>
-<p>Plot <span class="math notranslate nohighlight">\(k\)</span>-SFS composition as a scatter (a color for each mutation type)</p>
+<p>The ancestral misidentification rate was also inferred (to fit the “smile”), and we can check that it is near the true value used to simulate.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">r</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_16_0.svg" src="../_images/notebooks_quickstart_16_0.svg" /></div>
+<div class="highlight"><pre>
+DeviceArray(0.02017785, dtype=float64)
+</pre></div></div>
 </div>
-<p>Plot again using the centered log ratio transform option (<code class="docutils literal notranslate"><span class="pre">clr=True</span></code>) to represent compositions over mutation types in each frequency class</p>
+<div class="section" id="Folded-SFS">
+<h3>Folded SFS<a class="headerlink" href="#Folded-SFS" title="Permalink to this headline">¶</a></h3>
+<p>For non-model organisms, it is often difficult to polarize the ancestral state of SNPs. The SFS can be supplied with reference polarized data, and inference can be performed using the flag <code class="docutils literal notranslate"><span class="pre">folded=True</span></code>, to use the folded SFS (aggregating each sample frequence with its complement). We can repeate the above inference using folded SFS inference to get similar results.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>
+               <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+               <span class="n">folded</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">folded</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -4.442544e+07
+iteration 300, objective -4.443e+07, relative change 2.147e-11
+maximum iteration 300 reached with relative change in objective function 2.1e-11
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_18_0.svg" src="../_images/notebooks_quickstart_18_0.svg" /></div>
+<img alt="../_images/notebooks_quickstart_18_1.svg" src="../_images/notebooks_quickstart_18_1.svg" /></div>
 </div>
-<p>Use a heatmap to show the <span class="math notranslate nohighlight">\(k\)</span>-SFS as a matrix, colored using a compositional centralization transform. This method wraps the <code class="docutils literal notranslate"><span class="pre">clustermap</span></code> function in <a class="reference external" href="https://seaborn.pydata.org/generated/seaborn.clustermap.html#seaborn.clustermap">Seaborn</a>, and you can use keyword arguments you would use in that function. A few of note: - <code class="docutils literal notranslate"><span class="pre">figsize</span></code>: a tuple giving the width and height of the figure - <code class="docutils literal notranslate"><span class="pre">col_cluster</span></code>: if <code class="docutils literal notranslate"><span class="pre">False</span></code>, don’t cluster the columns (giving an ordinary heatmap) -
-<code class="docutils literal notranslate"><span class="pre">xticklabels</span></code>: if <code class="docutils literal notranslate"><span class="pre">True</span></code>, force printing of all the mutation type labels - <code class="docutils literal notranslate"><span class="pre">robust</span></code>: if <code class="docutils literal notranslate"><span class="pre">True</span></code>, automatically set the min and max values for the color scaling - <code class="docutils literal notranslate"><span class="pre">cmap</span></code>: color map name</p>
+</div>
+</div>
+<div class="section" id="Mutation-spectrum-history-(mush)-inference">
+<h2>Mutation spectrum history (mush) inference<a class="headerlink" href="#Mutation-spectrum-history-(mush)-inference" title="Permalink to this headline">¶</a></h2>
+<p>We now consider data that is resolved into different mutation types (e.g. 96 triplet mutation types), and we have an SFS for each type as a separate column of a <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix. As described above, a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> can be instantiated from a numpy array, or loaded from a tsv file. Here we’ll again simulate one, so we first need to define a true mutation spectrum history.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, the mush is denoted by a time dependent mutation rate history vector <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span> (“mu” of t), and can be constructed using the class <code class="docutils literal notranslate"><span class="pre">mushi.mu</span></code>. Each component of the vector is the mutation rate for one mutation type (e.g. one triplet type, like <code class="docutils literal notranslate"><span class="pre">AAA&gt;ACA</span></code>).</p>
+<p>We instantiate mush with a vector of times (into the past) when the mush changes, and a <em>matrix</em> of mutation rate vectors in each interval. Here we define a a 96 dimensional history where all are constant in time except two: a pulse and a monotonic ramp. Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">clustermap</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">xticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/seaborn/matrix.py:649: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
-  warnings.warn(msg)
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_20_1.svg" src="../_images/notebooks_quickstart_20_1.svg" /></div>
-</div>
-</div>
-<div class="section" id="Basic-model-parameters">
-<h2>Basic model parameters<a class="headerlink" href="#Basic-model-parameters" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="Total-mutation-rate">
-<h3>Total mutation rate<a class="headerlink" href="#Total-mutation-rate" title="Permalink to this headline">¶</a></h3>
-<p>To compute the total mutation rate in units of mutations per masked genome per generation, we multiply an estimate of the site-wise rate by the target size</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">μ0</span> <span class="o">=</span> <span class="mf">1.25e-8</span> <span class="o">*</span> <span class="n">masked_genome_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">μ0</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-25.421035375
-</pre></div></div>
-</div>
-</div>
-<div class="section" id="Generation-time">
-<h3>Generation time<a class="headerlink" href="#Generation-time" title="Permalink to this headline">¶</a></h3>
-<p>To render time in years rather than generations, we use an estimate of the generation time</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">t_gen</span> <span class="o">=</span> <span class="mi">29</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="Discrete-time-grid">
-<h3>Discrete time grid<a class="headerlink" href="#Discrete-time-grid" title="Permalink to this headline">¶</a></h3>
-<p>We define a grid of times to represent histories on, measured retrospectively from the present in units of Wright-Fisher generations.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">200000</span><span class="p">),</span> <span class="mi">200</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="Jointly-infer-demography-and-mutation-spectrum-history">
-<h2>Jointly infer demography and mutation spectrum history<a class="headerlink" href="#Jointly-infer-demography-and-mutation-spectrum-history" title="Permalink to this headline">¶</a></h2>
-<p>To infer a time-calibrated mutation spectrum history (MuSH), we need to jointly estimate the demographic history, since this defines the diffusion timescale of the coalescent process.</p>
-<p>We now run the optimization, setting a few parameters to control how complicated we let the histories look. We use the <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> argument to print convergence messages.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">μ0</span><span class="p">,</span> <span class="n">alpha_tv</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">alpha_spline</span><span class="o">=</span><span class="mf">3e3</span><span class="p">,</span> <span class="n">alpha_ridge</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
-                   <span class="n">beta_rank</span><span class="o">=</span><span class="mf">1e1</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mf">7e1</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">1e1</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
-                   <span class="n">tol</span><span class="o">=</span><span class="mf">1e-11</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-inferring η(t)
-initial objective -8.183982e+07
-iteration 433, objective -8.193e+07, relative change 3.190e-12
-relative change in objective function 3.2e-12 is within tolerance 1e-11 after 433 iterations
-inferring μ(t) conditioned on η(t)
-initial objective -4.937803e+07
-iteration 318, objective -4.939e+07, relative change 8.698e-12
-relative change in objective function 8.7e-12 is within tolerance 1e-11 after 318 iterations
-</pre></div></div>
-</div>
-<p>Hopefully you agree that was fast 🏎</p>
-</div>
-<div class="section" id="Visualizing-inferred-histories">
-<h2>Visualizing inferred histories<a class="headerlink" href="#Visualizing-inferred-histories" title="Permalink to this headline">¶</a></h2>
-<p>After inferring histories, we can access them as instance attributes of the <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object: - demography: <code class="docutils literal notranslate"><span class="pre">ksfs.eta</span></code> (or <code class="docutils literal notranslate"><span class="pre">ksfs.η</span></code>) - MuSH: <code class="docutils literal notranslate"><span class="pre">ksfs.mu</span></code> (or <code class="docutils literal notranslate"><span class="pre">ksfs.μ</span></code>)</p>
-<p>We can inspect these, and see they’re both object with base class <code class="docutils literal notranslate"><span class="pre">mushi.histories.history</span></code></p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">print</span><span class="p">(</span><span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span></span><span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">t</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="c1"># pulse</span>
+<span class="n">Z</span><span class="p">[</span><span class="mi">40</span><span class="p">:</span><span class="mi">70</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
+<span class="n">Z</span><span class="p">[:</span><span class="mi">40</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">1.2</span>
+<span class="n">Z</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
+
+<span class="c1"># ramp</span>
+<span class="n">Z</span><span class="p">[</span><span class="mi">25</span><span class="p">:</span><span class="mi">75</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">Z</span><span class="p">[:</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span>
+
+<span class="c1"># flat</span>
+<span class="n">Z</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">94</span>
+
+<span class="c1"># We model a TCC&gt;TTC, it&#39;s revertant type GAA&gt;GGA (for ancestral misidentification),</span>
+<span class="c1"># and aggregate category for the remainder of mutations</span>
+<span class="n">mutation_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+
+<span class="n">mu_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">)</span>
+
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -764,27 +719,25 @@ relative change in objective function 8.7e-12 is within tolerance 1e-11 after 31
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;class &#39;mushi.histories.eta&#39;&gt;
-&lt;class &#39;mushi.histories.History&#39;&gt;
-&lt;class &#39;mushi.histories.mu&#39;&gt;
-&lt;class &#39;mushi.histories.History&#39;&gt;
-</pre></div></div>
+<img alt="../_images/notebooks_quickstart_20_0.svg" src="../_images/notebooks_quickstart_20_0.svg" /></div>
 </div>
-<p>We’ll now check that the demography has a few features we expect in the Finnish population: the out-of-Africa bottleneck shared by all Eurasians, a later bottleneck associated with northward migration, and exponential population growth toward the present. - The plot on the left shows fit to the SFS - The plot on the right shows the inferred haploid effective population size history.</p>
+<p>Now simulate new <span class="math notranslate nohighlight">\(k\)</span>-SFS data assuming this mush, and plot just the first two (non-constant) components.</p>
+<p>Using the flag <code class="docutils literal notranslate"><span class="pre">clr=True</span></code> when plotting the <span class="math notranslate nohighlight">\(k\)</span>-SFS shows relative mutation counts (using a compositional transform) at each time, so it makes it easier to visualize.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span></span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">eta_true</span><span class="p">,</span> <span class="n">mu_true</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
 <span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">]);</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -792,57 +745,91 @@ relative change in objective function 8.7e-12 is within tolerance 1e-11 after 31
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_34_0.svg" src="../_images/notebooks_quickstart_34_0.svg" /></div>
+<img alt="../_images/notebooks_quickstart_22_0.svg" src="../_images/notebooks_quickstart_22_0.svg" /></div>
 </div>
-<p>Now let’s take a look at the inferred mutation spectrum history (MuSH). - The plot on the left shows the measured <span class="math notranslate nohighlight">\(k\)</span>-SFS composition (points) and the fit from <code class="docutils literal notranslate"><span class="pre">mushi</span></code> (lines) - The plot on the right shows the inferred MuSH</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span></span><span class="n">mu0</span> <span class="o">=</span> <span class="n">Z</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
+               <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span>
+               <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+               <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e3</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">]);</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_36_0.svg" src="../_images/notebooks_quickstart_36_0.svg" /></div>
-</div>
-<p>We can also plot the MuSH as a heatmap with the y axis representing time (with an interface similar to the <code class="docutils literal notranslate"><span class="pre">kSFS.clustermap</span></code> method above)</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">clustermap</span><span class="p">(</span><span class="n">t_gen</span><span class="o">=</span><span class="n">t_gen</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">17</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">xticklabels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
-<div class="output_area stderr docutils container">
+<div class="output_area docutils container">
 <div class="highlight"><pre>
-/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/seaborn/matrix.py:649: UserWarning: Clustering large matrix with scipy. Installing `fastcluster` may give better performance.
-  warnings.warn(msg)
+initial objective -8.880823e+07
+iteration 300, objective -8.918e+07, relative change 1.540e-08
+maximum iteration 300 reached with relative change in objective function 1.5e-08
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_38_1.svg" src="../_images/notebooks_quickstart_38_1.svg" /></div>
+<img alt="../_images/notebooks_quickstart_23_1.svg" src="../_images/notebooks_quickstart_23_1.svg" /></div>
 </div>
-<p>Now that you have a MuSH, you can start answering questions about mutation spectrum history!🤸‍</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">),</span> <span class="c1"># &lt;-- mixed trend penalties</span>
+                <span class="n">ridge_penalty</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+                <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">),</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -8.770428e+07
+iteration 300, objective -8.771e+07, relative change 3.642e-09
+maximum iteration 300 reached with relative change in objective function 3.6e-09
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_quickstart_24_1.svg" src="../_images/notebooks_quickstart_24_1.svg" /></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 

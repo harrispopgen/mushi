@@ -94,9 +94,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/simulation.html">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="notebooks/observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l1"><a class="reference internal" href="notebooks/simulation.html">Testing with simulations</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -179,12 +177,16 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#X"><strong>X</strong></a>
@@ -209,10 +211,12 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.optimization.acc_prox_grad_method">acc_prox_grad_method() (in module mushi.optimization)</a>
+      <li><a href="mushi.html#mushi.optimization.AccProxGrad">AccProxGrad (class in mushi.optimization)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History.arrays">arrays() (mushi.histories.History method)</a>
+</li>
       <li><a href="mushi.html#mushi.kSFS.as_df">as_df() (mushi.kSFS method)</a>
 </li>
   </ul></td>
@@ -223,15 +227,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.utils.C">C() (in module mushi.utils)</a>
 </li>
+      <li><a href="mushi.html#mushi.histories.History.check_grid">check_grid() (mushi.histories.History method)</a>
+</li>
+      <li><a href="mushi.html#mushi.optimization.Optimizer.check_x">check_x() (mushi.optimization.Optimizer method)</a>
+</li>
       <li><a href="mushi.html#mushi.kSFS.clear_eta">clear_eta() (mushi.kSFS method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.kSFS.clear_mu">clear_mu() (mushi.kSFS method)</a>
 </li>
-      <li><a href="mushi.html#mushi.kSFS.clustermap">clustermap() (mushi.kSFS method)</a>
+      <li><a href="mushi.html#mushi.histories.mu.clustermap">clustermap() (mushi.histories.mu method)</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.kSFS.clustermap">(mushi.kSFS method)</a>
+</li>
         <li><a href="mushi.html#mushi.mu.clustermap">(mushi.mu method)</a>
 </li>
       </ul></li>
@@ -241,7 +251,7 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.utils.d_kl">d_kl() (in module mushi.utils)</a>
+      <li><a href="mushi.html#mushi.loss_functions.dkl">dkl() (in module mushi.loss_functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -249,9 +259,13 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History.epochs">epochs() (mushi.histories.History method)</a>
+</li>
       <li><a href="mushi.html#mushi.eta">eta (class in mushi)</a>, <a href="stubs/mushi.eta.html#mushi.eta">[1]</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.eta">(class in mushi.histories)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.eta">(mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.eta">[1]</a>
 </li>
       </ul></li>
@@ -262,11 +276,55 @@
   </ul></td>
 </tr></table>
 
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.optimization.AccProxGrad.f">f() (mushi.optimization.AccProxGrad method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.optimization.Optimizer.f">(mushi.optimization.Optimizer method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.ThreeOpProxGrad.f">(mushi.optimization.ThreeOpProxGrad method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.TrendFilter.f">(mushi.optimization.TrendFilter method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.utils.fold">fold() (in module mushi.utils)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.histories.History">History (class in mushi.histories)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.kSFS.infer_history">infer_history() (mushi.kSFS method)</a>
+      <li><a href="mushi.html#mushi.kSFS.infer_eta">infer_eta() (mushi.kSFS method)</a>
 </li>
+      <li><a href="mushi.html#mushi.kSFS.infer_misid">infer_misid() (mushi.kSFS method)</a>
+</li>
+      <li><a href="mushi.html#mushi.kSFS.infer_mush">infer_mush() (mushi.kSFS method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.optimization.AccProxGrad.initialize">initialize() (mushi.optimization.AccProxGrad method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.optimization.Optimizer.initialize">(mushi.optimization.Optimizer method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.ThreeOpProxGrad.initialize">(mushi.optimization.ThreeOpProxGrad method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.TrendFilter.initialize">(mushi.optimization.TrendFilter method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -281,7 +339,13 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.utils.lsq">lsq() (in module mushi.utils)</a>
+      <li><a href="mushi.html#mushi.optimization.LineSearcher">LineSearcher (class in mushi.optimization)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.kSFS.loss">loss() (mushi.kSFS method)</a>
+</li>
+      <li><a href="mushi.html#mushi.loss_functions.lsq">lsq() (in module mushi.loss_functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -291,11 +355,17 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.utils.M">M() (in module mushi.utils)</a>
 </li>
+      <li><a href="mushi.html#mushi.utils.misid_partners">misid_partners() (in module mushi.utils)</a>
+</li>
       <li>
     module
 
       <ul>
         <li><a href="stubs/mushi.composition.html#module-mushi.composition">mushi.composition</a>
+</li>
+        <li><a href="mushi.html#module-mushi.histories">mushi.histories</a>, <a href="stubs/mushi.histories.html#module-mushi.histories">[1]</a>
+</li>
+        <li><a href="mushi.html#module-mushi.loss_functions">mushi.loss_functions</a>
 </li>
         <li><a href="mushi.html#module-mushi.optimization">mushi.optimization</a>, <a href="stubs/mushi.optimization.html#module-mushi.optimization">[1]</a>
 </li>
@@ -305,18 +375,34 @@
       <li><a href="mushi.html#mushi.mu">mu (class in mushi)</a>, <a href="stubs/mushi.mu.html#mushi.mu">[1]</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.mu">(class in mushi.histories)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.mu">(mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.mu">[1]</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#id1">mu() (mushi.kSFS property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     mushi.composition
 
       <ul>
         <li><a href="stubs/mushi.composition.html#module-mushi.composition">module</a>
+</li>
+      </ul></li>
+      <li>
+    mushi.histories
+
+      <ul>
+        <li><a href="mushi.html#module-mushi.histories">module</a>, <a href="stubs/mushi.histories.html#module-mushi.histories">[1]</a>
+</li>
+      </ul></li>
+      <li>
+    mushi.loss_functions
+
+      <ul>
+        <li><a href="mushi.html#module-mushi.loss_functions">module</a>
 </li>
       </ul></li>
       <li>
@@ -335,6 +421,8 @@
       </ul></li>
       <li><a href="mushi.html#mushi.kSFS.mutation_types">mutation_types (mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.mutation_types">[1]</a>
 </li>
+      <li><a href="mushi.html#mushi.utils.mutype_misid">mutype_misid() (in module mushi.utils)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -346,12 +434,26 @@
   </ul></td>
 </tr></table>
 
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.optimization.Optimizer">Optimizer (class in mushi.optimization)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.eta.plot">plot() (mushi.eta method)</a>
 
       <ul>
+        <li><a href="mushi.html#mushi.histories.eta.plot">(mushi.histories.eta method)</a>
+</li>
+        <li><a href="mushi.html#mushi.histories.History.plot">(mushi.histories.History method)</a>
+</li>
+        <li><a href="mushi.html#mushi.histories.mu.plot">(mushi.histories.mu method)</a>
+</li>
         <li><a href="mushi.html#mushi.kSFS.plot">(mushi.kSFS method)</a>
 </li>
         <li><a href="mushi.html#mushi.mu.plot">(mushi.mu method)</a>
@@ -359,33 +461,67 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.mu.plot_cumulative">plot_cumulative() (mushi.mu method)</a>
+      <li><a href="mushi.html#mushi.histories.mu.plot_cumulative">plot_cumulative() (mushi.histories.mu method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.mu.plot_cumulative">(mushi.mu method)</a>
 </li>
+      </ul></li>
       <li><a href="mushi.html#mushi.kSFS.plot_total">plot_total() (mushi.kSFS method)</a>
 </li>
-      <li><a href="mushi.html#mushi.utils.prf">prf() (in module mushi.utils)</a>
+      <li><a href="mushi.html#mushi.loss_functions.prf">prf() (in module mushi.loss_functions)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.utils.revcomp">revcomp() (in module mushi.utils)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.optimization.Optimizer.run">run() (mushi.optimization.Optimizer method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.optimization.TrendFilter.run">(mushi.optimization.TrendFilter method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.kSFS.set_eta">set_eta() (mushi.kSFS method)</a>
+</li>
       <li><a href="mushi.html#mushi.kSFS.simulate">simulate() (mushi.kSFS method)</a>
 </li>
+      <li><a href="mushi.html#mushi.optimization.AccProxGrad.step">step() (mushi.optimization.AccProxGrad method)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.optimization.Optimizer.step">(mushi.optimization.Optimizer method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.ThreeOpProxGrad.step">(mushi.optimization.ThreeOpProxGrad method)</a>
+</li>
+        <li><a href="mushi.html#mushi.optimization.TrendFilter.step">(mushi.optimization.TrendFilter method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.optimization.three_op_prox_grad_method">three_op_prox_grad_method() (in module mushi.optimization)</a>
+      <li><a href="mushi.html#mushi.optimization.ThreeOpProxGrad">ThreeOpProxGrad (class in mushi.optimization)</a>
+</li>
+      <li><a href="mushi.html#mushi.kSFS.tmrca_cdf">tmrca_cdf() (mushi.kSFS method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.kSFS.tmrca_cdf">tmrca_cdf() (mushi.kSFS method)</a>
-</li>
       <li><a href="mushi.html#mushi.utils.tmrca_sf">tmrca_sf() (in module mushi.utils)</a>
+</li>
+      <li><a href="mushi.html#mushi.optimization.TrendFilter">TrendFilter (class in mushi.optimization)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -396,21 +532,33 @@
       <li><a href="mushi.html#mushi.kSFS.X">X (mushi.kSFS attribute)</a>, <a href="stubs/mushi.kSFS.html#mushi.kSFS.X">[1]</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="mushi.html#mushi.optimization.Optimizer.x">x (mushi.optimization.Optimizer attribute)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="Y">Y</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="mushi.html#mushi.eta.y">y() (mushi.eta property)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.histories.eta.y">(mushi.histories.eta property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="Z">Z</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="mushi.html#mushi.mu.Z">Z() (mushi.mu property)</a>
+      <li><a href="mushi.html#mushi.histories.mu.Z">Z() (mushi.histories.mu property)</a>
+
+      <ul>
+        <li><a href="mushi.html#mushi.mu.Z">(mushi.mu property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

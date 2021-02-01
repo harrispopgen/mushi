@@ -25,11 +25,9 @@ Submodules that the main classes rely on, and may be of interest to some users
     :toctree: stubs
 
     mushi.optimization
-    mushi.composition
+    mushi.histories
     mushi.utils
-
-
-
+    mushi.composition
 
 
 .. autoclass:: kSFS
@@ -41,11 +39,16 @@ Submodules that the main classes rely on, and may be of interest to some users
 .. autoclass:: mu
     :members:
 
-
 .. automodule:: mushi.optimization
     :members:
 
+.. automodule:: mushi.histories
+    :members:
+
 .. automodule:: mushi.utils
+    :members:
+
+.. automodule:: mushi.loss_functions
     :members:
 
 .. automodule:: mushi.composition

@@ -17,9 +17,9 @@ class TestMushi(unittest.TestCase):
         change_points = np.array([])
         η = histories.eta(change_points, np.array([η0]))
         t, y = η.arrays()
-        μ = histories.mu(change_points, np.array([[μ0]]))
 
-        ξ_mushi = np.squeeze(utils.C(n) @ utils.M(n, t, y) @ μ.Z)
+        L = utils.C(n) @ utils.M(n, t, y)
+        ξ_mushi = np.squeeze(μ0 * L.sum(1))
         ξ_Fu = 2 * η0 * μ0 / np.arange(1, n)
 
         self.assertTrue(np.isclose(ξ_mushi, ξ_Fu).all(),

@@ -5,16 +5,19 @@ mushi.optimization
 
    
    
-   .. rubric:: Functions
+   
+
+   
+   
+   .. rubric:: Classes
 
    .. autosummary::
    
-      acc_prox_grad_method
-      three_op_prox_grad_method
-   
-   
-
-   
+      AccProxGrad
+      LineSearcher
+      Optimizer
+      ThreeOpProxGrad
+      TrendFilter
    
    
 

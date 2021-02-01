@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Testing mushi with stdpopsim simulations &mdash; mushi  documentation</title>
+  <title>Testing with simulations &mdash; mushi  documentation</title>
   
 
   
@@ -39,7 +39,7 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Inferring demography and mutation spectrum history for human populations" href="1KG.html" />
+    <link rel="next" title="Public API: mushi package" href="../mushi.html" />
     <link rel="prev" title="Citing mushi" href="../cite.html" /> 
 </head>
 
@@ -95,18 +95,22 @@
 </ul>
 <p class="caption"><span class="caption-text">Notebooks</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Testing with simulations</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Time-grid">Time grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Sawtooth-demographic-history-\eta(t)">Sawtooth demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Mutation-rate-history-\mu(t)">Mutation rate history <span class="math notranslate nohighlight">\(\mu(t)\)</span></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#stdpopsim-simulation"><code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Simulate-k-SFS">Simulate <span class="math notranslate nohighlight">\(k\)</span>-SFS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Infer-\eta(t)-and-\boldsymbol\mu(t)">Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Plot-results">Plot results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Define-true-demographic-history">Define true demographic history</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Mutation-rate-history-\mu(t)">Mutation rate history <span class="math notranslate nohighlight">\(\mu(t)\)</span></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Simulate-a-k-SFS">Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="1KG.html">Inferring demography and mutation spectrum history for human populations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="observability.html">Observability toward the coalescent horizon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TMRCA-CDF">TMRCA CDF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Inference">Inference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#convergence-parameters-and-time-grid">convergence parameters and time grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-\eta(t)">Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Infer-\boldsymbol\mu(t)">Infer <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
@@ -163,7 +167,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations</li>
+      <li>Testing with simulations</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -437,25 +441,22 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Testing-mushi-with-stdpopsim-simulations">
-<h1>Testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code> with <code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulations<a class="headerlink" href="#Testing-mushi-with-stdpopsim-simulations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Testing-with-simulations">
+<h1>Testing with simulations<a class="headerlink" href="#Testing-with-simulations" title="Permalink to this headline">¶</a></h1>
+<p>A notebook for testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code>’s ability to invert data simulated under the forward model</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">mushi</span>
-<span class="kn">import</span> <span class="nn">mushi.composition</span> <span class="k">as</span> <span class="nn">cmp</span>
 
-<span class="kn">import</span> <span class="nn">msprime</span>
-<span class="kn">import</span> <span class="nn">stdpopsim</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">SVG</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
-<span class="kn">from</span> <span class="nn">matplotlib.lines</span> <span class="kn">import</span> <span class="n">Line2D</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.lines</span> <span class="kn">import</span> <span class="n">Line2D</span>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">expit</span>
-<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">stdpopsim</span>
 </pre></div>
 </div>
 </div>
@@ -466,14 +467,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">change_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">100000</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+<span></span><span class="n">change_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">100000</span><span class="p">),</span> <span class="mi">200</span><span class="p">)</span>
 <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">change_points</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="Sawtooth-demographic-history-\eta(t)">
-<h2>Sawtooth demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span><a class="headerlink" href="#Sawtooth-demographic-history-\eta(t)" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Define-true-demographic-history">
+<h2>Define true demographic history<a class="headerlink" href="#Define-true-demographic-history" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -482,7 +483,10 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">species</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_species</span><span class="p">(</span><span class="s2">&quot;HomSap&quot;</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get_demographic_model</span><span class="p">(</span><span class="s2">&quot;Zigzag_1S14&quot;</span><span class="p">)</span>
 <span class="n">ddb</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_demography_debugger</span><span class="p">()</span>
-<span class="n">eta_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ddb</span><span class="o">.</span><span class="n">population_size_trajectory</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">t</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="n">eta_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span>
+                     <span class="mi">1</span> <span class="o">/</span> <span class="n">ddb</span><span class="o">.</span><span class="n">coalescence_rate_trajectory</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="n">t</span><span class="p">,</span>
+                                                         <span class="n">num_samples</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                                         <span class="n">double_step_validation</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">))</span>
 <span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">);</span>
@@ -507,45 +511,32 @@ div.rendered_html tbody tr:hover {
 <span></span><span class="n">flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 <span class="n">pulse</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="mi">100</span><span class="p">))</span> <span class="o">-</span> <span class="n">expit</span><span class="p">(</span><span class="o">.</span><span class="mi">01</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="mi">2000</span><span class="p">))</span>
 <span class="n">ramp</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="o">-.</span><span class="mi">01</span> <span class="o">*</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="mi">100</span><span class="p">))</span>
-<span class="n">n_mutation_types</span> <span class="o">=</span> <span class="mi">96</span>
-<span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">n_mutation_types</span><span class="p">))</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">cols</span><span class="p">))</span>
 <span class="n">mu0</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="n">Z</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">flat</span> <span class="o">+</span> <span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">pulse</span><span class="p">)</span>
-
 <span class="n">Z</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu0</span> <span class="o">*</span> <span class="p">(</span><span class="o">.</span><span class="mi">5</span> <span class="o">*</span> <span class="n">flat</span> <span class="o">+</span> <span class="o">.</span><span class="mi">4</span> <span class="o">*</span> <span class="n">ramp</span><span class="p">)</span>
+<span class="n">Z</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">94</span> <span class="o">*</span> <span class="n">mu0</span> <span class="o">*</span> <span class="n">flat</span>
 
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">):</span>
-    <span class="n">scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">lognormal</span><span class="p">(</span><span class="o">-.</span><span class="mi">2</span><span class="p">,</span> <span class="o">.</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">pulse_weight</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
-    <span class="n">Z</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu0</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">flat</span>
+<span class="n">mutation_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
-<span class="n">mu_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+<span class="n">mu_true</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">False</span><span class="p">);</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
-  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
-</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_7_1.svg" src="../_images/notebooks_simulation_7_1.svg" /></div>
+<img alt="../_images/notebooks_simulation_7_0.svg" src="../_images/notebooks_simulation_7_0.svg" /></div>
 </div>
-<p>Estimate constant total mutation rate using most recent time point (introducing a misspecification)</p>
+<p>Estimate the total mutation rate using <span class="math notranslate nohighlight">\(t=0\)</span></p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -561,147 +552,59 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-83.11894862750988
+95.79244612935578
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="stdpopsim-simulation">
-<h2><code class="docutils literal notranslate"><span class="pre">stdpopsim</span></code> simulation<a class="headerlink" href="#stdpopsim-simulation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Simulate-a-k-SFS">
+<h3>Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS<a class="headerlink" href="#Simulate-a-k-SFS" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>200 sampled haplotypes</p></li>
-<li><p>generate initial tree sequence without mutations, then we’ll place mutations according to the MuSH</p></li>
+<li><p>We’ll sample 200 haplotypes</p></li>
+<li><p>note that this simulation will have a slightly varying total mutation rate</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">200</span>
-<span class="n">chrom</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">species</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_species</span><span class="p">(</span><span class="s1">&#39;HomSap&#39;</span><span class="p">)</span>
-<span class="n">contig</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get_contig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;chr</span><span class="si">{</span><span class="n">chrom</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">contig</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">Contig</span><span class="p">(</span><span class="n">recombination_map</span><span class="o">=</span><span class="n">contig</span><span class="o">.</span><span class="n">recombination_map</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">genetic_map</span><span class="o">=</span><span class="n">contig</span><span class="o">.</span><span class="n">genetic_map</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">PiecewiseConstantSize</span><span class="p">(</span><span class="n">eta_true</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">*</span><span class="nb">zip</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">eta_true</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
-<span class="n">samples</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-<span class="n">engine</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_default_engine</span><span class="p">()</span>
-<span class="n">ts</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">contig</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>Number of marginal trees</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ts</span><span class="o">.</span><span class="n">num_trees</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-250115
-</pre></div></div>
-</div>
-<p>Display first tree in the tree sequence</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">SVG</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">first</span><span class="p">()</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">&#39;svg&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
-                    <span class="n">node_labels</span><span class="o">=</span><span class="p">{},</span> <span class="n">mutation_labels</span><span class="o">=</span><span class="p">{}))</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_15_0.svg" src="../_images/notebooks_simulation_15_0.svg" /></div>
-</div>
-</div>
-<div class="section" id="Simulate-k-SFS">
-<h2>Simulate <span class="math notranslate nohighlight">\(k\)</span>-SFS<a class="headerlink" href="#Simulate-k-SFS" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p>place mutations on simulated tree sequence according to <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span></p></li>
-<li><p>iterate over mutation types and epochs</p></li>
-<li><p>compute component of <span class="math notranslate nohighlight">\(k\)</span>-SFS for each iterate</p></li>
-</ul>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">mutation_rate</span> <span class="ow">in</span> <span class="n">mu_true</span><span class="o">.</span><span class="n">epochs</span><span class="p">():</span>
-    <span class="n">mutation_rate_total</span> <span class="o">=</span> <span class="n">mutation_rate</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;epoch boundaries: (</span><span class="si">{</span><span class="n">start_time</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">end_time</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">), μ: </span><span class="si">{</span><span class="n">mutation_rate_total</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">     &#39;</span><span class="p">,</span>
-          <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;     </span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
-    <span class="c1"># note: the factor of 1 / chrom.length is needed to scale the mutation rate from sites to genomes</span>
-    <span class="n">ts_temp</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">mutate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span>
-                             <span class="n">rate</span><span class="o">=</span><span class="n">mutation_rate_total</span> <span class="o">/</span> <span class="n">species</span><span class="o">.</span><span class="n">genome</span><span class="o">.</span><span class="n">chromosomes</span><span class="p">[</span><span class="n">chrom</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">length</span><span class="p">,</span>
-                             <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
-                             <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
-                             <span class="n">random_seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                             <span class="n">keep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ts_temp</span><span class="o">.</span><span class="n">variants</span><span class="p">():</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">genotypes</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_mutation_types</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="p">(</span><span class="n">mutation_rate</span> <span class="o">/</span> <span class="n">mutation_rate_total</span><span class="p">))</span>
-        <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">eta_true</span><span class="p">,</span> <span class="n">mu_true</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-epoch boundaries: (100000.00, inf), μ: 82.83
-</pre></div></div>
-</div>
-<p>Plot SFS and <span class="math notranslate nohighlight">\(k\)</span>-SFS</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
-                <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-                <span class="n">fill_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C2&#39;</span><span class="p">))</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">))</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/jax/lib/xla_bridge.py:116: UserWarning: No GPU/TPU found, falling back to CPU.
+  warnings.warn(&#39;No GPU/TPU found, falling back to CPU.&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_19_0.svg" src="../_images/notebooks_simulation_19_0.svg" /></div>
+<img alt="../_images/notebooks_simulation_11_1.svg" src="../_images/notebooks_simulation_11_1.svg" /></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_19_1.svg" src="../_images/notebooks_simulation_19_1.svg" /></div>
+<img alt="../_images/notebooks_simulation_11_2.svg" src="../_images/notebooks_simulation_11_2.svg" /></div>
 </div>
 <p>Number of segregating sites</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -710,17 +613,20 @@ epoch boundaries: (100000.00, inf), μ: 82.83
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-8264757.0
+DeviceArray(9507495, dtype=int64)
 </pre></div></div>
 </div>
-<p>TMRCA CDF</p>
+</div>
+</div>
+<div class="section" id="TMRCA-CDF">
+<h2>TMRCA CDF<a class="headerlink" href="#TMRCA-CDF" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -738,99 +644,132 @@ epoch boundaries: (100000.00, inf), μ: 82.83
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_23_0.svg" src="../_images/notebooks_simulation_23_0.svg" /></div>
+<img alt="../_images/notebooks_simulation_15_0.svg" src="../_images/notebooks_simulation_15_0.svg" /></div>
+</div>
+<div class="section" id="Inference">
+<h3>Inference<a class="headerlink" href="#Inference" title="Permalink to this headline">¶</a></h3>
 </div>
 </div>
-<div class="section" id="Infer-\eta(t)-and-\boldsymbol\mu(t)">
-<h2>Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-\eta(t)-and-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
-<p>Define regularization parameters and convergence criteria. We use a very low tolerance and a very large number of iterations.</p>
+<div class="section" id="convergence-parameters-and-time-grid">
+<h2>convergence parameters and time grid<a class="headerlink" href="#convergence-parameters-and-time-grid" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">convergence</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
-<span class="n">regularization_eta</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">alpha_tv</span><span class="o">=</span><span class="mf">2e0</span><span class="p">,</span> <span class="n">alpha_spline</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">alpha_ridge</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
-<span class="n">regularization_mu</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">hard</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">beta_rank</span><span class="o">=</span><span class="mf">2e1</span><span class="p">,</span> <span class="n">beta_tv</span><span class="o">=</span><span class="mf">1e2</span><span class="p">,</span> <span class="n">beta_spline</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span> <span class="n">beta_ridge</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>Clear out histories (just in case) and run inference</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">clear_eta</span><span class="p">()</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
-
-<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_history</span><span class="p">(</span><span class="n">change_points</span><span class="p">,</span> <span class="n">mu0</span><span class="p">,</span>
-                   <span class="o">**</span><span class="n">regularization_eta</span><span class="p">,</span> <span class="o">**</span><span class="n">regularization_mu</span><span class="p">,</span> <span class="o">**</span><span class="n">convergence</span><span class="p">)</span>
+<span></span><span class="n">convergence</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">trend_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">pts</span> <span class="o">=</span> <span class="mi">100</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="Plot-results">
-<h2>Plot results<a class="headerlink" href="#Plot-results" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Infer-\eta(t)">
+<h2>Infer <span class="math notranslate nohighlight">\(\eta(t)\)</span><a class="headerlink" href="#Infer-\eta(t)" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">mpl</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">usetex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;text.latex.preamble&#39;</span><span class="p">]</span><span class="o">=</span><span class="p">[</span><span class="sa">r</span><span class="s2">&quot;\usepackage</span><span class="si">{amsmath}</span><span class="s2">&quot;</span><span class="p">]</span>
+<span></span><span class="n">trend_penalties</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">))</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="s1">&#39;col&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">5.9</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">),</span> <span class="n">gridspec_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;height_ratios&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="n">folded</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;simulated SFS, $\mathbf x$&#39;</span><span class="p">),</span>
-                <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;reconstructed SFS, $\boldsymbol{\xi}$&#39;</span><span class="p">),</span>
-                <span class="n">fill_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">clear_eta</span><span class="p">()</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span>
+               <span class="o">*</span><span class="n">trend_penalties</span><span class="p">,</span>
+               <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+               <span class="n">pts</span><span class="o">=</span><span class="n">pts</span><span class="p">,</span> <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">folded</span><span class="o">=</span><span class="n">folded</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">ksfs</span><span class="o">.</span><span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;inferred ancestral misidentification rate: </span><span class="si">{</span><span class="n">ksfs</span><span class="o">.</span><span class="n">r</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot_total</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+                <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+                <span class="n">fill_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                <span class="n">folded</span><span class="o">=</span><span class="n">folded</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-          <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">),</span>
-          <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">))</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">),</span>
-          <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;variant count composition&#39;</span><span class="p">)</span>
-<span class="n">legend_elements</span> <span class="o">=</span> <span class="p">[</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;simulated $k$-SFS, $\mathrm</span><span class="si">{clr}</span><span class="s1">(\mathbf X)$&#39;</span><span class="p">),</span>
-                   <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;reconstructed $k$-SFS, $\mathrm</span><span class="si">{clr}</span><span class="s1">(\boldsymbol\Xi)$&#39;</span><span class="p">)]</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">legend_elements</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_prop_cycle</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_mutation_types</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\mathrm</span><span class="si">{clr}</span><span class="s1">(\boldsymbol{\mu}(t))$&#39;</span><span class="p">)</span>
-<span class="n">legend_elements</span> <span class="o">=</span> <span class="p">[</span><span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">),</span>
-                   <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)]</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">legend_elements</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower left&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">1e1</span><span class="p">,</span> <span class="mf">5e4</span><span class="p">])</span>
-
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">();</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">eta_true</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;true&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">eta</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;inferred&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -1.037442e+08
+iteration 100, objective -1.039e+08, relative change 4.192e-08
+maximum iteration 100 reached with relative change in objective function 4.2e-08
+inferred ancestral misidentification rate: 0.020
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_simulation_29_0.svg" src="../_images/notebooks_simulation_29_0.svg" /></div>
+<img alt="../_images/notebooks_simulation_19_1.svg" src="../_images/notebooks_simulation_19_1.svg" /></div>
+</div>
+</div>
+<div class="section" id="Infer-\boldsymbol\mu(t)">
+<h2>Infer <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span><a class="headerlink" href="#Infer-\boldsymbol\mu(t)" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">ksfs</span><span class="o">.</span><span class="n">clear_mu</span><span class="p">()</span>
+
+<span class="n">trend_penalties</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">))</span>
+
+<span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">(</span><span class="o">*</span><span class="n">trend_penalties</span><span class="p">,</span> <span class="n">ridge_penalty</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">convergence</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">),</span>
+          <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">))</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,),</span> <span class="n">clr</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">),</span>
+          <span class="n">line_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">)</span>
+<span class="n">mu_true</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">)</span>
+<span class="n">ksfs</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">,),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+initial objective -1.028206e+08
+iteration 100, objective -1.028e+08, relative change 1.141e-09
+maximum iteration 100 reached with relative change in objective function 1.1e-09
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_simulation_21_1.svg" src="../_images/notebooks_simulation_21_1.svg" /></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
@@ -852,7 +791,7 @@ epoch boundaries: (100000.00, inf), μ: 82.83
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="1KG.html" class="btn btn-neutral float-right" title="Inferring demography and mutation spectrum history for human populations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../mushi.html" class="btn btn-neutral float-right" title="Public API: mushi package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../cite.html" class="btn btn-neutral float-left" title="Citing mushi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

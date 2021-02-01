@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>mushi.mu &mdash; mushi  documentation</title>
+  <title>mushi.histories &mdash; mushi  documentation</title>
   
 
   
@@ -39,8 +39,8 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mushi.optimization" href="mushi.optimization.html" />
-    <link rel="prev" title="mushi.eta" href="mushi.eta.html" /> 
+    <link rel="next" title="mushi.utils" href="mushi.utils.html" />
+    <link rel="prev" title="mushi.optimization" href="mushi.optimization.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -100,13 +100,14 @@
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#classes">Classes</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="mushi.kSFS.html">mushi.kSFS</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.eta.html">mushi.eta</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.mu</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mushi.html#classes">Classes</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.histories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../mushi.html#submodules">Submodules</a></li>
 </ul>
 </li>
 </ul>
@@ -163,13 +164,13 @@
         
           <li><a href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a> &raquo;</li>
         
-      <li>mushi.mu</li>
+      <li>mushi.histories</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/stubs/mushi.mu.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/stubs/mushi.histories.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -206,77 +207,26 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="mushi-mu">
-<h1>mushi.mu<a class="headerlink" href="#mushi-mu" title="Permalink to this headline">¶</a></h1>
-<dl class="py class">
-<dt id="mushi.mu">
-<em class="property">class </em><code class="sig-prename descclassname">mushi.</code><code class="sig-name descname">mu</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">change_points</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">vals</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></span></em>, <em class="sig-param"><span class="n">mutation_types</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#mu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.mu" title="Permalink to this definition">¶</a></dt>
-<dd><p>mutation spectrum history</p>
-<p>change_points: epoch change points (times)
-Z: matrix of constant values for each epoch (rows) in each mutation type</p>
-<blockquote>
-<div><p>(columns)</p>
-</div></blockquote>
-<p>mutation_types: list of mutation type names (optional <code class="docutils literal notranslate"><span class="pre">None</span></code> element)</p>
-<dl class="py method">
-<dt id="mushi.mu.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">change_points</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">vals</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)">numpy.ndarray</a></span></em>, <em class="sig-param"><span class="n">mutation_types</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="headerlink" href="#mushi.mu.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Methods</p>
+<div class="section" id="module-mushi.histories">
+<span id="mushi-histories"></span><h1>mushi.histories<a class="headerlink" href="#module-mushi.histories" title="Permalink to this headline">¶</a></h1>
+<p class="rubric">Classes</p>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.mu.__init__" title="mushi.mu.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(change_points, vals, mutation_types)</p></td>
-<td><p><dl class="field-list simple">
-<dt class="field-odd">rtype</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-obj docutils literal notranslate"><span class="pre">History</span></code></a>(change_points, vals)</p></td>
+<td><p>base class piecewise constant history.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">arrays</span></code>()</p></td>
-<td><p>return time grid and values in each cell</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta</span></code></a>(change_points, vals)</p></td>
+<td><p>demographic history</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_grid</span></code>(other)</p></td>
-<td><p>test if time grid is the same as another instance</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.mu.clustermap" title="mushi.mu.clustermap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustermap</span></code></a>([t_gen])</p></td>
-<td><p>clustermap of compositionally centralized MUSH</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">epochs</span></code>()</p></td>
-<td><p>generator yielding epochs as tuples: (start_time, end_time, value)</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.mu.plot" title="mushi.mu.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([types, clr])</p></td>
-<td><p>types: list of mutation types to plot (default all) clr: flag to normalize to total mutation intensity and display as      centered log ratio transform</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.mu.plot_cumulative" title="mushi.mu.plot_cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_cumulative</span></code></a>([t_gen, clr])</p></td>
-<td><p>plot the cumulative mutation rate, like a Muller plot</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu</span></code></a>(change_points, vals, mutation_types)</p></td>
+<td><p>mutation spectrum history</p></td>
 </tr>
 </tbody>
 </table>
-<p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.mu.Z" title="mushi.mu.Z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Z</span></code></a></p></td>
-<td><p>read-only alias to vals attribute in base class</p></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </div>
 
 
@@ -287,10 +237,10 @@ Z: matrix of constant values for each epoch (rows) in each mutation type</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mushi.optimization.html" class="btn btn-neutral float-right" title="mushi.optimization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.utils.html" class="btn btn-neutral float-right" title="mushi.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mushi.eta.html" class="btn btn-neutral float-left" title="mushi.eta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mushi.optimization.html" class="btn btn-neutral float-left" title="mushi.optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
