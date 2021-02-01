@@ -66,7 +66,7 @@ class History():
         if not np.array_equal(self.change_points, other.change_points):
             raise ValueError('histories have different time grids')
 
-    def plot(self, t_gen: np.float = None, types=None,
+    def plot(self, t_gen: float = None, types=None,
              **kwargs) -> List[mpl.lines.Line2D]:
         """plot the history
 
@@ -174,7 +174,7 @@ class mu(History):
             plt.ylabel('$\\mu(t)$')
         plt.tight_layout()
 
-    def plot_cumulative(self, t_gen: np.float = None, clr: bool = False,
+    def plot_cumulative(self, t_gen: float = None, clr: bool = False,
                         **kwargs) -> None:
         """plot the cumulative mutation rate, like a Muller plot
 
@@ -199,7 +199,7 @@ class mu(History):
         plt.xscale('log')
         plt.tight_layout()
 
-    def clustermap(self, t_gen: np.float = None, **kwargs) -> None:
+    def clustermap(self, t_gen: float = None, **kwargs) -> None:
         """clustermap of compositionally centralized MUSH
 
         t_gen: generation time in years (optional)
