@@ -1,4 +1,6 @@
-#! /usr/bin/env python
+r"""History objects for representing demography and MuSH
+
+"""
 
 from dataclasses import dataclass
 from typing import List
@@ -13,11 +15,13 @@ import mushi.composition as cmp
 
 @dataclass
 class History():
-    """base class piecewise constant history. The first epoch starts at zero,
+    """
+    Base class piecewise constant history. The first epoch starts at zero,
     and the last epoch extends to infinity
 
-    change_points: epoch change points (times)
-    vals: constant values for each epoch (rows)
+    Args:
+        change_points: epoch change points (times)
+        vals: constant values for each epoch (rows)
     """
     change_points: np.array
     vals: np.ndarray
@@ -36,14 +40,14 @@ class History():
         self.m = len(self.vals)
 
     def arrays(self):
-        """return time grid and values in each cell"""
+        """Return time grid and values in each cell"""
         t = np.concatenate((np.array([0]),
                             self.change_points,
                             np.array([np.inf])))
         return t, self.vals
 
     def epochs(self):
-        """generator yielding epochs as tuples: (start_time, end_time, value)
+        """Generator yielding epochs as tuples: (start_time, end_time, value)
         """
         for i in range(self.m):
             if i == 0:
@@ -58,7 +62,7 @@ class History():
             yield (start_time, end_time, value)
 
     def check_grid(self, other: 'History'):
-        """test if time grid is the same as another instance
+        """Test if time grid is the same as another instance
 
         Args:
             other: another History object
@@ -68,10 +72,11 @@ class History():
 
     def plot(self, t_gen: float = None, types=None,
              **kwargs) -> List[mpl.lines.Line2D]:
-        """plot the history
+        """Plot the history
 
-        t_gen: generation time in years (optional)
-        kwargs: key word arguments passed to plt.plot
+        Args:
+            t_gen: generation time in years (optional)
+            kwargs: key word arguments passed to plt.plot
         """
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:
@@ -92,10 +97,11 @@ class History():
 
 
 class eta(History):
-    """demographic history
+    """Demographic history
 
-    change_points: epoch change points (times)
-    y: vector of constant population sizes in each epoch
+    Args:
+        change_points: epoch change points (times)
+        y: vector of constant population sizes in each epoch
     """
     @property
     def y(self):
@@ -119,12 +125,13 @@ class eta(History):
 
 @dataclass
 class mu(History):
-    """mutation spectrum history
+    """Mutation spectrum history (MuSH)
 
-    change_points: epoch change points (times)
-    Z: matrix of constant values for each epoch (rows) in each mutation type
-       (columns)
-    mutation_types: list of mutation type names (optional ``None`` element)
+    Args:
+        change_points: epoch change points (times)
+        Z: matrix of constant values for each epoch (rows) in each mutation type
+           (columns)
+           mutation_types: list of mutation type names (optional ``None`` element)
     """
     mutation_types: List[str]
 
@@ -149,10 +156,12 @@ class mu(History):
 
     def plot(self, types: List[str] = None, clr: bool = False,
              **kwargs) -> None:
-        """
-        types: list of mutation types to plot (default all)
-        clr: flag to normalize to total mutation intensity and display as
-             centered log ratio transform
+        """Plot history
+
+        Args:
+            types: list of mutation types to plot (default all)
+            clr: flag to normalize to total mutation intensity and display as
+                 centered log ratio transform
         """
         lines = super().plot(types=types, **kwargs)
         if clr:
@@ -176,12 +185,13 @@ class mu(History):
 
     def plot_cumulative(self, t_gen: float = None, clr: bool = False,
                         **kwargs) -> None:
-        """plot the cumulative mutation rate, like a Muller plot
+        r"""Plot the cumulative mutation rate, like a Muller plot
 
-        t_gen: generation time in years (optional)
-        clr: flag to normalize to total mutation intensity and display as
-             centered log ratio transform
-        kwargs: key word arguments passed to plt.fill_between
+        Args:
+            t_gen: generation time in years (optional)
+            clr: flag to normalize to total mutation intensity and display as
+                 centered log ratio transform
+            kwargs: key word arguments passed to ``plt.fill_between``
         """
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:
@@ -200,10 +210,11 @@ class mu(History):
         plt.tight_layout()
 
     def clustermap(self, t_gen: float = None, **kwargs) -> None:
-        """clustermap of compositionally centralized MUSH
+        r"""Clustermap of compositionally centralized MuSH
 
-        t_gen: generation time in years (optional)
-        kwargs: additional keyword arguments passed to pd.clustermap
+        Args:
+            t_gen: generation time in years (optional)
+            kwargs: additional keyword arguments passed to ``pd.clustermap``
         """
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:

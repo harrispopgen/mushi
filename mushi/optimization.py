@@ -1,4 +1,4 @@
-r"""Optimization functions.
+r"""Optimizer objects
 
 """
 

@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 import mushi.histories as hst
 from mushi import loss_functions, utils
 import mushi.optimization as opt
@@ -22,7 +20,9 @@ config.update('jax_enable_x64', True)
 
 
 class kSFS():
-    r"""The core :math:`k`-SFS class for simulation and inference
+    r"""Primary class for working with SFS data to infer demography
+    :math:`\eta(t)\equiv 2N(t)`, or with :math:`k`-SFS data to infer demography
+    and mutation spectrum history :math:`\boldsymbol\mu(t)`.
 
     Attributes:
         X (:obj:`numpy.ndarray`): :math:`k`-SFS matrix (or 1D SFS vector)
@@ -36,7 +36,8 @@ class kSFS():
 
         1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`
 
-        2) ``X`` and ``mutation_types``
+        2) ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is
+           a 1D SFS array)
 
         3) ``n``: number of haplotypes to initialize for simulation
 
