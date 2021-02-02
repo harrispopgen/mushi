@@ -103,8 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# scons
-.sconsign.dblite
-
+# sphinx stubs
+docsrc/stubs
 
 .DS_Store
