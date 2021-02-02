@@ -1,15 +1,13 @@
 .. currentmodule:: mushi
 
-Public API: ``mushi`` package
-=============================
-
 Classes
--------
+=======
 
-Primary classes for working with :math:`k`-SFS data to infer demography :math:`\eta(t)\equiv 2N(t)` and mutation spectrum history :math:`\boldsymbol\mu(t)`.
+Top level classes.
 
 .. autosummary::
     :toctree: stubs
+    :template: custom-class-template.rst
 
     kSFS
     eta
@@ -17,43 +15,15 @@ Primary classes for working with :math:`k`-SFS data to infer demography :math:`\
 
 
 Submodules
------------
+==========
 
 Submodules that the main classes rely on, and may be of interest to some users
 
 .. autosummary::
     :toctree: stubs
+    :template: custom-module-template.rst
 
     mushi.optimization
     mushi.histories
     mushi.utils
     mushi.composition
-
-
-.. autoclass:: kSFS
-    :members:
-
-.. autoclass:: eta
-    :members:
-
-.. autoclass:: mu
-    :members:
-
-.. automodule:: mushi.optimization
-    :members:
-
-.. automodule:: mushi.histories
-    :members:
-
-.. automodule:: mushi.utils
-    :members:
-
-.. automodule:: mushi.loss_functions
-    :members:
-
-.. automodule:: mushi.composition
-    mushi.composition.clr
-    mushi.composition.clr_inv
-    mushi.composition.ilr
-    mushi.composition.ilr_inv
-    mushi.composition.centralize

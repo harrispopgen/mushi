@@ -29,7 +29,7 @@ to infer these histories from data without model specification.
    faq
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: API Documentation
 
    mushi
