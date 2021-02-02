@@ -1,19 +1,21 @@
-mushi.mu
+﻿mushi.mu
 ========
 
 .. currentmodule:: mushi
 
 .. autoclass:: mu
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
 
    
-   .. automethod:: __init__
-
    
    .. rubric:: Methods
 
    .. autosummary::
+      :nosignatures:
    
-      ~mu.__init__
       ~mu.arrays
       ~mu.check_grid
       ~mu.clustermap

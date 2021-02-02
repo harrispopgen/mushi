@@ -1,4 +1,4 @@
-mushi.optimization
+﻿mushi.optimization
 ==================
 
 .. automodule:: mushi.optimization
@@ -9,9 +9,16 @@ mushi.optimization
 
    
    
+   
+
+   
+   
    .. rubric:: Classes
 
    .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
    
       AccProxGrad
       LineSearcher
@@ -24,3 +31,6 @@ mushi.optimization
    
    
    
+
+
+

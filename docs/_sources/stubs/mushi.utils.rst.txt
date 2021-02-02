@@ -1,13 +1,19 @@
-mushi.utils
+﻿mushi.utils
 ===========
 
 .. automodule:: mushi.utils
 
    
    
+   
+
+   
+   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
+      :nosignatures:
    
       C
       M
@@ -26,3 +32,6 @@ mushi.utils
    
    
    
+
+
+

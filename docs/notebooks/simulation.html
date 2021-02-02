@@ -24,9 +24,8 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -39,7 +38,7 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Public API: mushi package" href="../mushi.html" />
+    <link rel="next" title="Classes" href="../mushi.html" />
     <link rel="prev" title="Citing mushi" href="../cite.html" /> 
 </head>
 
@@ -114,7 +113,8 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html#submodules">Submodules</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer Documentation</span></p>
 <ul>
@@ -173,8 +173,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/notebooks/simulation.ipynb.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -444,7 +442,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Testing-with-simulations">
 <h1>Testing with simulations<a class="headerlink" href="#Testing-with-simulations" title="Permalink to this headline">¶</a></h1>
 <p>A notebook for testing <code class="docutils literal notranslate"><span class="pre">mushi</span></code>’s ability to invert data simulated under the forward model</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -459,6 +457,15 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">stdpopsim</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/traitlets/traitlets.py:3036: FutureWarning: --rc={&#39;figure.dpi&#39;: 96} for dict-traits is deprecated in traitlets 5.0. You can pass --rc &lt;key=value&gt; ... multiple times to add items to a dict.
+  FutureWarning,
+</pre></div></div>
 </div>
 <div class="section" id="Time-grid">
 <h2>Time grid<a class="headerlink" href="#Time-grid" title="Permalink to this headline">¶</a></h2>
@@ -791,7 +798,7 @@ maximum iteration 100 reached with relative change in objective function 1.1e-09
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../mushi.html" class="btn btn-neutral float-right" title="Public API: mushi package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../mushi.html" class="btn btn-neutral float-right" title="Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../cite.html" class="btn btn-neutral float-left" title="Citing mushi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

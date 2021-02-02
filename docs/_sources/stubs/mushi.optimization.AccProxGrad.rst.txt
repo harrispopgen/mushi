@@ -1,0 +1,29 @@
+mushi.optimization.AccProxGrad
+==============================
+
+.. currentmodule:: mushi.optimization
+
+.. autoclass:: AccProxGrad
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~AccProxGrad.check_x
+      ~AccProxGrad.f
+      ~AccProxGrad.initialize
+      ~AccProxGrad.run
+      ~AccProxGrad.step
+   
+   
+
+   
+   
+   

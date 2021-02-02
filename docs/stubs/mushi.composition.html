@@ -24,9 +24,8 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -39,8 +38,8 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Open source code repository" href="../developer.html" />
-    <link rel="prev" title="mushi.utils" href="mushi.utils.html" /> 
+    <link rel="next" title="mushi.composition.ancom" href="mushi.composition.ancom.html" />
+    <link rel="prev" title="mushi.utils.tmrca_sf" href="mushi.utils.tmrca_sf.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -99,13 +98,24 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../mushi.html#classes">Classes</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.composition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.composition</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.ancom.html">mushi.composition.ancom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.centralize.html">mushi.composition.centralize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.closure.html">mushi.composition.closure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.clr.html">mushi.composition.clr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.clr_inv.html">mushi.composition.clr_inv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.ilr.html">mushi.composition.ilr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.ilr_inv.html">mushi.composition.ilr_inv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.inner.html">mushi.composition.inner</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.multiplicative_replacement.html">mushi.composition.multiplicative_replacement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.perturb.html">mushi.composition.perturb</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.perturb_inv.html">mushi.composition.perturb_inv</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.composition.power.html">mushi.composition.power</a></li>
 </ul>
 </li>
 </ul>
@@ -162,7 +172,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a> &raquo;</li>
+          <li><a href="../mushi.html">Classes</a> &raquo;</li>
         
       <li>mushi.composition</li>
     
@@ -170,8 +180,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/stubs/mushi.composition.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -280,40 +288,40 @@ perturbation vector would be as follows</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ancom</span></code>(table, grouping[, alpha, tau, theta, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.ancom.html#mushi.composition.ancom" title="mushi.composition.ancom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ancom</span></code></a></p></td>
 <td><p>Performs a differential abundance test using ANCOM.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">centralize</span></code>(mat)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.centralize.html#mushi.composition.centralize" title="mushi.composition.centralize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">centralize</span></code></a></p></td>
 <td><p>Center data around its geometric average.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">closure</span></code>(mat)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.closure.html#mushi.composition.closure" title="mushi.composition.closure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">closure</span></code></a></p></td>
 <td><p>Performs closure to ensure that all elements add up to 1.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">clr</span></code>(mat)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.clr.html#mushi.composition.clr" title="mushi.composition.clr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clr</span></code></a></p></td>
 <td><p>Performs centre log ratio transformation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">clr_inv</span></code>(mat)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.clr_inv.html#mushi.composition.clr_inv" title="mushi.composition.clr_inv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clr_inv</span></code></a></p></td>
 <td><p>Performs inverse centre log ratio transformation.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ilr</span></code>(mat[, basis, check])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.ilr.html#mushi.composition.ilr" title="mushi.composition.ilr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ilr</span></code></a></p></td>
 <td><p>Performs isometric log ratio transformation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ilr_inv</span></code>(mat, basis)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.ilr_inv.html#mushi.composition.ilr_inv" title="mushi.composition.ilr_inv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ilr_inv</span></code></a></p></td>
 <td><p>Performs inverse isometric log ratio transform.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">inner</span></code>(x, y)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.inner.html#mushi.composition.inner" title="mushi.composition.inner"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inner</span></code></a></p></td>
 <td><p>Calculates the Aitchson inner product.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">multiplicative_replacement</span></code>(mat[, delta])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.multiplicative_replacement.html#mushi.composition.multiplicative_replacement" title="mushi.composition.multiplicative_replacement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multiplicative_replacement</span></code></a></p></td>
 <td><p>Replace all zeros with small non-zero values</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturb</span></code>(x, y)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.perturb.html#mushi.composition.perturb" title="mushi.composition.perturb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturb</span></code></a></p></td>
 <td><p>Performs the perturbation operation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturb_inv</span></code>(x, y)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.perturb_inv.html#mushi.composition.perturb_inv" title="mushi.composition.perturb_inv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturb_inv</span></code></a></p></td>
 <td><p>Performs the inverse perturbation operation.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">power</span></code>(x, a)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.power.html#mushi.composition.power" title="mushi.composition.power"><code class="xref py py-obj docutils literal notranslate"><span class="pre">power</span></code></a></p></td>
 <td><p>Performs the power operation.</p></td>
 </tr>
 </tbody>
@@ -328,10 +336,10 @@ perturbation vector would be as follows</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../developer.html" class="btn btn-neutral float-right" title="Open source code repository" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.composition.ancom.html" class="btn btn-neutral float-right" title="mushi.composition.ancom" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mushi.utils.html" class="btn btn-neutral float-left" title="mushi.utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mushi.utils.tmrca_sf.html" class="btn btn-neutral float-left" title="mushi.utils.tmrca_sf" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

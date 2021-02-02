@@ -1,0 +1,29 @@
+mushi.optimization.LineSearcher
+===============================
+
+.. currentmodule:: mushi.optimization
+
+.. autoclass:: LineSearcher
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~LineSearcher.check_x
+      ~LineSearcher.f
+      ~LineSearcher.initialize
+      ~LineSearcher.run
+      ~LineSearcher.step
+   
+   
+
+   
+   
+   

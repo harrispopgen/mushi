@@ -1,0 +1,29 @@
+mushi.optimization.ThreeOpProxGrad
+==================================
+
+.. currentmodule:: mushi.optimization
+
+.. autoclass:: ThreeOpProxGrad
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~ThreeOpProxGrad.check_x
+      ~ThreeOpProxGrad.f
+      ~ThreeOpProxGrad.initialize
+      ~ThreeOpProxGrad.run
+      ~ThreeOpProxGrad.step
+   
+   
+
+   
+   
+   

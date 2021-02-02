@@ -24,9 +24,8 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -39,7 +38,7 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mushi.histories" href="mushi.histories.html" />
+    <link rel="next" title="mushi.optimization.AccProxGrad" href="mushi.optimization.AccProxGrad.html" />
     <link rel="prev" title="mushi.mu" href="mushi.mu.html" /> 
 </head>
 
@@ -99,15 +98,19 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../mushi.html#classes">Classes</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.optimization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.AccProxGrad.html">mushi.optimization.AccProxGrad</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.LineSearcher.html">mushi.optimization.LineSearcher</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.Optimizer.html">mushi.optimization.Optimizer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.ThreeOpProxGrad.html">mushi.optimization.ThreeOpProxGrad</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.TrendFilter.html">mushi.optimization.TrendFilter</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
 </li>
 </ul>
@@ -162,7 +165,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a> &raquo;</li>
+          <li><a href="../mushi.html">Classes</a> &raquo;</li>
         
       <li>mushi.optimization</li>
     
@@ -170,8 +173,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/stubs/mushi.optimization.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -209,7 +210,7 @@
 </style>
 <div class="section" id="module-mushi.optimization">
 <span id="mushi-optimization"></span><h1>mushi.optimization<a class="headerlink" href="#module-mushi.optimization" title="Permalink to this headline">¶</a></h1>
-<p>Optimization functions.</p>
+<p>Optimizer objects</p>
 <p class="rubric">Classes</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -217,19 +218,19 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.AccProxGrad" title="mushi.optimization.AccProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccProxGrad</span></code></a>(g, grad_g, h, prox[, verbose])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad" title="mushi.optimization.AccProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AccProxGrad</span></code></a></p></td>
 <td><p>Nesterov accelerated proximal gradient method with backtracking line search <a href="#id4"><span class="problematic" id="id1">[1]_</span></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LineSearcher</span></code></a>([s0, max_line_iter, gamma, verbose])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LineSearcher</span></code></a></p></td>
 <td><p>Abstract class for an optimizer with Armijo line search</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.Optimizer" title="mushi.optimization.Optimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Optimizer</span></code></a>([verbose])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.optimization.Optimizer.html#mushi.optimization.Optimizer" title="mushi.optimization.Optimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Optimizer</span></code></a></p></td>
 <td><p>Abstract base class for optimizers</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.ThreeOpProxGrad" title="mushi.optimization.ThreeOpProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThreeOpProxGrad</span></code></a>(g, grad_g, h1, prox1, h2, prox2)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad" title="mushi.optimization.ThreeOpProxGrad"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ThreeOpProxGrad</span></code></a></p></td>
 <td><p>Three operator splitting proximal gradient method with backtracking line search <a href="#id5"><span class="problematic" id="id2">[2]_</span></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.optimization.TrendFilter" title="mushi.optimization.TrendFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrendFilter</span></code></a>(ks, lambdas[, rhos, verbose])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter" title="mushi.optimization.TrendFilter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrendFilter</span></code></a></p></td>
 <td><p>Mixed trend filtering via specialized ADMM as in <a href="#id6"><span class="problematic" id="id3">[3]_</span></a>, section 5.2.</p></td>
 </tr>
 </tbody>
@@ -244,7 +245,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mushi.histories.html" class="btn btn-neutral float-right" title="mushi.histories" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.optimization.AccProxGrad.html" class="btn btn-neutral float-right" title="mushi.optimization.AccProxGrad" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="mushi.mu.html" class="btn btn-neutral float-left" title="mushi.mu" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

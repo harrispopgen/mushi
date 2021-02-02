@@ -1,4 +1,4 @@
-mushi.histories
+﻿mushi.histories
 ===============
 
 .. automodule:: mushi.histories
@@ -9,9 +9,16 @@ mushi.histories
 
    
    
+   
+
+   
+   
    .. rubric:: Classes
 
    .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+      :nosignatures:
    
       History
       eta
@@ -22,3 +29,6 @@ mushi.histories
    
    
    
+
+
+

@@ -24,9 +24,8 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -99,6 +98,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#Demographic-inference">Demographic inference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Regularization-parameters">Regularization parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Folded-SFS">Folded SFS</a></li>
 </ul>
 </li>
@@ -113,7 +113,8 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html#submodules">Submodules</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer Documentation</span></p>
 <ul>
@@ -172,8 +173,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/notebooks/quickstart.ipynb.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -447,7 +446,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Imports">
 <h2>Imports<a class="headerlink" href="#Imports" title="Permalink to this headline">¶</a></h2>
 <p>We first import the <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package, and a few other standard packages.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -459,6 +458,15 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/Users/williamdewitt/Applications/miniconda2/envs/mushidocs/lib/python3.7/site-packages/traitlets/traitlets.py:3036: FutureWarning: --rc={&#39;figure.dpi&#39;: 96} for dict-traits is deprecated in traitlets 5.0. You can pass --rc &lt;key=value&gt; ... multiple times to add items to a dict.
+  FutureWarning,
+</pre></div></div>
 </div>
 </div>
 <div class="section" id="Reading-sample-frequency-spectrum-data">
@@ -567,8 +575,14 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Demographic-inference">
 <h2>Demographic inference<a class="headerlink" href="#Demographic-inference" title="Permalink to this headline">¶</a></h2>
 <p>With SFS data defined, we can attempt to infer demographic history, and ask if it resembles the true history we used to simulate the data.</p>
-<p>Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties. ### Regularization parameters - The most important regularization parameter is the trend penalty, a tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code>. This indicates a trend penalty of order <code class="docutils literal notranslate"><span class="pre">k</span></code> and strength <code class="docutils literal notranslate"><span class="pre">λ</span></code>. Inference will favor piece-wise polynomial solutions, with pieces of order <code class="docutils literal notranslate"><span class="pre">k</span></code>. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty
-would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which will result in solutions that are a mix of pieces of difference orders. - An additional <code class="docutils literal notranslate"><span class="pre">ridge_penalty</span></code> parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p>
+<p>Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties.</p>
+<div class="section" id="Regularization-parameters">
+<h3>Regularization parameters<a class="headerlink" href="#Regularization-parameters" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The most important regularization parameter is the trend penalty, a tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code>. This indicates a trend penalty of order <code class="docutils literal notranslate"><span class="pre">k</span></code> and strength <code class="docutils literal notranslate"><span class="pre">λ</span></code>. Inference will favor piece-wise polynomial solutions, with pieces of order <code class="docutils literal notranslate"><span class="pre">k</span></code>. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which
+will result in solutions that are a mix of pieces of different orders.</p></li>
+<li><p>An additional <code class="docutils literal notranslate"><span class="pre">ridge_penalty</span></code> parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p></li>
+</ul>
 <p>We use a single 0th order trend penalty, to favor piecewise constant solutions. The choice of which trend orders to use is a model selection choice that should be judiciously chosen, possible based on domain knowledge about the population under study.</p>
 <p>We also can specify the number of iterations (if we want more than the default), and a verbosity level to print info about progress.</p>
 <div class="nbinput docutils container">
@@ -612,11 +626,20 @@ maximum iteration 300 reached with relative change in objective function 2.5e-08
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7f80a2049f90&gt;
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_14_0.svg" src="../_images/notebooks_quickstart_14_0.svg" /></div>
+<img alt="../_images/notebooks_quickstart_14_1.svg" src="../_images/notebooks_quickstart_14_1.svg" /></div>
 </div>
 <p>The ancestral misidentification rate was also inferred (to fit the “smile”), and we can check that it is near the true value used to simulate.</p>
 <div class="nbinput docutils container">
@@ -636,6 +659,7 @@ maximum iteration 300 reached with relative change in objective function 2.5e-08
 <div class="highlight"><pre>
 DeviceArray(0.02017785, dtype=float64)
 </pre></div></div>
+</div>
 </div>
 <div class="section" id="Folded-SFS">
 <h3>Folded SFS<a class="headerlink" href="#Folded-SFS" title="Permalink to this headline">¶</a></h3>
@@ -673,11 +697,20 @@ iteration 300, objective -4.443e+07, relative change 2.147e-11
 maximum iteration 300 reached with relative change in objective function 2.1e-11
 </pre></div></div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7f80a2a4a250&gt;
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_18_1.svg" src="../_images/notebooks_quickstart_18_1.svg" /></div>
+<img alt="../_images/notebooks_quickstart_18_2.svg" src="../_images/notebooks_quickstart_18_2.svg" /></div>
 </div>
 </div>
 </div>
@@ -686,6 +719,7 @@ maximum iteration 300 reached with relative change in objective function 2.1e-11
 <p>We now consider data that is resolved into different mutation types (e.g. 96 triplet mutation types), and we have an SFS for each type as a separate column of a <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix. As described above, a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> can be instantiated from a numpy array, or loaded from a tsv file. Here we’ll again simulate one, so we first need to define a true mutation spectrum history.</p>
 <p>In <code class="docutils literal notranslate"><span class="pre">mushi</span></code>, the mush is denoted by a time dependent mutation rate history vector <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span> (“mu” of t), and can be constructed using the class <code class="docutils literal notranslate"><span class="pre">mushi.mu</span></code>. Each component of the vector is the mutation rate for one mutation type (e.g. one triplet type, like <code class="docutils literal notranslate"><span class="pre">AAA&gt;ACA</span></code>).</p>
 <p>We instantiate mush with a vector of times (into the past) when the mush changes, and a <em>matrix</em> of mutation rate vectors in each interval. Here we define a a 96 dimensional history where all are constant in time except two: a pulse and a monotonic ramp. Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration.</p>
+<p>To simplify things, we’ll aggregate all the constant mutation types, so we have mutation types: <code class="docutils literal notranslate"><span class="pre">TCC&gt;TTC</span></code>, <code class="docutils literal notranslate"><span class="pre">GAA&gt;GGA</span></code>, and <code class="docutils literal notranslate"><span class="pre">None</span></code> (which will contain the remaining 94 mutation types.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -781,11 +815,20 @@ iteration 300, objective -8.918e+07, relative change 1.540e-08
 maximum iteration 300 reached with relative change in objective function 1.5e-08
 </pre></div></div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.legend.Legend at 0x7f80a0d93890&gt;
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_quickstart_23_1.svg" src="../_images/notebooks_quickstart_23_1.svg" /></div>
+<img alt="../_images/notebooks_quickstart_23_2.svg" src="../_images/notebooks_quickstart_23_2.svg" /></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:

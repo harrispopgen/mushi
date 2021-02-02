@@ -24,9 +24,8 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -39,8 +38,8 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mushi.composition" href="mushi.composition.html" />
-    <link rel="prev" title="mushi.histories" href="mushi.histories.html" /> 
+    <link rel="next" title="mushi.utils.C" href="mushi.utils.C.html" />
+    <link rel="prev" title="mushi.histories.mu" href="mushi.histories.mu.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -99,15 +98,21 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../mushi.html#classes">Classes</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.utils</a></li>
-<li class="toctree-l3"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.C.html">mushi.utils.C</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.M.html">mushi.utils.M</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.fold.html">mushi.utils.fold</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.misid_partners.html">mushi.utils.misid_partners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.mutype_misid.html">mushi.utils.mutype_misid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.revcomp.html">mushi.utils.revcomp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.utils.tmrca_sf.html">mushi.utils.tmrca_sf</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
 </li>
 </ul>
@@ -162,7 +167,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a> &raquo;</li>
+          <li><a href="../mushi.html">Classes</a> &raquo;</li>
         
       <li>mushi.utils</li>
     
@@ -170,8 +175,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/stubs/mushi.utils.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -217,25 +220,25 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.C" title="mushi.utils.C"><code class="xref py py-obj docutils literal notranslate"><span class="pre">C</span></code></a>(n)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.utils.C.html#mushi.utils.C" title="mushi.utils.C"><code class="xref py py-obj docutils literal notranslate"><span class="pre">C</span></code></a></p></td>
 <td><p>The combinatorial <span class="math notranslate nohighlight">\(C\)</span> matrix defined in the paper’s appendix</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.M" title="mushi.utils.M"><code class="xref py py-obj docutils literal notranslate"><span class="pre">M</span></code></a>(n, t, y)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.utils.M.html#mushi.utils.M" title="mushi.utils.M"><code class="xref py py-obj docutils literal notranslate"><span class="pre">M</span></code></a></p></td>
 <td><p>The M matrix defined in the paper’s appendix</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.fold" title="mushi.utils.fold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fold</span></code></a>(x)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.utils.fold.html#mushi.utils.fold" title="mushi.utils.fold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fold</span></code></a></p></td>
 <td><p>transform SFS to folded SFS</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.misid_partners" title="mushi.utils.misid_partners"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misid_partners</span></code></a>(mutation_types)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.utils.misid_partners.html#mushi.utils.misid_partners" title="mushi.utils.misid_partners"><code class="xref py py-obj docutils literal notranslate"><span class="pre">misid_partners</span></code></a></p></td>
 <td><p>Ancestral state misidentification partner indices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.mutype_misid" title="mushi.utils.mutype_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mutype_misid</span></code></a>(mutation_types)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.utils.mutype_misid.html#mushi.utils.mutype_misid" title="mushi.utils.mutype_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mutype_misid</span></code></a></p></td>
 <td><p>mutation type misidentification operator</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.revcomp" title="mushi.utils.revcomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revcomp</span></code></a>(seq)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="mushi.utils.revcomp.html#mushi.utils.revcomp" title="mushi.utils.revcomp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revcomp</span></code></a></p></td>
 <td><p>reverse complement mutation type</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../mushi.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a>(t, y, n)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="mushi.utils.tmrca_sf.html#mushi.utils.tmrca_sf" title="mushi.utils.tmrca_sf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_sf</span></code></a></p></td>
 <td><p>The survival function of the TMRCA at each time point</p></td>
 </tr>
 </tbody>
@@ -250,10 +253,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mushi.composition.html" class="btn btn-neutral float-right" title="mushi.composition" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.utils.C.html" class="btn btn-neutral float-right" title="mushi.utils.C" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="mushi.histories.html" class="btn btn-neutral float-left" title="mushi.histories" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="mushi.histories.mu.html" class="btn btn-neutral float-left" title="mushi.histories.mu" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

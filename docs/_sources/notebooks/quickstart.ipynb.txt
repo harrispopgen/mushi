@@ -162,9 +162,11 @@
     "With SFS data defined, we can attempt to infer demographic history, and ask if it resembles the true history we used to simulate the data.\n",
     "\n",
     "Demographic inference requires an estimate of the total mutation rate, and optional regularization penalties.\n",
+    "\n",
     "### Regularization parameters\n",
-    " - The most important regularization parameter is the trend penalty, a tuple `(k, λ)`. This indicates a trend penalty of order `k` and strength `λ`. Inference will favor piece-wise polynomial solutions, with pieces of order `k`. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which will result in solutions that are a mix of pieces of difference orders.\n",
-    " - An additional `ridge_penalty` parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically `1e-4`.\n",
+    "\n",
+    "- The most important regularization parameter is the trend penalty, a tuple `(k, λ)`. This indicates a trend penalty of order `k` and strength `λ`. Inference will favor piece-wise polynomial solutions, with pieces of order `k`. For example using a 0th order penalty (as we do below) will favor piece-wise constant solutions. Using a 1st order penalty would allow linear pieces, and a 2nd order penalty would allow quadratic pieces, etc. Multiple trend penalty tuples can be supplied, which will result in solutions that are a mix of pieces of different orders.\n",
+    "- An additional `ridge_penalty` parameter improves convergence without noticably affecting the solution, so we recommend using a small one, typically `1e-4`.\n",
     "\n",
     "We use a single 0th order trend penalty, to favor piecewise constant solutions. The choice of which trend orders to use is a model selection choice that should be judiciously chosen, possible based on domain knowledge about the population under study.\n",
     "\n",
@@ -277,7 +279,9 @@
     "\n",
     "We instantiate mush with a vector of times (into the past) when the mush changes, and a _matrix_ of mutation rate vectors in each interval.\n",
     "Here we define a a 96 dimensional history where all are constant in time except two: a pulse and a monotonic ramp.\n",
-    "Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration."
+    "Here again, note that this step would not be necessary for inference on real data, but is needed for this demonstration.\n",
+    "\n",
+    "To simplify things, we'll aggregate all the constant mutation types, so we have mutation types: `TCC>TTC`, `GAA>GGA`, and `None` (which will contain the remaining 94 mutation types."
    ]
   },
   {

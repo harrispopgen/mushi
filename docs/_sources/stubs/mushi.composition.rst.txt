@@ -1,13 +1,19 @@
-mushi.composition
+﻿mushi.composition
 =================
 
 .. automodule:: mushi.composition
 
    
    
+   
+
+   
+   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
+      :nosignatures:
    
       ancom
       centralize
@@ -31,3 +37,6 @@ mushi.composition
    
    
    
+
+
+

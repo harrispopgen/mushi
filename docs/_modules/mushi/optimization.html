@@ -24,9 +24,8 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
@@ -97,7 +96,8 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mushi.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mushi.html#submodules">Submodules</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer Documentation</span></p>
 <ul>
@@ -168,7 +168,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mushi.optimization</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimization functions.</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimizer objects</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -180,7 +180,7 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
 
 
-<div class="viewcode-block" id="Optimizer"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer">[docs]</a><span class="k">class</span> <span class="nc">Optimizer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+<div class="viewcode-block" id="Optimizer"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer">[docs]</a><span class="k">class</span> <span class="nc">Optimizer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract base class for optimizers</span>
 
 <span class="sd">    Attributes:</span>
@@ -194,27 +194,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="Optimizer.initialize"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer.initialize">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="Optimizer.initialize"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.initialize">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;initialize solution point x, and any auxiliary variables&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Optimizer.check_x"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer.check_x">[docs]</a>    <span class="k">def</span> <span class="nf">check_x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Optimizer.check_x"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.check_x">[docs]</a>    <span class="k">def</span> <span class="nf">check_x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;test if x is defined&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;solution point x is not initialized&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Optimizer.f"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer.f">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="Optimizer.f"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.f">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;evaluate cost function at current solution point&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Optimizer.step"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer.step">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="Optimizer.step"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.step">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;take an optimization step and update solution point&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Optimizer.run"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.Optimizer.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<div class="viewcode-block" id="Optimizer.run"><a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
             <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Optimize until convergence criteria are met</span>
 
@@ -259,7 +259,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span></div></div>
 
 
-<div class="viewcode-block" id="LineSearcher"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.LineSearcher">[docs]</a><span class="k">class</span> <span class="nc">LineSearcher</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
+<div class="viewcode-block" id="LineSearcher"><a class="viewcode-back" href="../../stubs/mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher">[docs]</a><span class="k">class</span> <span class="nc">LineSearcher</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Abstract class for an optimizer with Armijo line search</span>
 
 <span class="sd">    Args:</span>
@@ -277,7 +277,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="AccProxGrad"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.AccProxGrad">[docs]</a><span class="k">class</span> <span class="nc">AccProxGrad</span><span class="p">(</span><span class="n">LineSearcher</span><span class="p">):</span>
+<div class="viewcode-block" id="AccProxGrad"><a class="viewcode-back" href="../../stubs/mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad">[docs]</a><span class="k">class</span> <span class="nc">AccProxGrad</span><span class="p">(</span><span class="n">LineSearcher</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Nesterov accelerated proximal gradient method with backtracking line</span>
 <span class="sd">    search [1]_.</span>
 
@@ -318,11 +318,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prox</span> <span class="o">=</span> <span class="n">prox</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span> <span class="o">**</span><span class="n">line_search_kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AccProxGrad.f"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.AccProxGrad.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AccProxGrad.f"><a class="viewcode-back" href="../../stubs/mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_x</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AccProxGrad.initialize"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.AccProxGrad.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AccProxGrad.initialize"><a class="viewcode-back" href="../../stubs/mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># initialize solution point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
         <span class="c1"># initialize momentum iterate</span>
@@ -332,7 +332,7 @@
         <span class="c1"># initialize step counter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="AccProxGrad.step"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.AccProxGrad.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AccProxGrad.step"><a class="viewcode-back" href="../../stubs/mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;step with backtracking line search&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_x</span><span class="p">()</span>
         <span class="c1"># evaluate differtiable part of objective at momentum point</span>
@@ -369,7 +369,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0</span></div></div>
 
 
-<div class="viewcode-block" id="ThreeOpProxGrad"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.ThreeOpProxGrad">[docs]</a><span class="k">class</span> <span class="nc">ThreeOpProxGrad</span><span class="p">(</span><span class="n">AccProxGrad</span><span class="p">):</span>
+<div class="viewcode-block" id="ThreeOpProxGrad"><a class="viewcode-back" href="../../stubs/mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad">[docs]</a><span class="k">class</span> <span class="nc">ThreeOpProxGrad</span><span class="p">(</span><span class="n">AccProxGrad</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Three operator splitting proximal gradient method with backtracking</span>
 <span class="sd">    line search [2]_.</span>
 
@@ -414,15 +414,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">h2</span> <span class="o">=</span> <span class="n">h2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prox2</span> <span class="o">=</span> <span class="n">prox2</span>
 
-<div class="viewcode-block" id="ThreeOpProxGrad.f"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.ThreeOpProxGrad.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ThreeOpProxGrad.f"><a class="viewcode-back" href="../../stubs/mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">f</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">h2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ThreeOpProxGrad.initialize"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.ThreeOpProxGrad.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ThreeOpProxGrad.initialize"><a class="viewcode-back" href="../../stubs/mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="c1"># dual variable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ThreeOpProxGrad.step"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.ThreeOpProxGrad.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ThreeOpProxGrad.step"><a class="viewcode-back" href="../../stubs/mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;step with backtracking line search&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_x</span><span class="p">()</span>
         <span class="c1"># evaluate differentiable part of objective</span>
@@ -456,7 +456,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="TrendFilter"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.TrendFilter">[docs]</a><span class="k">class</span> <span class="nc">TrendFilter</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
+<div class="viewcode-block" id="TrendFilter"><a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter">[docs]</a><span class="k">class</span> <span class="nc">TrendFilter</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixed trend filtering via specialized ADMM as in [3]_, section 5.2.</span>
 
 <span class="sd">    The optimization problem solved is:</span>
@@ -496,14 +496,14 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ks and rhos must have equal length&#39;</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TrendFilter.f"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.TrendFilter.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TrendFilter.f"><a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.f">[docs]</a>    <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_x</span><span class="p">()</span>
         <span class="n">fit</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">penalty</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">λ</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
                       <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">λ</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">λ</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fit</span> <span class="o">+</span> <span class="n">penalty</span></div>
 
-<div class="viewcode-block" id="TrendFilter.initialize"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.TrendFilter.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="TrendFilter.initialize"><a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># input signal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -522,7 +522,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DTD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_D_DTD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choleskify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ρ</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="TrendFilter.step"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.TrendFilter.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TrendFilter.step"><a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">cho_solve_banded</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ρ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">α</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -535,7 +535,7 @@
                                              <span class="bp">self</span><span class="o">.</span><span class="n">λ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">ρ</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">α</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">Dx</span></div>
 
-<div class="viewcode-block" id="TrendFilter.run"><a class="viewcode-back" href="../../mushi.html#mushi.optimization.TrendFilter.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="TrendFilter.run"><a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="n">solution</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="c1"># squeeze out singleton dimension if input was a 1D</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">oneD</span><span class="p">:</span>

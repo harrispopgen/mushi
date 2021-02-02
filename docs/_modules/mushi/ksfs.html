@@ -24,9 +24,8 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
@@ -97,7 +96,8 @@
 </ul>
 <p class="caption"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../mushi.html">Public API: <code class="docutils literal notranslate"><span class="pre">mushi</span></code> package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mushi.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mushi.html#submodules">Submodules</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer Documentation</span></p>
 <ul>
@@ -168,9 +168,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mushi.ksfs</h1><div class="highlight"><pre>
-<span></span><span class="ch">#! /usr/bin/env python</span>
-
-<span class="kn">import</span> <span class="nn">mushi.histories</span> <span class="k">as</span> <span class="nn">hst</span>
+<span></span><span class="kn">import</span> <span class="nn">mushi.histories</span> <span class="k">as</span> <span class="nn">hst</span>
 <span class="kn">from</span> <span class="nn">mushi</span> <span class="kn">import</span> <span class="n">loss_functions</span><span class="p">,</span> <span class="n">utils</span>
 <span class="kn">import</span> <span class="nn">mushi.optimization</span> <span class="k">as</span> <span class="nn">opt</span>
 <span class="kn">import</span> <span class="nn">mushi.composition</span> <span class="k">as</span> <span class="nn">cmp</span>
@@ -191,8 +189,10 @@
 <span class="c1"># config.update(&#39;jax_debug_nans&#39;, True)</span>
 
 
-<div class="viewcode-block" id="kSFS"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS">[docs]</a><span class="k">class</span> <span class="nc">kSFS</span><span class="p">():</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The core :math:`k`-SFS class for simulation and inference</span>
+<div class="viewcode-block" id="kSFS"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS">[docs]</a><span class="k">class</span> <span class="nc">kSFS</span><span class="p">():</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Primary class for working with SFS data to infer demography</span>
+<span class="sd">    :math:`\eta(t)\equiv 2N(t)`, or with :math:`k`-SFS data to infer demography</span>
+<span class="sd">    and mutation spectrum history :math:`\boldsymbol\mu(t)`.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        X (:obj:`numpy.ndarray`): :math:`k`-SFS matrix (or 1D SFS vector)</span>
@@ -206,7 +206,8 @@
 
 <span class="sd">        1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`</span>
 
-<span class="sd">        2) ``X`` and ``mutation_types``</span>
+<span class="sd">        2) ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is</span>
+<span class="sd">           a 1D SFS array)</span>
 
 <span class="sd">        3) ``n``: number of haplotypes to initialize for simulation</span>
 
@@ -218,7 +219,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="kSFS.__init__"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -231,11 +232,11 @@
                                            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mutation type&#39;</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mutation_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;must specify mutation_types&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># NOTE: np is jax.numpy</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mutation_types</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;must specify mutation_types&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mutation_types</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;inconsistent number of mutation &#39;</span>
                                      <span class="sa">f</span><span class="s1">&#39;types </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">mutation_types</span><span class="p">)</span><span class="si">}</span><span class="s1"> for X &#39;</span>
@@ -263,7 +264,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">AM_freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="c1"># mutation type misidentification operator</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">AM_mut</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">mutype_misid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_types</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">AM_mut</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">mutype_misid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_types</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">eta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span><span class="p">:</span>
@@ -281,7 +282,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">μ</span>
 
-<div class="viewcode-block" id="kSFS.as_df"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.as_df">[docs]</a>    <span class="k">def</span> <span class="nf">as_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.as_df"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.as_df">[docs]</a>    <span class="k">def</span> <span class="nf">as_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return a pandas DataFrame representation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sample frequency&#39;</span><span class="p">)</span>
@@ -291,19 +292,19 @@
             <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
                                 <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_types</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="kSFS.clear_eta"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.clear_eta">[docs]</a>    <span class="k">def</span> <span class="nf">clear_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.clear_eta"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.clear_eta">[docs]</a>    <span class="k">def</span> <span class="nf">clear_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clear demographic history attribute η</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">η</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="kSFS.clear_mu"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.clear_mu">[docs]</a>    <span class="k">def</span> <span class="nf">clear_mu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.clear_mu"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.clear_mu">[docs]</a>    <span class="k">def</span> <span class="nf">clear_mu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clear μ attribute</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">μ</span> <span class="o">=</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="kSFS.tmrca_cdf"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.tmrca_cdf">[docs]</a>    <span class="k">def</span> <span class="nf">tmrca_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.tmrca_cdf"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.tmrca_cdf">[docs]</a>    <span class="k">def</span> <span class="nf">tmrca_cdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The CDF of the TMRCA at each change point in ``eta``</span>
 
 <span class="sd">        Args:</span>
@@ -315,7 +316,7 @@
         <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">eta</span><span class="o">.</span><span class="n">arrays</span><span class="p">()</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">utils</span><span class="o">.</span><span class="n">tmrca_sf</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="kSFS.simulate"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">hst</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
+<div class="viewcode-block" id="kSFS.simulate"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">hst</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                  <span class="n">r</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Simulate a :math:`k`-SFS under the Poisson random field model</span>
@@ -343,7 +344,7 @@
             <span class="n">ξ</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">L</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">poisson</span><span class="o">.</span><span class="n">rvs</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">ξ</span> <span class="o">+</span> <span class="n">r</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">AM_freq</span> <span class="o">@</span> <span class="n">ξ</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="kSFS.set_eta"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.set_eta">[docs]</a>    <span class="k">def</span> <span class="nf">set_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span><span class="p">):</span>
+<div class="viewcode-block" id="kSFS.set_eta"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.set_eta">[docs]</a>    <span class="k">def</span> <span class="nf">set_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eta</span><span class="p">:</span> <span class="n">hst</span><span class="o">.</span><span class="n">eta</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Set pre-specified demographic history :math:`\eta(t)`</span>
 
 <span class="sd">        Args:</span>
@@ -355,7 +356,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="kSFS.infer_misid"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.infer_misid">[docs]</a>    <span class="k">def</span> <span class="nf">infer_misid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="kSFS.infer_misid"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.infer_misid">[docs]</a>    <span class="k">def</span> <span class="nf">infer_misid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                     <span class="n">mu0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
                     <span class="n">loss</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;prf&#39;</span><span class="p">,</span>
                     <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
@@ -418,7 +419,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">expit</span><span class="p">(</span><span class="n">r_logit</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="kSFS.infer_eta"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.infer_eta">[docs]</a>    <span class="k">def</span> <span class="nf">infer_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="kSFS.infer_eta"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.infer_eta">[docs]</a>    <span class="k">def</span> <span class="nf">infer_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                   <span class="n">mu0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
                   <span class="o">*</span><span class="n">trend_penalty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                   <span class="n">ridge_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -575,7 +576,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span></div>
 
-<div class="viewcode-block" id="kSFS.infer_mush"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.infer_mush">[docs]</a>    <span class="k">def</span> <span class="nf">infer_mush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="viewcode-block" id="kSFS.infer_mush"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.infer_mush">[docs]</a>    <span class="k">def</span> <span class="nf">infer_mush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                    <span class="o">*</span><span class="n">trend_penalty</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
                    <span class="n">ridge_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                    <span class="n">rank_penalty</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -652,17 +653,17 @@
         <span class="c1"># orthonormal basis for Aitchison simplex</span>
         <span class="c1"># NOTE: instead of Gram-Schmidt could try SVD of clr transformed X</span>
         <span class="c1">#       https://en.wikipedia.org/wiki/Compositional_data#Isometric_logratio_transform</span>
-        <span class="n">basis</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">_gram_schmidt_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">_gram_schmidt_basis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">check_orth</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">False</span>
 
         <span class="c1"># constand MLE and reference mush</span>
-        <span class="n">Z_const</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">μ_const</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
-        <span class="n">Z_ref</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">mu_ref</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
+        <span class="n">Z_const</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">μ_const</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
+        <span class="n">Z_ref</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">mu_ref</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
 
         <span class="c1"># weights for relating misid rates to aggregate misid rate from eta step</span>
         <span class="n">misid_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="c1"># reference composition for weighted misid (if all rates are equal)</span>
-        <span class="n">misid_ref</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">misid_weights</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
+        <span class="n">misid_ref</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">misid_weights</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
 
         <span class="c1"># In the following, params will hold the weighted misid composition in</span>
         <span class="c1"># the first row and the mush composition at each time in the remaining rows</span>
@@ -670,9 +671,9 @@
         <span class="nd">@jit</span>
         <span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;differentiable piece of objective in μ problem&quot;&quot;&quot;</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">*</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">)</span> <span class="o">/</span> <span class="n">misid_weights</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">*</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">)</span> <span class="o">/</span> <span class="n">misid_weights</span>
             <span class="n">Z</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
-            <span class="n">Ξ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">*</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">))</span>
+            <span class="n">Ξ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">))</span>
             <span class="n">Ξ</span> <span class="o">=</span>  <span class="n">Ξ</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">AM_freq</span> <span class="o">@</span> <span class="n">Ξ</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AM_mut</span> <span class="o">*</span> <span class="n">r</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
             <span class="n">loss_term</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">Ξ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
             <span class="n">Z_delta</span> <span class="o">=</span> <span class="n">Z</span> <span class="o">-</span> <span class="n">Z_ref</span>
@@ -760,9 +761,9 @@
             <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_vector</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-        <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">misid_weights</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">))</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="n">misid_weights</span> <span class="o">*</span> <span class="n">r</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">))</span>
         <span class="c1"># ilr transformed mush</span>
-        <span class="n">ilr_mush</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
+        <span class="n">ilr_mush</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">check_orth</span><span class="p">)</span>
         <span class="c1"># make sure it&#39;s a column vector if only 2 mutation types</span>
         <span class="k">if</span> <span class="n">ilr_mush</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">ilr_mush</span> <span class="o">=</span> <span class="n">ilr_mush</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
@@ -773,12 +774,12 @@
         <span class="n">params</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tol</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
 
         <span class="c1"># update attributes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">r_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">*</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">)</span> <span class="o">/</span> <span class="n">misid_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">r_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">*</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">)</span> <span class="o">/</span> <span class="n">misid_weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">μ</span> <span class="o">=</span> <span class="n">hst</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">η</span><span class="o">.</span><span class="n">change_points</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">*</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">*</span> <span class="n">cmp</span><span class="o">.</span><span class="n">ilr_inv</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">basis</span><span class="p">),</span>
                         <span class="n">mutation_types</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_types</span><span class="o">.</span><span class="n">values</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="kSFS.plot_total"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.plot_total">[docs]</a>    <span class="k">def</span> <span class="nf">plot_total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">),</span>
+<div class="viewcode-block" id="kSFS.plot_total"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.plot_total">[docs]</a>    <span class="k">def</span> <span class="nf">plot_total</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">),</span>
                    <span class="n">line_kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
                    <span class="n">fill_kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
                    <span class="n">folded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -824,7 +825,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;variant count&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="kSFS.plot"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="kSFS.plot"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
              <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">ls</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
              <span class="n">line_kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plot the :math:`k`-SFS</span>
@@ -846,9 +847,9 @@
             <span class="n">Ξ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">μ</span><span class="o">.</span><span class="n">Z</span>
             <span class="n">Ξ</span> <span class="o">=</span> <span class="n">Ξ</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_vector</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">AM_freq</span> <span class="o">@</span> <span class="n">Ξ</span> <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">AM_mut</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">r_vector</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">clr</span><span class="p">:</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">clr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">clr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">μ</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">Ξ</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">clr</span><span class="p">(</span><span class="n">Ξ</span><span class="p">)</span>
+                <span class="n">Ξ</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">clr</span><span class="p">(</span><span class="n">Ξ</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;variant count composition</span><span class="se">\n</span><span class="s1">(CLR transformed)&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span>
@@ -868,13 +869,13 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="kSFS.clustermap"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.clustermap">[docs]</a>    <span class="k">def</span> <span class="nf">clustermap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.clustermap"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.clustermap">[docs]</a>    <span class="k">def</span> <span class="nf">clustermap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Clustermap of compositionally centralized k-SFS</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            kwargs: additional keyword arguments passed to pandas.clustermap</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">Z</span> <span class="o">=</span> <span class="nb">cmp</span><span class="o">.</span><span class="n">centralize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">cmp</span><span class="o">.</span><span class="n">centralize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
         <span class="n">cbar_label</span> <span class="o">=</span> <span class="s1">&#39;variant count</span><span class="se">\n</span><span class="s1">perturbation&#39;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Z</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span>
                                                  <span class="n">name</span><span class="o">=</span><span class="s1">&#39;sample frequency&#39;</span><span class="p">),</span>
@@ -886,7 +887,7 @@
         <span class="n">g</span><span class="o">.</span><span class="n">ax_heatmap</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">ax_heatmap</span><span class="o">.</span><span class="n">get_xmajorticklabels</span><span class="p">(),</span>
                                      <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="s1">&#39;monospace&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="kSFS.loss"><a class="viewcode-back" href="../../mushi.html#mushi.kSFS.loss">[docs]</a>    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<div class="viewcode-block" id="kSFS.loss"><a class="viewcode-back" href="../../stubs/mushi.kSFS.html#mushi.kSFS.loss">[docs]</a>    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="s1">&#39;prf&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Loss under current history</span>
 
 <span class="sd">        Args:</span>
