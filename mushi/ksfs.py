@@ -61,11 +61,11 @@ class kSFS():
                                            name='mutation type')
 
         elif X is not None:
-            if mutation_types is None:
-                raise TypeError('must specify mutation_types')
             self.X = np.array(X)  # NOTE: np is jax.numpy
             self.n = len(X) + 1
             if self.X.ndim == 2:
+                if mutation_types is None:
+                    raise TypeError('must specify mutation_types')
                 if len(mutation_types) != self.X.shape[1]:
                     raise ValueError('inconsistent number of mutation '
                                      f'types {len(mutation_types)} for X '
