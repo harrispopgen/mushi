@@ -808,9 +808,6 @@ class kSFS():
         Args:
             func: loss function name from :mod:`~mushi.loss_functions` module
 
-        Returns:
-            loss
-
         Example:
             After fitting demography and/or MuSH (with ``infer_eta`` and
             ``infer_mush``), the loss (goodness of fit) may be evaluated as
