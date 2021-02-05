@@ -1,4 +1,10 @@
-r"""History objects for representing demography and MuSH
+r"""
+History objects for representing demography :math:`\eta(t)` and MuSH
+:math:`\boldsymbol\mu(t)`.
+
+A base class :class:`mushi.histories.History` is defined, from which
+:class:`mushi.eta` and :class:`mushi.mu` are derived and exposed
+at package level.
 
 """
 
@@ -97,7 +103,7 @@ class History():
 
 
 class eta(History):
-    """Demographic history
+    """Demographic history :math:`\eta(t)`
 
     Args:
         change_points: epoch change points (times)
@@ -133,7 +139,7 @@ class eta(History):
 
 @dataclass
 class mu(History):
-    """Mutation spectrum history (MuSH)
+    r"""Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`
 
     Args:
         change_points: epoch change points (times)
