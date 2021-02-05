@@ -1,4 +1,9 @@
-r"""Optimizer objects
+r"""
+Optimization algorithms.
+
+An abstract base class :class:`mushi.optimization.Optimizer` is defined, from
+which concrete optimization classes are derived (perhaps with intermediate
+abstraction).
 
 """
 
