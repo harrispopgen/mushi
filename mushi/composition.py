@@ -50,6 +50,7 @@ Examples
 --------
 
 >>> import numpy as np
+>>> import mushi.composition as cmp
 
 Consider a very simple environment with only 3 species. The species
 in the environment are equally distributed and their proportions are
@@ -65,8 +66,8 @@ perturbation vector would be as follows
 
 And the resulting perturbation would be
 
->>> perturb(otus, antibiotic)
-array([ 0.25,  0.25,  0.5 ])
+>>> cmp.perturb(otus, antibiotic)
+DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)
 
 """
 
@@ -114,11 +115,11 @@ def closure(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import closure
+    >>> import mushi.composition as cmp
     >>> X = np.array([[2, 2, 6], [4, 4, 2]])
-    >>> closure(X)
-    array([[ 0.2,  0.2,  0.6],
-           [ 0.4,  0.4,  0.2]])
+    >>> cmp.closure(X)
+    DeviceArray([[0.2, 0.2, 0.6],
+                 [0.4, 0.4, 0.2]], dtype=float64)
 
     """
     mat = np.atleast_2d(mat)
@@ -177,11 +178,11 @@ def multiplicative_replacement(mat, delta=None):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import multiplicative_replacement
+    >>> import mushi.composition as cmp
     >>> X = np.array([[.2,.4,.4, 0],[0,.5,.5,0]])
-    >>> multiplicative_replacement(X)
-    array([[ 0.1875,  0.375 ,  0.375 ,  0.0625],
-           [ 0.0625,  0.4375,  0.4375,  0.0625]])
+    >>> cmp.multiplicative_replacement(X)
+    DeviceArray([[0.1875, 0.375 , 0.375 , 0.0625],
+                 [0.0625, 0.4375, 0.4375, 0.0625]], dtype=float64)
 
     """
     mat = closure(mat)
@@ -239,11 +240,11 @@ def perturb(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import perturb
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
-    >>> perturb(x,y)
-    array([ 0.0625,  0.1875,  0.5   ,  0.25  ])
+    >>> cmp.perturb(x,y)
+    DeviceArray([0.0625, 0.1875, 0.5   , 0.25  ], dtype=float64)
 
     """
     x, y = closure(x), closure(y)
@@ -289,11 +290,11 @@ def perturb_inv(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import perturb_inv
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
-    >>> perturb_inv(x,y)
-    array([ 0.14285714,  0.42857143,  0.28571429,  0.14285714])
+    >>> cmp.perturb_inv(x,y)
+    DeviceArray([0.14285714, 0.42857143, 0.28571429, 0.14285714], dtype=float64)
     """
     x, y = closure(x), closure(y)
     return closure(x / y)
@@ -335,10 +336,10 @@ def power(x, a):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import power
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1,.3,.4, .2])
-    >>> power(x, .1)
-    array([ 0.23059566,  0.25737316,  0.26488486,  0.24714631])
+    >>> cmp.power(x, .1)
+    DeviceArray([0.23059566, 0.25737316, 0.26488486, 0.24714631], dtype=float64)
 
     """
     x = closure(x)
@@ -375,11 +376,11 @@ def inner(x, y):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import inner
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
     >>> y = np.array([.2, .4, .2, .2])
-    >>> inner(x, y)  # doctest: +ELLIPSIS
-    0.2107852473...
+    >>> cmp.inner(x, y)  # doctest: +ELLIPSIS
+    DeviceArray(0.21078525, dtype=float64)
     """
     x = closure(x)
     y = closure(y)
@@ -423,10 +424,10 @@ def clr(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import clr
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
-    >>> clr(x)
-    array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628])
+    >>> cmp.clr(x)
+    DeviceArray([-0.79451346,  0.30409883,  0.5917809 , -0.10136628], dtype=float64)
 
     """
     mat = closure(mat)
@@ -468,10 +469,10 @@ def clr_inv(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import clr_inv
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
-    >>> clr_inv(x)
-    array([ 0.21383822,  0.26118259,  0.28865141,  0.23632778])
+    >>> cmp.clr_inv(x)
+    DeviceArray([0.21383822, 0.26118259, 0.28865141, 0.23632778], dtype=float64)
 
     """
     return closure(np.exp(mat))
@@ -513,10 +514,10 @@ def ilr(mat, basis=None, check=True):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import ilr
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
-    >>> ilr(x)
-    array([-0.7768362 , -0.68339802,  0.11704769])
+    >>> cmp.ilr(x)
+    DeviceArray([-0.7768362 , -0.68339802,  0.11704769], dtype=float64)
 
     """
     mat = closure(mat)
@@ -563,10 +564,11 @@ def ilr_inv(mat, basis):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import ilr
+    >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .6,])
-    >>> ilr_inv(x)
-    array([ 0.34180297,  0.29672718,  0.22054469,  0.14092516])
+    >>> basis = cmp._gram_schmidt_basis(4)
+    >>> cmp.ilr_inv(x, basis)
+    DeviceArray([0.34180297, 0.29672718, 0.22054469, 0.14092516], dtype=float64)
 
     """
 
@@ -591,11 +593,11 @@ def centralize(mat):
     Examples
     --------
     >>> import numpy as np
-    >>> from mushi.composition import centralize
+    >>> import mushi.composition as cmp
     >>> X = np.array([[.1,.3,.4, .2],[.2,.2,.2,.4]])
-    >>> centralize(X)
-    array([[ 0.17445763,  0.30216948,  0.34891526,  0.17445763],
-           [ 0.32495488,  0.18761279,  0.16247744,  0.32495488]])
+    >>> cmp.centralize(X)
+    DeviceArray([[0.17445763, 0.30216948, 0.34891526, 0.17445763],
+                 [0.32495488, 0.18761279, 0.16247744, 0.32495488]],            dtype=float64)
 
     """
     mat = closure(mat)
@@ -712,7 +714,7 @@ def ancom(table, grouping,
     --------
     First import all of the necessary modules:
 
-    >>> from mushi.composition import ancom
+    >>> import mushi.composition as cmp
     >>> import pandas as pd
 
     Now let's load in a pd.DataFrame with 6 samples and 7 unknown bacteria:
@@ -737,8 +739,8 @@ def ancom(table, grouping,
     Now run ``ancom`` and see if there are any features that have any
     significant differences between the treatment and the control.
 
-    >>> results = ancom(table, grouping)
-    >>> results['W']
+    >>> results = cmp.ancom(table, grouping) # doctest: +SKIP
+    >>> results['W'] # doctest: +SKIP
     b1    0
     b2    4
     b3    1
@@ -746,7 +748,7 @@ def ancom(table, grouping,
     b5    1
     b6    0
     b7    1
-    Name: W, dtype: int64
+    Name: W, dtype: np.int64
 
     The W-statistic is the number of features that a single feature is tested
     to be significantly different against.  In this scenario, `b2` was detected
@@ -754,7 +756,7 @@ def ancom(table, grouping,
     species. To summarize the results from the W-statistic, let's take a look
     at the results from the hypothesis test:
 
-    >>> results['reject']
+    >>> results['reject'] # doctest: +SKIP
     b1    False
     b2     True
     b3    False
@@ -802,7 +804,7 @@ def ancom(table, grouping,
     if (table.isnull()).any().any():
         raise ValueError('Cannot handle missing values in `table`.')
 
-    groups, _grouping = np.unique(grouping, return_inverse=True)
+    groups, _grouping = onp.unique(grouping, return_inverse=True)
     grouping = pd.Series(_grouping, index=grouping.index)
     num_groups = len(groups)
 
