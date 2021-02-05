@@ -31,22 +31,35 @@ class kSFS():
         mutation_types (:obj:`List[str]`): mutation spectrum history
         n (:obj:`int`): number of sampled haplotypes
 
-    Notes:
-        Three constructors:
-
-        1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`
-
-        2) ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is
-           a 1D SFS array)
-
-        3) ``n``: number of haplotypes to initialize for simulation
-
     Args:
         ksfs_file: path to :math:`k`-SFS file, as ouput by ``mutyper ksfs``
         X: :math:`k`-SFS matrix
         mutation_types: list of names of X columns
         n: number of sampled haplotypes
 
+    Examples:
+
+        >>> import mushi
+        >>> import numpy as np
+
+        Three constructors:
+
+        1. ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`
+
+        >>> ksfs = mushi.kSFS(file='ksfs.tsv') # doctest: +SKIP
+
+        2. ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is
+           a 1D SFS array)
+
+        >>> sfs = mushi.kSFS(X=np.array([10, 5, 3, 1]))
+
+        >>> ksfs = mushi.kSFS(X=np.ones((10, 4)),
+        ...                   mutation_types=['AAA>ACA', 'ACA>AAA',
+        ...                                   'TCC>TTC', 'GAA>GGA'])
+
+        3. ``n``: number of haplotypes to initialize for simulation
+
+        >>> ksfs = mushi.kSFS(n=100)
     """
 
     def __init__(self, X: np.ndarray = None, mutation_types: List[str] = None,
@@ -102,7 +115,7 @@ class kSFS():
         """
         return self.η
 
-    def check_eta(self):
+    def _check_eta(self):
         if self.η is None:
             raise TypeError('demographic history η is not defined')
 
@@ -141,7 +154,7 @@ class kSFS():
             eta: demographic history (if ``None``, use ``self.eta`` attribute)
         """
         if eta is None:
-            self.check_eta()
+            self._check_eta()
             eta = self.η
         t, y = eta.arrays()
         return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
@@ -157,6 +170,43 @@ class kSFS():
             mu: mutation spectrum history (or constant mutation rate)
             r: ancestral state misidentification rate (default 0)
             seed: random seed
+
+        Examples:
+
+           Define sample size:
+
+           >>> ksfs = mushi.kSFS(n=10)
+
+           Define demographic history and MuSH:
+
+           >>> eta = mushi.eta(np.array([1, 100, 10000]), np.array([1e4, 1e4, 1e2, 1e4]))
+           >>> mush = mushi.mu(eta.change_points, np.ones((4, 4)),
+           ...                 ['AAA>ACA', 'ACA>AAA', 'TCC>TTC', 'GAA>GGA'])
+
+           Define ancestral misidentification rate:
+
+           >>> r = 0.03
+
+           Set random seed:
+
+           >>> seed = 0
+
+           Run simulation and print simulated :math:`k`-SFS
+
+           >>> ksfs.simulate(eta, mush, r, seed)
+
+           >>> ksfs.as_df() # doctest: +NORMALIZE_WHITESPACE
+           mutation type     AAA>ACA  ACA>AAA  TCC>TTC  GAA>GGA
+           sample frequency
+           1                    1118     1123     1106     1108
+           2                     147      128      120       98
+           3                      65       55       66       60
+           4                      49       52       64       46
+           5                      44       43       34       36
+           6                      35       28       36       33
+           7                      23       32       24       35
+           8                      34       32       24       24
+           9                      52       41       57       56
         """
         onp.random.seed(seed)
         t, y = eta.arrays()
@@ -196,19 +246,20 @@ class kSFS():
                     ) -> None:
         r"""Infer ancestral misidentification rate with :math:`\eta(t)` fixed.
         This function is used for fitting with a pre-specified demography, after
-        using ``set_eta()``, instead of inferring :math:`\eta(t)` with
-        ``infer_eta()`` (which jointly infers misidentification rate).
+        using (see :func:`~mushi.kSFS.set_eta`), instead of inferring
+        :math:`\eta(t)` with :func:`~mushi.kSFS.infer_eta` (which jointly infers
+        misidentification rate).
 
         Args:
             mu0: total mutation rate (per genome per generation)
-            loss: loss function name from loss_functions module
+            loss: loss function name from :mod:`~mushi.loss_functions` module
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             line_search_kwargs: line search keyword arguments,
                                 see :py:meth:`mushi.optimization.LineSearcher`
             verbose: print verbose messages if ``True``
         """
-        self.check_eta()
+        self._check_eta()
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
 
@@ -285,7 +336,7 @@ class kSFS():
                  computed
             eta_ref: reference demographic history for ridge penalty. If
                      ``None``, the constant MLE is used
-            loss: loss function name from loss_functions module
+            loss: loss function name from :mod:`~mushi.loss_functions` module
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             line_search_kwargs: line search keyword arguments,
@@ -293,6 +344,24 @@ class kSFS():
             trend_kwargs: keyword arguments for trend filtering,
                           see :py:meth:`mushi.optimization.TrendFilter.run`
             verbose: print verbose messages if ``True``
+
+        Examples:
+
+            Suppose ``ksfs`` is a ``kSFS`` object. Then the following fits a
+            demographic history with 0-th order (piecewise constant) trend
+            penalization of strength 100, assuming a mutation rate of 10
+            mutations per genome per generation.
+
+            >>> mu0 = 1
+            >>> ksfs.infer_eta(mu0, (0, 1e2))
+
+            Alternatively, a mixed trend solution, with constant and cubic
+            pieces, is fit with
+
+            >>> ksfs.infer_eta(mu0, (0, 1e2), (3, 1e1))
+
+            The attribute ``ksfs.eta`` is now set and accessable for plotting
+            (see :class:`~mushi.eta`).
         """
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
@@ -432,7 +501,7 @@ class kSFS():
                     MLE is used
             misid_penalty: ridge parameter to shrink misid rates to aggregate
                            rate
-            loss: loss function from loss_functions module
+            loss: loss function from :mod:`~mushi.loss_functions` module
             max_iter: maximum number of optimization steps
             tol: relative tolerance in objective function (if ``0``, not used)
             line_search_kwargs: line search keyword arguments,
@@ -440,10 +509,26 @@ class kSFS():
             trend_kwargs: keyword arguments for trend filtering,
                           see :py:meth:`mushi.optimization.TrendFilter.run`
             verbose: print verbose messages if ``True``
+
+        Examples:
+            Suppose ``ksfs`` is a ``kSFS`` object, and the demography has
+            already been fit with ``infer_eta``. The following fits a
+            mutation spectrum history with 0-th order (piecewise constant) trend
+            penalization of strength 100.
+
+            >>> ksfs.infer_mush((0, 1e2))
+
+            Alternatively, a mixed trend solution, with constant and cubic
+            pieces, and with rank penalization 100, is fit with
+
+            >>> ksfs.infer_mush((0, 1e2), (3, 1e1), rank_penalty=1e2)
+
+            The attribute ``ksfs.mu`` is now set and accessable for plotting
+            (see :class:`~mushi.mu`).
         """
         if self.X is None:
             raise TypeError('use simulate() to generate data first')
-        self.check_eta()
+        self._check_eta()
         if self.r is None or self.r == 0:
             raise ValueError('ancestral misidentification rate has not been '
                              'inferred, possibly due to folded SFS inference')
@@ -721,12 +806,19 @@ class kSFS():
         """Loss under current history
 
         Args:
-            func: loss function name from loss_functions module
+            func: loss function name from :mod:`~mushi.loss_functions` module
 
         Returns:
             loss
+
+        Example:
+            After fitting demography and/or MuSH (with ``infer_eta`` and
+            ``infer_mush``), the loss (goodness of fit) may be evaluated as
+
+        >>> ksfs.loss()
+        -31584.277426010947
         """
-        self.check_eta()
+        self._check_eta()
         loss = getattr(loss_functions, func)
         if self.μ is None:
             ξ = self.mu0 * self.L.sum(1)
