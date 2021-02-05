@@ -103,7 +103,7 @@ class History():
 
 
 class eta(History):
-    """Demographic history :math:`\eta(t)`
+    """Demographic history :math:`\eta(t)`.
 
     Args:
         change_points: epoch change points (times)
@@ -139,7 +139,7 @@ class eta(History):
 
 @dataclass
 class mu(History):
-    r"""Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`
+    r"""Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`.
 
     Args:
         change_points: epoch change points (times)
