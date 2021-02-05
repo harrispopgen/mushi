@@ -168,7 +168,13 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mushi.histories</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;History objects for representing demography and MuSH</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">History objects for representing demography :math:`\eta(t)` and MuSH</span>
+<span class="sd">:math:`\boldsymbol\mu(t)`.</span>
+
+<span class="sd">A base class :class:`mushi.histories.History` is defined, from which</span>
+<span class="sd">:class:`mushi.eta` and :class:`mushi.mu` are derived and exposed</span>
+<span class="sd">at package level.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -267,7 +273,7 @@
 
 
 <div class="viewcode-block" id="eta"><a class="viewcode-back" href="../../stubs/mushi.histories.eta.html#mushi.eta">[docs]</a><span class="k">class</span> <span class="nc">eta</span><span class="p">(</span><span class="n">History</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Demographic history</span>
+    <span class="sd">&quot;&quot;&quot;Demographic history :math:`\eta(t)`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        change_points: epoch change points (times)</span>
@@ -303,7 +309,7 @@
 
 <div class="viewcode-block" id="mu"><a class="viewcode-back" href="../../stubs/mushi.mu.html#mushi.mu">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">mu</span><span class="p">(</span><span class="n">History</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Mutation spectrum history (MuSH)</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        change_points: epoch change points (times)</span>

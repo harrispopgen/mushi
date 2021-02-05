@@ -246,7 +246,7 @@ class kSFS():
                     ) -> None:
         r"""Infer ancestral misidentification rate with :math:`\eta(t)` fixed.
         This function is used for fitting with a pre-specified demography, after
-        using (see :func:`~mushi.kSFS.set_eta`), instead of inferring
+        using :func:`~mushi.kSFS.set_eta`, instead of inferring
         :math:`\eta(t)` with :func:`~mushi.kSFS.infer_eta` (which jointly infers
         misidentification rate).
 
