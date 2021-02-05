@@ -209,7 +209,44 @@
 </style>
 <div class="section" id="module-mushi.loss_functions">
 <span id="mushi-loss-functions"></span><h1>mushi.loss_functions<a class="headerlink" href="#module-mushi.loss_functions" title="Permalink to this headline">¶</a></h1>
-<p>Loss functions</p>
+<p>Loss functions for measuring goodness of fit.</p>
+<p>Each loss function takes an expected data matrix <span class="math notranslate nohighlight">\(\mathbb{E}[\mathbf X]\)</span>
+and an observed data matrix <span class="math notranslate nohighlight">\(\mathbf X\)</span>, and returns a loss value.
+Higher loss means worse fit between <span class="math notranslate nohighlight">\(\mathbf X\)</span> and
+<span class="math notranslate nohighlight">\(\mathbb{E}[\mathbf X]\)</span>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi.loss_functions</span> <span class="k">as</span> <span class="nn">lf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>Define expected data matrix <span class="math notranslate nohighlight">\(\mathbb{E}[\mathbf X]\)</span> and an observed data
+matrix <span class="math notranslate nohighlight">\(\mathbf X\)</span> as <span class="math notranslate nohighlight">\(10\times 10\)</span> arrays of ones (for this trivial
+example):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Compute various losses:</p>
+<ul>
+<li><p>Poisson random field</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lf</span><span class="o">.</span><span class="n">prf</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<span class="go">DeviceArray(100., dtype=float64)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Generalized Kullback-Leibler divergence</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lf</span><span class="o">.</span><span class="n">dkl</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<span class="go">DeviceArray(0., dtype=float64)</span>
+</pre></div>
+</div>
+</li>
+<li><p>Least squares</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lf</span><span class="o">.</span><span class="n">lsq</span><span class="p">(</span><span class="n">E</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</li>
+</ul>
 <p class="rubric">Functions</p>
 <table class="longtable docutils align-default">
 <colgroup>

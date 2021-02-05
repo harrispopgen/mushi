@@ -168,7 +168,44 @@
            <div itemprop="articleBody">
             
   <h1>Source code for mushi.loss_functions</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Loss functions&quot;&quot;&quot;</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Loss functions for measuring goodness of fit.</span>
+
+<span class="sd">Each loss function takes an expected data matrix :math:`\mathbb{E}[\mathbf X]`</span>
+<span class="sd">and an observed data matrix :math:`\mathbf X`, and returns a loss value.</span>
+<span class="sd">Higher loss means worse fit between :math:`\mathbf X` and</span>
+<span class="sd">:math:`\mathbb{E}[\mathbf X]`.</span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+
+<span class="sd">&gt;&gt;&gt; import mushi.loss_functions as lf</span>
+<span class="sd">&gt;&gt;&gt; import numpy as np</span>
+
+<span class="sd">Define expected data matrix :math:`\mathbb{E}[\mathbf X]` and an observed data</span>
+<span class="sd">matrix :math:`\mathbf X` as :math:`10\times 10` arrays of ones (for this trivial</span>
+<span class="sd">example):</span>
+
+<span class="sd">&gt;&gt;&gt; E = np.ones((10, 10))</span>
+<span class="sd">&gt;&gt;&gt; X = np.ones((10, 10))</span>
+
+<span class="sd">Compute various losses:</span>
+
+<span class="sd">- Poisson random field</span>
+
+<span class="sd">  &gt;&gt;&gt; lf.prf(E, X)</span>
+<span class="sd">  DeviceArray(100., dtype=float64)</span>
+
+<span class="sd">- Generalized Kullback-Leibler divergence</span>
+
+<span class="sd">  &gt;&gt;&gt; lf.dkl(E, X)</span>
+<span class="sd">  DeviceArray(0., dtype=float64)</span>
+
+<span class="sd">- Least squares</span>
+
+<span class="sd">  &gt;&gt;&gt; lf.lsq(E, X)</span>
+<span class="sd">  0.0</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
