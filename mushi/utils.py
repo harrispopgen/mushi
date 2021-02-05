@@ -8,7 +8,8 @@ from typing import List
 
 
 def C(n: int) -> np.ndarray:
-    r"""The combinatorial :math:`C` matrix defined in the paper's appendix
+    r"""The combinatorial matrix :math:`\mathbf C` defined in the paper's
+    appendix.
 
     Args:
         n: the number of sampled haplotypes :math:`n`
@@ -37,7 +38,7 @@ def C(n: int) -> np.ndarray:
 
 
 def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
-    r"""The M matrix defined in the paper's appendix
+    r"""The matrix :math:`\mathbf M` defined in the paper's appendix
 
     Args:
         n: the number of sampled haplotypes :math:`n`
@@ -102,7 +103,7 @@ complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
 
 
 def revcomp(seq: str) -> str:
-    """reverse complement mutation type
+    """Reverse complement of nucleotide sequence
 
     Args:
         seq: nucleotide string (all caps ACGT)
@@ -116,6 +117,13 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
 
     Args:
         mutation_types: list of mutation type strings, e.g. [AAA>ACA, ...]
+
+    Examples:
+
+        >>> from mushi import utils
+
+        >>> utils.misid_partners(['TCC>TTC', 'GAA>GGA', None])
+        [1, 0, 2]
 
     """
     to_pair = list(enumerate(mutation_types))
@@ -145,11 +153,21 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
     return pair_idxs
 
 
-def mutype_misid(mutation_types: List[str]):
+def mutype_misid(mutation_types: List[str]) -> np.ndarray:
     """mutation type misidentification operator
 
     Args:
         mutation_types: list of mutation type strings, e.g. [AAA>ACA, ...]
+
+    Examples:
+
+        >>> from mushi import utils
+
+        >>> utils.mutype_misid(['TCC>TTC', 'GAA>GGA', None])
+        DeviceArray([[0., 1., 0.],
+                     [1., 0., 0.],
+                     [0., 0., 1.]], dtype=float64)
+
     """
     AM_mut = np.zeros((len(mutation_types), len(mutation_types)))
     for j, i in enumerate(misid_partners(mutation_types)):
@@ -158,14 +176,21 @@ def mutype_misid(mutation_types: List[str]):
 
 
 def fold(x: np.ndarray) -> np.ndarray:
-    """transform SFS to folded SFS"""
-    """Loss under current history
+    """transform SFS to folded SFS
 
     Args:
         func: loss function name from loss_functions module
 
-    Returns:
-        loss
+    Examples:
+
+        >>> from mushi import utils
+        >>> import jax.numpy as np
+
+        >>> sfs = np.array([1000, 100, 10])
+
+        >>> utils.fold(sfs)
+        DeviceArray([1010,  100], dtype=int64)
+
     """
     n = len(x) + 1
     x = (x + x[::-1])[:(n // 2)]
