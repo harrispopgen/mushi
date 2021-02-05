@@ -1,4 +1,41 @@
-"""Loss functions"""
+r"""
+Loss functions for measuring goodness of fit.
+
+Each loss function takes an expected data matrix :math:`\mathbb{E}[\mathbf X]`
+and an observed data matrix :math:`\mathbf X`, and returns a loss value.
+Higher loss means worse fit between :math:`\mathbf X` and
+:math:`\mathbb{E}[\mathbf X]`.
+
+Examples
+--------
+
+>>> import mushi.loss_functions as lf
+>>> import numpy as np
+
+Define expected data matrix :math:`\mathbb{E}[\mathbf X]` and an observed data
+matrix :math:`\mathbf X` as :math:`10\times 10` arrays of ones (for this trivial
+example):
+
+>>> E = np.ones((10, 10))
+>>> X = np.ones((10, 10))
+
+Compute various losses:
+
+- Poisson random field
+
+  >>> lf.prf(E, X)
+  DeviceArray(100., dtype=float64)
+
+- Generalized Kullback-Leibler divergence
+
+  >>> lf.dkl(E, X)
+  DeviceArray(0., dtype=float64)
+
+- Least squares
+
+  >>> lf.lsq(E, X)
+  0.0
+"""
 
 import jax.numpy as np
 
