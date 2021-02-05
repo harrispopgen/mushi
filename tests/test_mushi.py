@@ -2,7 +2,7 @@
 
 import unittest
 import numpy as np
-from mushi import histories
+import mushi
 from mushi import utils
 
 
@@ -15,7 +15,7 @@ class TestMushi(unittest.TestCase):
         η0 = 3e4
         μ0 = 40
         change_points = np.array([])
-        η = histories.eta(change_points, np.array([η0]))
+        η = mushi.eta(change_points, np.array([η0]))
         t, y = η.arrays()
 
         L = utils.C(n) @ utils.M(n, t, y)
