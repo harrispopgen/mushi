@@ -16,11 +16,8 @@ mushi.optimization.LineSearcher
    .. autosummary::
       :nosignatures:
    
-      ~LineSearcher.check_x
       ~LineSearcher.f
-      ~LineSearcher.initialize
       ~LineSearcher.run
-      ~LineSearcher.step
    
    
 

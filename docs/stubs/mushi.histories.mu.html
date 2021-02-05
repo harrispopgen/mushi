@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="../_static/style.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="mushi.utils" href="mushi.utils.html" />
+    <link rel="next" title="mushi.loss_functions" href="mushi.loss_functions.html" />
     <link rel="prev" title="mushi.histories.eta" href="mushi.histories.eta.html" /> 
 </head>
 
@@ -107,6 +107,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.histories.mu</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
@@ -220,11 +221,21 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>change_points</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">array</span></code>) – epoch change points (times)</p></li>
 <li><p><strong>Z</strong> – matrix of constant values for each epoch (rows) in each mutation type
-(columns)
-mutation_types: list of mutation type names (optional <code class="docutils literal notranslate"><span class="pre">None</span></code> element)</p></li>
+(columns)</p></li>
+<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of mutation type names (optional <code class="docutils literal notranslate"><span class="pre">None</span></code> element)</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mu</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]),</span>
+<span class="gp">... </span>              <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -359,7 +370,7 @@ centered log ratio transform</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mushi.utils.html" class="btn btn-neutral float-right" title="mushi.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mushi.loss_functions.html" class="btn btn-neutral float-right" title="mushi.loss_functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="mushi.histories.eta.html" class="btn btn-neutral float-left" title="mushi.histories.eta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

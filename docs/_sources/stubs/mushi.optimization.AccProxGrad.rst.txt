@@ -16,11 +16,8 @@ mushi.optimization.AccProxGrad
    .. autosummary::
       :nosignatures:
    
-      ~AccProxGrad.check_x
       ~AccProxGrad.f
-      ~AccProxGrad.initialize
       ~AccProxGrad.run
-      ~AccProxGrad.step
    
    
 

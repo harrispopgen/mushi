@@ -25,5 +25,6 @@ Submodules that the main classes rely on, and may be of interest to some users
 
     mushi.optimization
     mushi.histories
+    mushi.loss_functions
     mushi.utils
     mushi.composition

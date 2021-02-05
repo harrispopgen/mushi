@@ -102,6 +102,14 @@ class eta(History):
     Args:
         change_points: epoch change points (times)
         y: vector of constant population sizes in each epoch
+
+    Example:
+
+        >>> import mushi
+        >>> import numpy as np
+
+        >>> eta = mushi.eta(np.array([1, 10, 100, 1000]),
+        ...                 np.array([1000, 100, 100, 1000, 1000]))
     """
     @property
     def y(self):
@@ -131,7 +139,16 @@ class mu(History):
         change_points: epoch change points (times)
         Z: matrix of constant values for each epoch (rows) in each mutation type
            (columns)
-           mutation_types: list of mutation type names (optional ``None`` element)
+        mutation_types: list of mutation type names (optional ``None`` element)
+
+    Example:
+
+        >>> import mushi
+        >>> import numpy as np
+
+        >>> mu = mushi.mu(np.array([1, 10, 100, 1000]),
+        ...               np.ones((5, 2)),
+        ...               ['TCC>TTC', 'GAA>GGA'])
     """
     mutation_types: List[str]
 

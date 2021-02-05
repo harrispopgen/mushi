@@ -109,6 +109,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
@@ -241,6 +242,32 @@ Journal of Computational and Graphical Statistics
 25.3 (2016): 839-858.</p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi.optimization</span> <span class="k">as</span> <span class="nn">opt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>Define piecewise constant input signal</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">array([0., 0., 0., 1., 1., 1., 1., 0., 0., 0.])</span>
+</pre></div>
+</div>
+<p>Corrupt the signal with additive noise</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">+=</span> <span class="o">.</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Initialize and run 0-th order trend filter on input signal</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">TrendFilter</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="p">(</span><span class="mf">1e-1</span><span class="p">,))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tf</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">array([0.13810345, 0.13809355, 0.13809775, 1.10542391, 1.1054212 ,</span>
+<span class="go">       0.99863353, 0.99864752, 0.03853261, 0.03853295, 0.03853668])</span>
+</pre></div>
+</div>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -248,56 +275,30 @@ Journal of Computational and Graphical Statistics
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.check_x" title="mushi.optimization.TrendFilter.check_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_x</span></code></a></p></td>
-<td><p>test if x is defined</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.f" title="mushi.optimization.TrendFilter.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
-<td><p>evaluate cost function at current solution point</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.initialize" title="mushi.optimization.TrendFilter.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a></p></td>
-<td><p>initialize solution point x, and any auxiliary variables</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.f" title="mushi.optimization.TrendFilter.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
+<td><p>Evaluate cost function at current solution point</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.run" title="mushi.optimization.TrendFilter.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a></p></td>
 <td><p>Optimize until convergence criteria are met</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.TrendFilter.step" title="mushi.optimization.TrendFilter.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a></p></td>
-<td><p>take an optimization step and update solution point</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="mushi.optimization.TrendFilter.f">
 <code class="sig-name descname">f</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#TrendFilter.f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.TrendFilter.f" title="Permalink to this definition">¶</a></dt>
-<dd><p>evaluate cost function at current solution point</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.TrendFilter.initialize">
-<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#TrendFilter.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.TrendFilter.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>initialize solution point x, and any auxiliary variables</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.TrendFilter.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#TrendFilter.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.TrendFilter.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>take an optimization step and update solution point</p>
+<dd><p>Evaluate cost function at current solution point</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="mushi.optimization.TrendFilter.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#TrendFilter.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.TrendFilter.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">1e-06</span></em>, <em class="sig-param"><span class="n">max_iter</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.TrendFilter.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize until convergence criteria are met</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – initial point</p></li>
-<li><p><strong>tol</strong> – relative tolerance in objective function</p></li>
-<li><p><strong>max_iter</strong> – maximum number of iterations</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – initial point</p></li>
+<li><p><strong>tol</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – relative tolerance in objective function</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – maximum number of iterations</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -307,12 +308,6 @@ Journal of Computational and Graphical Statistics
 <dd class="field-odd"><p>x</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.TrendFilter.check_x">
-<code class="sig-name descname">check_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.TrendFilter.check_x" title="Permalink to this definition">¶</a></dt>
-<dd><p>test if x is defined</p>
 </dd></dl>
 
 </dd></dl>

@@ -17,7 +17,6 @@
       :nosignatures:
    
       ~kSFS.as_df
-      ~kSFS.check_eta
       ~kSFS.clear_eta
       ~kSFS.clear_mu
       ~kSFS.clustermap

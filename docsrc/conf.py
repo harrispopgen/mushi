@@ -31,7 +31,8 @@ extensions = [
     "sphinx.ext.viewcode",
     "nbsphinx",
     "sphinx_autodoc_typehints",
-    "sphinx.ext.todo"
+    "sphinx.ext.todo",
+    "sphinx.ext.doctest",
 ]
 
 # sort autodoc :members: content by source instead of alphabetically

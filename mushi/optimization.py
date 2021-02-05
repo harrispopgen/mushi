@@ -25,23 +25,24 @@ class Optimizer(metaclass=abc.ABCMeta):
         self.x = None
 
     @abc.abstractmethod
-    def initialize(self, x: np.ndarray) -> None:
-        """initialize solution point x, and any auxiliary variables"""
+    def _initialize(self, x: np.ndarray) -> None:
+        """Initialize solution point x, and any auxiliary variables"""
         pass
 
-    def check_x(self):
-        """test if x is defined"""
+    def _check_x(self) -> None:
+        """Test if x is defined"""
         if self.x is None:
             raise TypeError('solution point x is not initialized')
 
     @abc.abstractmethod
     def f(self) -> np.float64:
-        """evaluate cost function at current solution point"""
+        """Evaluate cost function at current solution point
+        """
         pass
 
     @abc.abstractmethod
-    def step(self) -> None:
-        """take an optimization step and update solution point"""
+    def _step(self) -> None:
+        """Take an optimization step and update solution point"""
         pass
 
     def run(self, x: np.ndarray,
@@ -56,15 +57,15 @@ class Optimizer(metaclass=abc.ABCMeta):
         Returns:
             x: solution point
         """
-        self.initialize(x)
-        self.check_x()
+        self._initialize(x)
+        self._check_x()
         # initial objective value
         f = self.f()
         if self.verbose:
             print(f'initial objective {f:.6e}', flush=True)
         k = 0
         for k in range(1, max_iter + 1):
-            self.step()
+            self._step()
             if not np.all(np.isfinite(self.x)):
                 print('warning: x contains invalid values', flush=True)
             # terminate if objective function is constant within tolerance
@@ -81,12 +82,12 @@ class Optimizer(metaclass=abc.ABCMeta):
                           f'{rel_change:.2g} '
                           f'is within tolerance {tol} after {k} iterations',
                           flush=True)
-                return self.x
+                return np.squeeze(self.x)
         if self.verbose and k > 0:
             print(f'\nmaximum iteration {max_iter} reached with relative '
                   f'change in objective function {rel_change:.2g}',
                   flush=True)
-        return self.x
+        return np.squeeze(self.x)
 
 
 class LineSearcher(Optimizer):
@@ -121,38 +122,79 @@ class AccProxGrad(LineSearcher):
 
     Args:
         g: differentiable term in objective function
-        grad_g: gradient of g
+        grad: gradient of g
         h: non-differentiable term in objective function
         prox: proximal operator corresponding to h
         verbose: flag to print convergence messages
         line_search_kwargs: line search keyword arguments,
                             see :py:class:`mushi.optimization.LineSearcher`
 
-    References
-    ----------
-    .. [1]
-    https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+    References:
+
+        .. [1]
+        https://people.eecs.berkeley.edu/~elghaoui/Teaching/EE227A/lecture18.pdf
+
+    Examples:
+
+        >>> import mushi.optimization as opt
+        >>> import numpy as np
+
+        We'll use a squared loss term and a Lasso term for this example, since
+        we can specify the solution analytically (indeed, it is directly the
+        prox of the Lasso term).
+
+        Define :math:`g(x)` and :math:`\boldsymbol\nabla g(x)`:
+
+        >>> def g(x):
+        ...     return 0.5 * np.sum(x ** 2)
+
+        >>> def grad(x):
+        ...     return x
+
+        Define :math:`h(x)` and :math:`\mathrm{prox}_h(u)` (we will use a Lasso
+        term and the corresponding soft thresholding operator):
+
+        >>> def h(x):
+        ...     return np.linalg.norm(x, 1)
+
+        >>> def prox(u, s):
+        ...     return np.sign(u) * np.clip(np.abs(u) - s, 0, None)
+
+        Initialize optimizer and define initial point
+
+        >>> fista = opt.AccProxGrad(g, grad, h, prox)
+        >>> x = np.zeros(2)
+
+        Run optimization
+
+        >>> fista.run(x)
+        array([0., 0.])
+
+        Evaluate cost at the solution point
+
+        >>> fista.f()
+        0.0
 
     """
 
     def __init__(self,
                  g: Callable[[np.ndarray], np.float64],
-                 grad_g: Callable[[np.ndarray], np.float64],
+                 grad: Callable[[np.ndarray], np.float64],
                  h: Callable[[np.ndarray], np.float64],
                  prox: Callable[[np.ndarray, np.float64], np.float64],
                  verbose: bool = False,
                  **line_search_kwargs):
         self.g = g
-        self.grad_g = grad_g
+        self.grad = grad
         self.h = h
         self.prox = prox
         super().__init__(verbose=verbose, **line_search_kwargs)
 
     def f(self):
-        self.check_x()
+        self._check_x()
         return self.g(self.x) + self.h(self.x)
 
-    def initialize(self, x: np.ndarray) -> None:
+    def _initialize(self, x: np.ndarray) -> None:
         # initialize solution point
         self.x = x
         # initialize momentum iterate
@@ -162,25 +204,25 @@ class AccProxGrad(LineSearcher):
         # initialize step counter
         self.k = 0
 
-    def step(self) -> None:
+    def _step(self) -> None:
         """step with backtracking line search"""
-        self.check_x()
+        self._check_x()
         # evaluate differtiable part of objective at momentum point
         g1 = self.g(self.q)
-        grad_g1 = self.grad_g(self.q)
-        if not np.all(np.isfinite(grad_g1)):
-            raise RuntimeError(f'invalid gradient:\n{grad_g1}')
+        grad1 = self.grad(self.q)
+        if not np.all(np.isfinite(grad1)):
+            raise RuntimeError(f'invalid gradient:\n{grad1}')
         # store old iterate
         x_old = self.x
         # Armijo line search
         for line_iter in range(self.max_line_iter):
             # new point via prox-gradient of momentum point
-            self.x = self.prox(self.q - self.s * grad_g1, self.s)
+            self.x = self.prox(self.q - self.s * grad1, self.s)
             # G_s(q) as in the notes linked above
             G = (1 / self.s) * (self.q - self.x)
             # test g(q - sG_s(q)) for sufficient decrease
             if self.g(self.q - self.s * G) <= (
-                                            g1 - self.s * (grad_g1 * G).sum()
+                                            g1 - self.s * (grad1 * G).sum()
                                             + (self.s / 2) * (G ** 2).sum()):
                 # Armijo satisfied
                 break
@@ -213,10 +255,10 @@ class ThreeOpProxGrad(AccProxGrad):
 
     Args:
         g: differentiable term in objective function
-        grad_g: gradient of g
+        grad: gradient of g
         h1: 1st non-differentiable term in objective function
-        h2: 2nd non-differentiable term in objective function
         prox1: proximal operator corresponding to h1
+        h2: 2nd non-differentiable term in objective function
         prox2: proximal operator corresponding to h2
         verbose: print convergence messages
         line_search_kwargs: line search keyword arguments,
@@ -228,18 +270,75 @@ class ThreeOpProxGrad(AccProxGrad):
                Learning, Proceedings of Machine Learning Research., J. Dy, A.
                Krause, Eds. (PMLR, 2018), pp. 4085–4094.
 
+    Examples:
+
+        Usage is very similar to :meth:`mushi.optimization.AccProxGrad`, except
+        that two non-smooth terms (and their associated proximal operators) may
+        be specified.
+
+        >>> import mushi.optimization as opt
+        >>> import numpy as np
+
+        We'll use a squared loss term, a Lasso term and a box constraint for
+        this example.
+
+        Define :math:`g(x)` and :math:`\boldsymbol\nabla g(x)`:
+
+        >>> def g(x):
+        ...     return 0.5 * np.sum(x ** 2)
+
+        >>> def grad(x):
+        ...     return x
+
+        Define :math:`h_1(x)` and :math:`\mathrm{prox}_{h_1}(u)`.
+        We will use a Lasso term and the corresponding soft thresholding
+        operator:
+
+        >>> def h1(x):
+        ...     return np.linalg.norm(x, 1)
+
+        >>> def prox1(u, s):
+        ...     return np.sign(u) * np.clip(np.abs(u) - s, 0, None)
+
+        Define :math:`h_2(x)` and :math:`\mathrm{prox}_{h_2}(u)`. We use a simple
+        box constraint on one dimension, although note that this is quite
+        artificial, since such constraints don't require operator splitting.
+
+        >>> def h2(x):
+        ...     if x[0] < 1:
+        ...         return np.inf
+        ...     return 0
+
+        >>> def prox2(u, s):
+        ...     return np.clip(u, np.array([1, -np.inf]), None)
+
+        Initialize optimizer and define initial point
+
+        >>> threeop = opt.ThreeOpProxGrad(g, grad, h1, prox1, h2, prox2)
+        >>> x = np.zeros(2)
+
+        Run optimization
+
+        >>> threeop.run(x)
+        array([1., 0.])
+
+        Evaluate cost at the solution point
+
+        >>> threeop.f()
+        1.5
+
     """
 
     def __init__(self,
                  g: Callable[[np.ndarray], np.float64],
-                 grad_g: Callable[[np.ndarray], np.float64],
+                 grad: Callable[[np.ndarray], np.float64],
                  h1: Callable[[np.ndarray], np.float64],
                  prox1: Callable[[np.ndarray, np.float64], np.float64],
                  h2: Callable[[np.ndarray], np.float64],
                  prox2: Callable[[np.ndarray, np.float64], np.float64],
                  verbose: bool = False,
                  **line_search_kwargs):
-        super().__init__(g, grad_g, h1, prox1, verbose=verbose,
+        super().__init__(g, grad, h1, prox1, verbose=verbose,
                          **line_search_kwargs)
         self.h2 = h2
         self.prox2 = prox2
@@ -247,25 +346,25 @@ class ThreeOpProxGrad(AccProxGrad):
     def f(self):
         return super().f() + self.h2(self.x)
 
-    def initialize(self, x: np.ndarray) -> None:
-        super().initialize(x)
+    def _initialize(self, x: np.ndarray) -> None:
+        super()._initialize(x)
         # dual variable
         self.u = np.zeros_like(self.q)
 
-    def step(self) -> None:
+    def _step(self) -> None:
         """step with backtracking line search"""
-        self.check_x()
+        self._check_x()
         # evaluate differentiable part of objective
         g1 = self.g(self.q)
-        grad_g1 = self.grad_g(self.q)
-        if not np.all(np.isfinite(grad_g1)):
-            raise RuntimeError(f'invalid gradient:\n{grad_g1}')
+        grad1 = self.grad(self.q)
+        if not np.all(np.isfinite(grad1)):
+            raise RuntimeError(f'invalid gradient:\n{grad1}')
         # Armijo line search
         for line_iter in range(self.max_line_iter):
             # new point via prox-gradient of momentum point
-            self.x = self.prox(self.q - self.s * (self.u + grad_g1), self.s)
+            self.x = self.prox(self.q - self.s * (self.u + grad1), self.s)
             # quadratic approximation of objective
-            Q = (g1 + (grad_g1 * (self.x - self.q)).sum()
+            Q = (g1 + (grad1 * (self.x - self.q)).sum()
                     + ((self.x - self.q) ** 2).sum() / (2 * self.s))
             if self.g(self.x) - Q <= 0:
                 # sufficient decrease satisfied
@@ -308,12 +407,38 @@ class TrendFilter(Optimizer):
                Fast and flexible admm algorithms for trend filtering.
                Journal of Computational and Graphical Statistics
                25.3 (2016): 839-858.
+
+    Example:
+
+        >>> import mushi.optimization as opt
+        >>> import numpy as np
+
+        Define piecewise constant input signal
+
+        >>> x = np.zeros(10)
+        >>> x[3:7] = 1
+        >>> x
+        array([0., 0., 0., 1., 1., 1., 1., 0., 0., 0.])
+
+        Corrupt the signal with additive noise
+
+        >>> np.random.seed(0)
+        >>> x += .1 * np.random.randn(10)
+
+        Initialize and run 0-th order trend filter on input signal
+
+        >>> tf = opt.TrendFilter((0,), (1e-1,))
+
+        >>> tf.run(x)
+        array([0.13810345, 0.13809355, 0.13809775, 1.10542391, 1.1054212 ,
+               0.99863353, 0.99864752, 0.03853261, 0.03853295, 0.03853668])
+
     """
 
     def __init__(self, ks: Tuple[int], lambdas: Tuple[np.float64],
                  rhos: Tuple[np.float64] = None, verbose: bool = False):
-        self.k = ks
-        self.λ = lambdas
+        self.k = tuple(ks)
+        self.λ = tuple(lambdas)
         self.r = len(self.k)
         if rhos is None:
             # default ADMM parameters used in cited paper
@@ -327,21 +452,17 @@ class TrendFilter(Optimizer):
         super().__init__(verbose=verbose)
 
     def f(self):
-        self.check_x()
+        self._check_x()
         fit = 0.5 * np.sum((self.x - self.y) ** 2)
         penalty = sum(λ * np.linalg.norm(np.diff(self.x, k + 1, axis=0), 1)
                       for k, λ in zip(self.k, self.λ))
         return fit + penalty
 
-    def initialize(self, x: np.ndarray) -> None:
+    def _initialize(self, x: np.ndarray) -> None:
         # input signal
         self.y = x
         if self.y.ndim == 1:
             self.y = self.y[:, np.newaxis]
-            # remember the signal was 1D
-            self.oneD = True
-        else:
-            self.oneD = False
         self.n = self.y.shape[0]
         # initialize solution point (β in the paper cited)
         self.x = np.zeros_like(self.y)
@@ -352,7 +473,7 @@ class TrendFilter(Optimizer):
         self.D, self.DTD = self._D_DTD(self.n, self.k)
         self.c = self._choleskify(self.n, self.k, self.ρ)
 
-    def step(self):
+    def _step(self):
         self.x = cho_solve_banded(
             (self.c, False),
             self.y + sum(self.ρ[i] * self.D[i].T @ (self.α[i] + self.u[i])
@@ -364,14 +485,6 @@ class TrendFilter(Optimizer):
                 self.α[i][:, j] = ptv.tv1_1d(Dx[:, j] - self.u[i][:, j],
                                              self.λ[i] / self.ρ[i])
             self.u[i] += self.α[i] - Dx
-
-    def run(self, *args, **kwargs) -> np.ndarray:
-        solution = super().run(*args, **kwargs)
-        # squeeze out singleton dimension if input was a 1D
-        if self.oneD:
-            return np.squeeze(solution)
-        # else:
-        return solution
 
     @staticmethod
     @lru_cache()

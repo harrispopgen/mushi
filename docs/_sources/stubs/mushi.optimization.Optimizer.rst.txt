@@ -16,11 +16,8 @@ mushi.optimization.Optimizer
    .. autosummary::
       :nosignatures:
    
-      ~Optimizer.check_x
       ~Optimizer.f
-      ~Optimizer.initialize
       ~Optimizer.run
-      ~Optimizer.step
    
    
 
