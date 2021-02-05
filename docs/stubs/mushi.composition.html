@@ -102,6 +102,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.composition</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="mushi.composition.ancom.html">mushi.composition.ancom</a></li>
@@ -262,6 +263,7 @@ Mathematical Geology, 35.3 (2003)</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi.composition</span> <span class="k">as</span> <span class="nn">cmp</span>
 </pre></div>
 </div>
 <p>Consider a very simple environment with only 3 species. The species
@@ -277,8 +279,8 @@ perturbation vector would be as follows</p>
 </pre></div>
 </div>
 <p>And the resulting perturbation would be</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">perturb</span><span class="p">(</span><span class="n">otus</span><span class="p">,</span> <span class="n">antibiotic</span><span class="p">)</span>
-<span class="go">array([ 0.25,  0.25,  0.5 ])</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmp</span><span class="o">.</span><span class="n">perturb</span><span class="p">(</span><span class="n">otus</span><span class="p">,</span> <span class="n">antibiotic</span><span class="p">)</span>
+<span class="go">DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)</span>
 </pre></div>
 </div>
 <p class="rubric">Functions</p>

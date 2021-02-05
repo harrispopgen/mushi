@@ -16,11 +16,8 @@ mushi.optimization.TrendFilter
    .. autosummary::
       :nosignatures:
    
-      ~TrendFilter.check_x
       ~TrendFilter.f
-      ~TrendFilter.initialize
       ~TrendFilter.run
-      ~TrendFilter.step
    
    
 

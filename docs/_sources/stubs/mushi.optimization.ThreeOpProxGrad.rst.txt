@@ -16,11 +16,8 @@ mushi.optimization.ThreeOpProxGrad
    .. autosummary::
       :nosignatures:
    
-      ~ThreeOpProxGrad.check_x
       ~ThreeOpProxGrad.f
-      ~ThreeOpProxGrad.initialize
       ~ThreeOpProxGrad.run
-      ~ThreeOpProxGrad.step
    
    
 

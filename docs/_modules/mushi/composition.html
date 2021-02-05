@@ -220,6 +220,7 @@
 <span class="sd">--------</span>
 
 <span class="sd">&gt;&gt;&gt; import numpy as np</span>
+<span class="sd">&gt;&gt;&gt; import mushi.composition as cmp</span>
 
 <span class="sd">Consider a very simple environment with only 3 species. The species</span>
 <span class="sd">in the environment are equally distributed and their proportions are</span>
@@ -235,8 +236,8 @@
 
 <span class="sd">And the resulting perturbation would be</span>
 
-<span class="sd">&gt;&gt;&gt; perturb(otus, antibiotic)</span>
-<span class="sd">array([ 0.25,  0.25,  0.5 ])</span>
+<span class="sd">&gt;&gt;&gt; cmp.perturb(otus, antibiotic)</span>
+<span class="sd">DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
@@ -284,11 +285,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import closure</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; X = np.array([[2, 2, 6], [4, 4, 2]])</span>
-<span class="sd">    &gt;&gt;&gt; closure(X)</span>
-<span class="sd">    array([[ 0.2,  0.2,  0.6],</span>
-<span class="sd">           [ 0.4,  0.4,  0.2]])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.closure(X)</span>
+<span class="sd">    DeviceArray([[0.2, 0.2, 0.6],</span>
+<span class="sd">                 [0.4, 0.4, 0.2]], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -347,11 +348,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import multiplicative_replacement</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; X = np.array([[.2,.4,.4, 0],[0,.5,.5,0]])</span>
-<span class="sd">    &gt;&gt;&gt; multiplicative_replacement(X)</span>
-<span class="sd">    array([[ 0.1875,  0.375 ,  0.375 ,  0.0625],</span>
-<span class="sd">           [ 0.0625,  0.4375,  0.4375,  0.0625]])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.multiplicative_replacement(X)</span>
+<span class="sd">    DeviceArray([[0.1875, 0.375 , 0.375 , 0.0625],</span>
+<span class="sd">                 [0.0625, 0.4375, 0.4375, 0.0625]], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -409,11 +410,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import perturb</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1,.3,.4, .2])</span>
 <span class="sd">    &gt;&gt;&gt; y = np.array([1./6,1./6,1./3,1./3])</span>
-<span class="sd">    &gt;&gt;&gt; perturb(x,y)</span>
-<span class="sd">    array([ 0.0625,  0.1875,  0.5   ,  0.25  ])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.perturb(x,y)</span>
+<span class="sd">    DeviceArray([0.0625, 0.1875, 0.5   , 0.25  ], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">closure</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -459,11 +460,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import perturb_inv</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1,.3,.4, .2])</span>
 <span class="sd">    &gt;&gt;&gt; y = np.array([1./6,1./6,1./3,1./3])</span>
-<span class="sd">    &gt;&gt;&gt; perturb_inv(x,y)</span>
-<span class="sd">    array([ 0.14285714,  0.42857143,  0.28571429,  0.14285714])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.perturb_inv(x,y)</span>
+<span class="sd">    DeviceArray([0.14285714, 0.42857143, 0.28571429, 0.14285714], dtype=float64)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">closure</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">closure</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">y</span><span class="p">)</span></div>
@@ -505,10 +506,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import power</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1,.3,.4, .2])</span>
-<span class="sd">    &gt;&gt;&gt; power(x, .1)</span>
-<span class="sd">    array([ 0.23059566,  0.25737316,  0.26488486,  0.24714631])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.power(x, .1)</span>
+<span class="sd">    DeviceArray([0.23059566, 0.25737316, 0.26488486, 0.24714631], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -545,11 +546,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import inner</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1, .3, .4, .2])</span>
 <span class="sd">    &gt;&gt;&gt; y = np.array([.2, .4, .2, .2])</span>
-<span class="sd">    &gt;&gt;&gt; inner(x, y)  # doctest: +ELLIPSIS</span>
-<span class="sd">    0.2107852473...</span>
+<span class="sd">    &gt;&gt;&gt; cmp.inner(x, y)  # doctest: +ELLIPSIS</span>
+<span class="sd">    DeviceArray(0.21078525, dtype=float64)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
@@ -593,10 +594,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import clr</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1, .3, .4, .2])</span>
-<span class="sd">    &gt;&gt;&gt; clr(x)</span>
-<span class="sd">    array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.clr(x)</span>
+<span class="sd">    DeviceArray([-0.79451346,  0.30409883,  0.5917809 , -0.10136628], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -638,10 +639,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import clr_inv</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1, .3, .4, .2])</span>
-<span class="sd">    &gt;&gt;&gt; clr_inv(x)</span>
-<span class="sd">    array([ 0.21383822,  0.26118259,  0.28865141,  0.23632778])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.clr_inv(x)</span>
+<span class="sd">    DeviceArray([0.21383822, 0.26118259, 0.28865141, 0.23632778], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">closure</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">mat</span><span class="p">))</span></div>
@@ -683,10 +684,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import ilr</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1, .3, .4, .2])</span>
-<span class="sd">    &gt;&gt;&gt; ilr(x)</span>
-<span class="sd">    array([-0.7768362 , -0.68339802,  0.11704769])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.ilr(x)</span>
+<span class="sd">    DeviceArray([-0.7768362 , -0.68339802,  0.11704769], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -733,10 +734,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import ilr</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; x = np.array([.1, .3, .6,])</span>
-<span class="sd">    &gt;&gt;&gt; ilr_inv(x)</span>
-<span class="sd">    array([ 0.34180297,  0.29672718,  0.22054469,  0.14092516])</span>
+<span class="sd">    &gt;&gt;&gt; basis = cmp._gram_schmidt_basis(4)</span>
+<span class="sd">    &gt;&gt;&gt; cmp.ilr_inv(x, basis)</span>
+<span class="sd">    DeviceArray([0.34180297, 0.29672718, 0.22054469, 0.14092516], dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -761,11 +763,11 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import centralize</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; X = np.array([[.1,.3,.4, .2],[.2,.2,.2,.4]])</span>
-<span class="sd">    &gt;&gt;&gt; centralize(X)</span>
-<span class="sd">    array([[ 0.17445763,  0.30216948,  0.34891526,  0.17445763],</span>
-<span class="sd">           [ 0.32495488,  0.18761279,  0.16247744,  0.32495488]])</span>
+<span class="sd">    &gt;&gt;&gt; cmp.centralize(X)</span>
+<span class="sd">    DeviceArray([[0.17445763, 0.30216948, 0.34891526, 0.17445763],</span>
+<span class="sd">                 [0.32495488, 0.18761279, 0.16247744, 0.32495488]],            dtype=float64)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mat</span> <span class="o">=</span> <span class="n">closure</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
@@ -882,7 +884,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    First import all of the necessary modules:</span>
 
-<span class="sd">    &gt;&gt;&gt; from mushi.composition import ancom</span>
+<span class="sd">    &gt;&gt;&gt; import mushi.composition as cmp</span>
 <span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
 
 <span class="sd">    Now let&#39;s load in a pd.DataFrame with 6 samples and 7 unknown bacteria:</span>
@@ -907,8 +909,8 @@
 <span class="sd">    Now run ``ancom`` and see if there are any features that have any</span>
 <span class="sd">    significant differences between the treatment and the control.</span>
 
-<span class="sd">    &gt;&gt;&gt; results = ancom(table, grouping)</span>
-<span class="sd">    &gt;&gt;&gt; results[&#39;W&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; results = cmp.ancom(table, grouping) # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; results[&#39;W&#39;] # doctest: +SKIP</span>
 <span class="sd">    b1    0</span>
 <span class="sd">    b2    4</span>
 <span class="sd">    b3    1</span>
@@ -916,7 +918,7 @@
 <span class="sd">    b5    1</span>
 <span class="sd">    b6    0</span>
 <span class="sd">    b7    1</span>
-<span class="sd">    Name: W, dtype: int64</span>
+<span class="sd">    Name: W, dtype: np.int64</span>
 
 <span class="sd">    The W-statistic is the number of features that a single feature is tested</span>
 <span class="sd">    to be significantly different against.  In this scenario, `b2` was detected</span>
@@ -924,7 +926,7 @@
 <span class="sd">    species. To summarize the results from the W-statistic, let&#39;s take a look</span>
 <span class="sd">    at the results from the hypothesis test:</span>
 
-<span class="sd">    &gt;&gt;&gt; results[&#39;reject&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; results[&#39;reject&#39;] # doctest: +SKIP</span>
 <span class="sd">    b1    False</span>
 <span class="sd">    b2     True</span>
 <span class="sd">    b3    False</span>
@@ -972,7 +974,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">isnull</span><span class="p">())</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot handle missing values in `table`.&#39;</span><span class="p">)</span>
 
-    <span class="n">groups</span><span class="p">,</span> <span class="n">_grouping</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">grouping</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">groups</span><span class="p">,</span> <span class="n">_grouping</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">grouping</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">grouping</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">_grouping</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">grouping</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
     <span class="n">num_groups</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
 

@@ -272,6 +272,14 @@
 <span class="sd">    Args:</span>
 <span class="sd">        change_points: epoch change points (times)</span>
 <span class="sd">        y: vector of constant population sizes in each epoch</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; import mushi</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+
+<span class="sd">        &gt;&gt;&gt; eta = mushi.eta(np.array([1, 10, 100, 1000]),</span>
+<span class="sd">        ...                 np.array([1000, 100, 100, 1000, 1000]))</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -301,7 +309,16 @@
 <span class="sd">        change_points: epoch change points (times)</span>
 <span class="sd">        Z: matrix of constant values for each epoch (rows) in each mutation type</span>
 <span class="sd">           (columns)</span>
-<span class="sd">           mutation_types: list of mutation type names (optional ``None`` element)</span>
+<span class="sd">        mutation_types: list of mutation type names (optional ``None`` element)</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; import mushi</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+
+<span class="sd">        &gt;&gt;&gt; mu = mushi.mu(np.array([1, 10, 100, 1000]),</span>
+<span class="sd">        ...               np.ones((5, 2)),</span>
+<span class="sd">        ...               [&#39;TCC&gt;TTC&#39;, &#39;GAA&gt;GGA&#39;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mutation_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 

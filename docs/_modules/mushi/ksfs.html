@@ -201,22 +201,35 @@
 <span class="sd">        mutation_types (:obj:`List[str]`): mutation spectrum history</span>
 <span class="sd">        n (:obj:`int`): number of sampled haplotypes</span>
 
-<span class="sd">    Notes:</span>
-<span class="sd">        Three constructors:</span>
-
-<span class="sd">        1) ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`</span>
-
-<span class="sd">        2) ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is</span>
-<span class="sd">           a 1D SFS array)</span>
-
-<span class="sd">        3) ``n``: number of haplotypes to initialize for simulation</span>
-
 <span class="sd">    Args:</span>
 <span class="sd">        ksfs_file: path to :math:`k`-SFS file, as ouput by ``mutyper ksfs``</span>
 <span class="sd">        X: :math:`k`-SFS matrix</span>
 <span class="sd">        mutation_types: list of names of X columns</span>
 <span class="sd">        n: number of sampled haplotypes</span>
 
+<span class="sd">    Examples:</span>
+
+<span class="sd">        &gt;&gt;&gt; import mushi</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+
+<span class="sd">        Three constructors:</span>
+
+<span class="sd">        1. ``ksfs_file``: path to k-SFS file, as ouput by `mutyper ksfs`</span>
+
+<span class="sd">        &gt;&gt;&gt; ksfs = mushi.kSFS(file=&#39;ksfs.tsv&#39;) # doctest: +SKIP</span>
+
+<span class="sd">        2. ``X`` and ``mutation_types`` (the latter may be ommitted if ``X`` is</span>
+<span class="sd">           a 1D SFS array)</span>
+
+<span class="sd">        &gt;&gt;&gt; sfs = mushi.kSFS(X=np.array([10, 5, 3, 1]))</span>
+
+<span class="sd">        &gt;&gt;&gt; ksfs = mushi.kSFS(X=np.ones((10, 4)),</span>
+<span class="sd">        ...                   mutation_types=[&#39;AAA&gt;ACA&#39;, &#39;ACA&gt;AAA&#39;,</span>
+<span class="sd">        ...                                   &#39;TCC&gt;TTC&#39;, &#39;GAA&gt;GGA&#39;])</span>
+
+<span class="sd">        3. ``n``: number of haplotypes to initialize for simulation</span>
+
+<span class="sd">        &gt;&gt;&gt; ksfs = mushi.kSFS(n=100)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">mutation_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -272,7 +285,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">η</span>
 
-    <span class="k">def</span> <span class="nf">check_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_check_eta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">η</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;demographic history η is not defined&#39;</span><span class="p">)</span>
 
@@ -311,7 +324,7 @@
 <span class="sd">            eta: demographic history (if ``None``, use ``self.eta`` attribute)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">eta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">check_eta</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_eta</span><span class="p">()</span>
             <span class="n">eta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">η</span>
         <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">eta</span><span class="o">.</span><span class="n">arrays</span><span class="p">()</span>
         <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">utils</span><span class="o">.</span><span class="n">tmrca_sf</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
@@ -327,6 +340,43 @@
 <span class="sd">            mu: mutation spectrum history (or constant mutation rate)</span>
 <span class="sd">            r: ancestral state misidentification rate (default 0)</span>
 <span class="sd">            seed: random seed</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">           Define sample size:</span>
+
+<span class="sd">           &gt;&gt;&gt; ksfs = mushi.kSFS(n=10)</span>
+
+<span class="sd">           Define demographic history and MuSH:</span>
+
+<span class="sd">           &gt;&gt;&gt; eta = mushi.eta(np.array([1, 100, 10000]), np.array([1e4, 1e4, 1e2, 1e4]))</span>
+<span class="sd">           &gt;&gt;&gt; mush = mushi.mu(eta.change_points, np.ones((4, 4)),</span>
+<span class="sd">           ...                 [&#39;AAA&gt;ACA&#39;, &#39;ACA&gt;AAA&#39;, &#39;TCC&gt;TTC&#39;, &#39;GAA&gt;GGA&#39;])</span>
+
+<span class="sd">           Define ancestral misidentification rate:</span>
+
+<span class="sd">           &gt;&gt;&gt; r = 0.03</span>
+
+<span class="sd">           Set random seed:</span>
+
+<span class="sd">           &gt;&gt;&gt; seed = 0</span>
+
+<span class="sd">           Run simulation and print simulated :math:`k`-SFS</span>
+
+<span class="sd">           &gt;&gt;&gt; ksfs.simulate(eta, mush, r, seed)</span>
+
+<span class="sd">           &gt;&gt;&gt; ksfs.as_df() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">           mutation type     AAA&gt;ACA  ACA&gt;AAA  TCC&gt;TTC  GAA&gt;GGA</span>
+<span class="sd">           sample frequency</span>
+<span class="sd">           1                    1118     1123     1106     1108</span>
+<span class="sd">           2                     147      128      120       98</span>
+<span class="sd">           3                      65       55       66       60</span>
+<span class="sd">           4                      49       52       64       46</span>
+<span class="sd">           5                      44       43       34       36</span>
+<span class="sd">           6                      35       28       36       33</span>
+<span class="sd">           7                      23       32       24       35</span>
+<span class="sd">           8                      34       32       24       24</span>
+<span class="sd">           9                      52       41       57       56</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
         <span class="n">t</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">eta</span><span class="o">.</span><span class="n">arrays</span><span class="p">()</span>
@@ -366,19 +416,20 @@
                     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Infer ancestral misidentification rate with :math:`\eta(t)` fixed.</span>
 <span class="sd">        This function is used for fitting with a pre-specified demography, after</span>
-<span class="sd">        using ``set_eta()``, instead of inferring :math:`\eta(t)` with</span>
-<span class="sd">        ``infer_eta()`` (which jointly infers misidentification rate).</span>
+<span class="sd">        using (see :func:`~mushi.kSFS.set_eta`), instead of inferring</span>
+<span class="sd">        :math:`\eta(t)` with :func:`~mushi.kSFS.infer_eta` (which jointly infers</span>
+<span class="sd">        misidentification rate).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            mu0: total mutation rate (per genome per generation)</span>
-<span class="sd">            loss: loss function name from loss_functions module</span>
+<span class="sd">            loss: loss function name from :mod:`~mushi.loss_functions` module</span>
 <span class="sd">            max_iter: maximum number of optimization steps</span>
 <span class="sd">            tol: relative tolerance in objective function (if ``0``, not used)</span>
 <span class="sd">            line_search_kwargs: line search keyword arguments,</span>
 <span class="sd">                                see :py:meth:`mushi.optimization.LineSearcher`</span>
 <span class="sd">            verbose: print verbose messages if ``True``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_eta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_eta</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;use simulate() to generate data first&#39;</span><span class="p">)</span>
 
@@ -455,7 +506,7 @@
 <span class="sd">                 computed</span>
 <span class="sd">            eta_ref: reference demographic history for ridge penalty. If</span>
 <span class="sd">                     ``None``, the constant MLE is used</span>
-<span class="sd">            loss: loss function name from loss_functions module</span>
+<span class="sd">            loss: loss function name from :mod:`~mushi.loss_functions` module</span>
 <span class="sd">            max_iter: maximum number of optimization steps</span>
 <span class="sd">            tol: relative tolerance in objective function (if ``0``, not used)</span>
 <span class="sd">            line_search_kwargs: line search keyword arguments,</span>
@@ -463,6 +514,24 @@
 <span class="sd">            trend_kwargs: keyword arguments for trend filtering,</span>
 <span class="sd">                          see :py:meth:`mushi.optimization.TrendFilter.run`</span>
 <span class="sd">            verbose: print verbose messages if ``True``</span>
+
+<span class="sd">        Examples:</span>
+
+<span class="sd">            Suppose ``ksfs`` is a ``kSFS`` object. Then the following fits a</span>
+<span class="sd">            demographic history with 0-th order (piecewise constant) trend</span>
+<span class="sd">            penalization of strength 100, assuming a mutation rate of 10</span>
+<span class="sd">            mutations per genome per generation.</span>
+
+<span class="sd">            &gt;&gt;&gt; mu0 = 1</span>
+<span class="sd">            &gt;&gt;&gt; ksfs.infer_eta(mu0, (0, 1e2))</span>
+
+<span class="sd">            Alternatively, a mixed trend solution, with constant and cubic</span>
+<span class="sd">            pieces, is fit with</span>
+
+<span class="sd">            &gt;&gt;&gt; ksfs.infer_eta(mu0, (0, 1e2), (3, 1e1))</span>
+
+<span class="sd">            The attribute ``ksfs.eta`` is now set and accessable for plotting</span>
+<span class="sd">            (see :class:`~mushi.eta`).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;use simulate() to generate data first&#39;</span><span class="p">)</span>
@@ -602,7 +671,7 @@
 <span class="sd">                    MLE is used</span>
 <span class="sd">            misid_penalty: ridge parameter to shrink misid rates to aggregate</span>
 <span class="sd">                           rate</span>
-<span class="sd">            loss: loss function from loss_functions module</span>
+<span class="sd">            loss: loss function from :mod:`~mushi.loss_functions` module</span>
 <span class="sd">            max_iter: maximum number of optimization steps</span>
 <span class="sd">            tol: relative tolerance in objective function (if ``0``, not used)</span>
 <span class="sd">            line_search_kwargs: line search keyword arguments,</span>
@@ -610,10 +679,26 @@
 <span class="sd">            trend_kwargs: keyword arguments for trend filtering,</span>
 <span class="sd">                          see :py:meth:`mushi.optimization.TrendFilter.run`</span>
 <span class="sd">            verbose: print verbose messages if ``True``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            Suppose ``ksfs`` is a ``kSFS`` object, and the demography has</span>
+<span class="sd">            already been fit with ``infer_eta``. The following fits a</span>
+<span class="sd">            mutation spectrum history with 0-th order (piecewise constant) trend</span>
+<span class="sd">            penalization of strength 100.</span>
+
+<span class="sd">            &gt;&gt;&gt; ksfs.infer_mush((0, 1e2))</span>
+
+<span class="sd">            Alternatively, a mixed trend solution, with constant and cubic</span>
+<span class="sd">            pieces, and with rank penalization 100, is fit with</span>
+
+<span class="sd">            &gt;&gt;&gt; ksfs.infer_mush((0, 1e2), (3, 1e1), rank_penalty=1e2)</span>
+
+<span class="sd">            The attribute ``ksfs.mu`` is now set and accessable for plotting</span>
+<span class="sd">            (see :class:`~mushi.mu`).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">X</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;use simulate() to generate data first&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_eta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_eta</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;ancestral misidentification rate has not been &#39;</span>
                              <span class="s1">&#39;inferred, possibly due to folded SFS inference&#39;</span><span class="p">)</span>
@@ -891,12 +976,16 @@
         <span class="sd">&quot;&quot;&quot;Loss under current history</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            func: loss function name from loss_functions module</span>
+<span class="sd">            func: loss function name from :mod:`~mushi.loss_functions` module</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            loss</span>
+<span class="sd">        Example:</span>
+<span class="sd">            After fitting demography and/or MuSH (with ``infer_eta`` and</span>
+<span class="sd">            ``infer_mush``), the loss (goodness of fit) may be evaluated as</span>
+
+<span class="sd">        &gt;&gt;&gt; ksfs.loss()</span>
+<span class="sd">        -31584.277426010947</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">check_eta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_eta</span><span class="p">()</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">loss_functions</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">μ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ξ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>

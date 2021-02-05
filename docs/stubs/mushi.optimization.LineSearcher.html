@@ -109,6 +109,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
@@ -234,47 +235,21 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.check_x" title="mushi.optimization.LineSearcher.check_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_x</span></code></a></p></td>
-<td><p>test if x is defined</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.f" title="mushi.optimization.LineSearcher.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
-<td><p>evaluate cost function at current solution point</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.initialize" title="mushi.optimization.LineSearcher.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a></p></td>
-<td><p>initialize solution point x, and any auxiliary variables</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.f" title="mushi.optimization.LineSearcher.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
+<td><p>Evaluate cost function at current solution point</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.run" title="mushi.optimization.LineSearcher.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a></p></td>
 <td><p>Optimize until convergence criteria are met</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.LineSearcher.step" title="mushi.optimization.LineSearcher.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a></p></td>
-<td><p>take an optimization step and update solution point</p></td>
-</tr>
 </tbody>
 </table>
 <dl class="py method">
-<dt id="mushi.optimization.LineSearcher.check_x">
-<code class="sig-name descname">check_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.LineSearcher.check_x" title="Permalink to this definition">¶</a></dt>
-<dd><p>test if x is defined</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="mushi.optimization.LineSearcher.f">
 <em class="property">abstract </em><code class="sig-name descname">f</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.LineSearcher.f" title="Permalink to this definition">¶</a></dt>
-<dd><p>evaluate cost function at current solution point</p>
+<dd><p>Evaluate cost function at current solution point</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.LineSearcher.initialize">
-<em class="property">abstract </em><code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.LineSearcher.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>initialize solution point x, and any auxiliary variables</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -296,17 +271,6 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>x</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.LineSearcher.step">
-<em class="property">abstract </em><code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.LineSearcher.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>take an optimization step and update solution point</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
 </dd></dl>

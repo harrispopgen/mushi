@@ -1,0 +1,6 @@
+mushi.loss\_functions.dkl
+=========================
+
+.. currentmodule:: mushi.loss_functions
+
+.. autofunction:: dkl

@@ -102,6 +102,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="mushi.utils.html">mushi.utils</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="mushi.utils.C.html">mushi.utils.C</a></li>
 <li class="toctree-l3"><a class="reference internal" href="mushi.utils.M.html">mushi.utils.M</a></li>
@@ -218,6 +219,23 @@
 <dt id="mushi.utils.fold">
 <code class="sig-name descname">fold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/utils.html#fold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.utils.fold" title="Permalink to this definition">¶</a></dt>
 <dd><p>transform SFS to folded SFS</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> – loss function name from loss_functions module</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mushi</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sfs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">utils</span><span class="o">.</span><span class="n">fold</span><span class="p">(</span><span class="n">sfs</span><span class="p">)</span>
+<span class="go">DeviceArray([1010,  100], dtype=int64)</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>

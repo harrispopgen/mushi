@@ -109,6 +109,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.histories.html">mushi.histories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
 </ul>
@@ -214,7 +215,7 @@
 <h1>mushi.optimization.ThreeOpProxGrad<a class="headerlink" href="#mushi-optimization-threeopproxgrad" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="mushi.optimization.ThreeOpProxGrad">
-<em class="property">class </em><code class="sig-name descname">ThreeOpProxGrad</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">grad_g</span></em>, <em class="sig-param"><span class="n">h1</span></em>, <em class="sig-param"><span class="n">prox1</span></em>, <em class="sig-param"><span class="n">h2</span></em>, <em class="sig-param"><span class="n">prox2</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">line_search_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#ThreeOpProxGrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ThreeOpProxGrad</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">g</span></em>, <em class="sig-param"><span class="n">grad</span></em>, <em class="sig-param"><span class="n">h1</span></em>, <em class="sig-param"><span class="n">prox1</span></em>, <em class="sig-param"><span class="n">h2</span></em>, <em class="sig-param"><span class="n">prox2</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">line_search_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#ThreeOpProxGrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad" title="mushi.optimization.AccProxGrad"><code class="xref py py-class docutils literal notranslate"><span class="pre">mushi.optimization.AccProxGrad</span></code></a></p>
 <p>Three operator splitting proximal gradient method with backtracking
 line search <a class="footnote-reference brackets" href="#id2" id="id1">2</a>.</p>
@@ -227,10 +228,10 @@ line search <a class="footnote-reference brackets" href="#id2" id="id1">2</a>.</
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>g</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – differentiable term in objective function</p></li>
-<li><p><strong>grad_g</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – gradient of g</p></li>
+<li><p><strong>grad</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – gradient of g</p></li>
 <li><p><strong>h1</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – 1st non-differentiable term in objective function</p></li>
-<li><p><strong>h2</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – 2nd non-differentiable term in objective function</p></li>
 <li><p><strong>prox1</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – proximal operator corresponding to h1</p></li>
+<li><p><strong>h2</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – 2nd non-differentiable term in objective function</p></li>
 <li><p><strong>prox2</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – proximal operator corresponding to h2</p></li>
 <li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – print convergence messages</p></li>
 <li><p><strong>line_search_kwargs</strong> – line search keyword arguments,
@@ -247,6 +248,64 @@ Learning, Proceedings of Machine Learning Research., J. Dy, A.
 Krause, Eds. (PMLR, 2018), pp. 4085–4094.</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>Usage is very similar to <a class="reference internal" href="mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad" title="mushi.optimization.AccProxGrad"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.AccProxGrad()</span></code></a>, except
+that two non-smooth terms (and their associated proximal operators) may
+be specified.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi.optimization</span> <span class="k">as</span> <span class="nn">opt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>We’ll use a squared loss term, a Lasso term and a box constraint for
+this example.</p>
+<p>Define <span class="math notranslate nohighlight">\(g(x)\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol\nabla g(x)\)</span>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">grad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>Define <span class="math notranslate nohighlight">\(h_1(x)\)</span> and <span class="math notranslate nohighlight">\(\mathrm{prox}_{h_1}(u)\)</span>.
+We will use a Lasso term and the corresponding soft thresholding
+operator:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">h1</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">prox1</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Define <span class="math notranslate nohighlight">\(h_2(x)\)</span> and <span class="math notranslate nohighlight">\(\mathrm{prox}_{h_2}(u)\)</span>. We use a simple
+box constraint on one dimension, although note that this is quite
+artificial, since such constraints don’t require operator splitting.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">h2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">prox2</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]),</span> <span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Initialize optimizer and define initial point</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">threeop</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">ThreeOpProxGrad</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">h1</span><span class="p">,</span> <span class="n">prox1</span><span class="p">,</span> <span class="n">h2</span><span class="p">,</span> <span class="n">prox2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Run optimization</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">threeop</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">array([1., 0.])</span>
+</pre></div>
+</div>
+<p>Evaluate cost at the solution point</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">threeop</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
+<span class="go">1.5</span>
+</pre></div>
+</div>
 <p class="rubric">Methods</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -254,55 +313,18 @@ Krause, Eds. (PMLR, 2018), pp. 4085–4094.</p>
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.check_x" title="mushi.optimization.ThreeOpProxGrad.check_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_x</span></code></a></p></td>
-<td><p>test if x is defined</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.f" title="mushi.optimization.ThreeOpProxGrad.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
-<td><p>evaluate cost function at current solution point</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.initialize" title="mushi.optimization.ThreeOpProxGrad.initialize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize</span></code></a></p></td>
-<td><p>initialize solution point x, and any auxiliary variables</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.f" title="mushi.optimization.ThreeOpProxGrad.f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">f</span></code></a></p></td>
+<td><p>Evaluate cost function at current solution point</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.run" title="mushi.optimization.ThreeOpProxGrad.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a></p></td>
 <td><p>Optimize until convergence criteria are met</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.optimization.ThreeOpProxGrad.step" title="mushi.optimization.ThreeOpProxGrad.step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">step</span></code></a></p></td>
-<td><p>step with backtracking line search</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt id="mushi.optimization.ThreeOpProxGrad.f">
 <code class="sig-name descname">f</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#ThreeOpProxGrad.f"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad.f" title="Permalink to this definition">¶</a></dt>
-<dd><p>evaluate cost function at current solution point</p>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.ThreeOpProxGrad.initialize">
-<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#ThreeOpProxGrad.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>initialize solution point x, and any auxiliary variables</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.ThreeOpProxGrad.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/optimization.html#ThreeOpProxGrad.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad.step" title="Permalink to this definition">¶</a></dt>
-<dd><p>step with backtracking line search</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="mushi.optimization.ThreeOpProxGrad.check_x">
-<code class="sig-name descname">check_x</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.optimization.ThreeOpProxGrad.check_x" title="Permalink to this definition">¶</a></dt>
-<dd><p>test if x is defined</p>
+<dd><p>Evaluate cost function at current solution point</p>
 </dd></dl>
 
 <dl class="py method">

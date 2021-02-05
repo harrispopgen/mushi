@@ -32,6 +32,13 @@ Modify notebooks in the ``notebooks`` directory as needed.
   Executing builds (below) after modifying notebooks can take a very long time
   if compute-heavy notebooks need to be recompiled.
 
+Run doctests
+------------
+
+From the ``docsrc`` dir::
+
+  make doctest
+
 Local build
 -----------
 
@@ -54,8 +61,9 @@ You can then see the generated documentation in
 Test notebook
 =============
 
-A test notebook that simulates under the linkage-free forward model (where the PRF composite likelihood is not approximate): `<notebooks/simulation_simple.html>`_
+A test notebook that simulates under the linkage-free forward model (where the PRF composite likelihood is not approximate): `<notebooks/simulation.ipynb>`_
 
+Note that this notebook is used to build a docs page.
 
 Todo list
 =========
