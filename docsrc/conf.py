@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'mushi'
-copyright = '2020, William DeWitt, Kameron Decker Harris, and Kelley Harris'
-author = 'William DeWitt, Kameron Decker Harris, and Kelley Harris'
+copyright = '2020, William DeWitt, Kameron Decker Harris, Aaron Ragsdale, and Kelley Harris'
+author = 'William DeWitt, Kameron Decker Harris, Aaron Ragsdale, and Kelley Harris'
 
 # No version in docs, doesn't play nice with versioneer
 # The short X.Y version
