@@ -15,7 +15,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/harrispopgen/mushi',
-    # packages=setuptools.find_packages(exclude=['tests', 'docs', 'docs']),
+    # packages=setuptools.find_packages(exclude=['tests', 'docs']),
     packages=['mushi'],
     classifiers=[
         'Programming Language :: Python :: 3',
@@ -27,7 +27,7 @@ setuptools.setup(
     install_requires=[
         'jax',
         'jaxlib',
-        'prox-tv @ git+https://github.com/albarji/proxTV#egg=prox-tv',
+        'prox-tv-SDIST',
         'seaborn',
         'pandas',
         'matplotlib',
