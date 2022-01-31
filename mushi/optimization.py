@@ -241,7 +241,7 @@ class AccProxGrad(LineSearcher):
             G = (1 / self.s) * (self.q - self.x)
             # test g(q - sG_s(q)) for sufficient decrease
             if self.g(self.q - self.s * G) <= (
-                g1 - self.s * (grad1 * G).sum() + (self.s / 2) * (G ** 2).sum()
+                g1 - self.s * (grad1 * G).sum() + (self.s / 2) * (G**2).sum()
             ):
                 # Armijo satisfied
                 break
@@ -405,7 +405,7 @@ class ThreeOpProxGrad(AccProxGrad):
         # update u variables: dual variables
         self.u = self.u + (self.x - self.q) / self.s
         # grow step size
-        self.s = min(self.s / self.gamma ** 2, self.s0)
+        self.s = min(self.s / self.gamma**2, self.s0)
 
 
 class TrendFilter(Optimizer):

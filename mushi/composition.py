@@ -343,7 +343,7 @@ def power(x, a):
 
     """
     x = closure(x)
-    return closure(x ** a).squeeze()
+    return closure(x**a).squeeze()
 
 
 def inner(x, y):

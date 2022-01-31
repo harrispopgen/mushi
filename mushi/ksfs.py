@@ -410,7 +410,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.η.m ** k / onp.math.factorial(k)) * λ)
+            (k, (self.η.m**k / onp.math.factorial(k)) * λ)
             for k, λ in trend_penalty
             if λ > 0
         )
@@ -569,7 +569,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.μ.m ** k / onp.math.factorial(k)) * λ)
+            (k, (self.μ.m**k / onp.math.factorial(k)) * λ)
             for k, λ in trend_penalty
             if λ > 0
         )
@@ -612,7 +612,7 @@ class kSFS:
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
             misid_delta = params[0, :] - misid_ref
-            misid_ridge_term = misid_penalty * np.sum(misid_delta ** 2)
+            misid_ridge_term = misid_penalty * np.sum(misid_delta**2)
             return loss_term + ridge_term + misid_ridge_term
 
         if trend_penalty:
