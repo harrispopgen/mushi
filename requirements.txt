@@ -8,4 +8,5 @@ sphinx-autodoc-typehints
 pandoc
 flake8
 black
+docformatter
 pytest
