@@ -1,0 +1,33 @@
+﻿mushi.loss\_functions
+=====================
+
+.. automodule:: mushi.loss_functions
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      dkl
+      lsq
+      prf
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

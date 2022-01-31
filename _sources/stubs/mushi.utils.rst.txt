@@ -1,0 +1,37 @@
+﻿mushi.utils
+===========
+
+.. automodule:: mushi.utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+      :nosignatures:
+   
+      C
+      M
+      fold
+      misid_partners
+      mutype_misid
+      revcomp
+      tmrca_sf
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

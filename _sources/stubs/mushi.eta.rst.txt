@@ -1,0 +1,34 @@
+﻿mushi.eta
+=========
+
+.. currentmodule:: mushi
+
+.. autoclass:: eta
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~eta.arrays
+      ~eta.check_grid
+      ~eta.epochs
+      ~eta.plot
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~eta.y
+   
+   

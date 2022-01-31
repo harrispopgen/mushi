@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mushi.histories.mu &mdash; mushi  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mushi.loss_functions" href="mushi.loss_functions.html" />
+    <link rel="prev" title="mushi.histories.eta" href="mushi.histories.eta.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">Citing <code class="docutils literal notranslate"><span class="pre">mushi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing with simulations</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html">Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="mushi.optimization.html">mushi.optimization</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="mushi.histories.html">mushi.histories</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="mushi.histories.History.html">mushi.histories.History</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mushi.histories.eta.html">mushi.histories.eta</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">mushi.histories.mu</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.loss_functions.html">mushi.loss_functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.utils.html">mushi.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.composition.html">mushi.composition</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html">Open source code repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#developer-tools">Developer tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#test-notebook">Test notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#todo-list">Todo list</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mushi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../mushi.html">Classes</a> &raquo;</li>
+          <li><a href="mushi.histories.html">mushi.histories</a> &raquo;</li>
+      <li>mushi.histories.mu</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="mushi-histories-mu">
+<h1>mushi.histories.mu<a class="headerlink" href="#mushi-histories-mu" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mushi.histories.mu">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_types</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#mu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.histories.mu" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">mushi.histories.History</span></code></a></p>
+<p>Mutation spectrum history (MuSH) <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>change_points</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – epoch change points (times)</p></li>
+<li><p><strong>Z</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – matrix of constant values for each epoch (rows) in each mutation type
+(columns)</p></li>
+<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – list of mutation type names (optional <code class="docutils literal notranslate"><span class="pre">None</span></code> element)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mu</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]),</span>
+<span class="gp">... </span>              <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span>              <span class="p">[</span><span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.histories.mu.arrays" title="mushi.histories.mu.arrays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arrays</span></code></a></p></td>
+<td><p>Return time grid and values in each cell.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.histories.mu.check_grid" title="mushi.histories.mu.check_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_grid</span></code></a></p></td>
+<td><p>Test if time grid is the same as another instance.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.histories.mu.clustermap" title="mushi.histories.mu.clustermap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustermap</span></code></a></p></td>
+<td><p>Clustermap of compositionally centralized MuSH</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.histories.mu.epochs" title="mushi.histories.mu.epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epochs</span></code></a></p></td>
+<td><p>Generator yielding epochs as tuples: (start_time, end_time, value)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.histories.mu.plot" title="mushi.histories.mu.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<td><p>Plot history.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.histories.mu.plot_cumulative" title="mushi.histories.mu.plot_cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_cumulative</span></code></a></p></td>
+<td><p>Plot the cumulative mutation rate, like a Muller plot</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.histories.mu.Z" title="mushi.histories.mu.Z"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Z</span></code></a></p></td>
+<td><p>read-only alias to vals attribute in base class.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">mutation_types</span></code></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.arrays">
+<span class="sig-name descname"><span class="pre">arrays</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.histories.mu.arrays" title="Permalink to this definition"></a></dt>
+<dd><p>Return time grid and values in each cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.check_grid">
+<span class="sig-name descname"><span class="pre">check_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mushi.histories.mu.check_grid" title="Permalink to this definition"></a></dt>
+<dd><p>Test if time grid is the same as another instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">History</span></code></a>) – another History object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.epochs">
+<span class="sig-name descname"><span class="pre">epochs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.histories.mu.epochs" title="Permalink to this definition"></a></dt>
+<dd><p>Generator yielding epochs as tuples: (start_time, end_time,
+value)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="mushi.histories.mu.Z">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Z</span></span><a class="headerlink" href="#mushi.histories.mu.Z" title="Permalink to this definition"></a></dt>
+<dd><p>read-only alias to vals attribute in base class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#mu.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.histories.mu.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of mutation types to plot (default all)</p></li>
+<li><p><strong>clr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – flag to normalize to total mutation intensity and display as
+centered log ratio transform</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.plot_cumulative">
+<span class="sig-name descname"><span class="pre">plot_cumulative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_gen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#mu.plot_cumulative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.histories.mu.plot_cumulative" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the cumulative mutation rate, like a Muller plot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_gen</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – generation time in years (optional)</p></li>
+<li><p><strong>clr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – flag to normalize to total mutation intensity and display as
+centered log ratio transform</p></li>
+<li><p><strong>kwargs</strong> – key word arguments passed to <code class="docutils literal notranslate"><span class="pre">plt.fill_between</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.histories.mu.clustermap">
+<span class="sig-name descname"><span class="pre">clustermap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_gen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#mu.clustermap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.histories.mu.clustermap" title="Permalink to this definition"></a></dt>
+<dd><p>Clustermap of compositionally centralized MuSH</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_gen</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]) – generation time in years (optional)</p></li>
+<li><p><strong>kwargs</strong> – additional keyword arguments passed to <code class="docutils literal notranslate"><span class="pre">pd.clustermap</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mushi.histories.eta.html" class="btn btn-neutral float-left" title="mushi.histories.eta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mushi.loss_functions.html" class="btn btn-neutral float-right" title="mushi.loss_functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, William DeWitt, Kameron Decker Harris, Aaron Ragsdale, and Kelley Harris.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

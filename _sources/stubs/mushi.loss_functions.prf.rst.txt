@@ -1,0 +1,6 @@
+mushi.loss\_functions.prf
+=========================
+
+.. currentmodule:: mushi.loss_functions
+
+.. autofunction:: prf

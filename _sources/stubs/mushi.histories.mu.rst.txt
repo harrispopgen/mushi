@@ -1,0 +1,37 @@
+mushi.histories.mu
+==================
+
+.. currentmodule:: mushi.histories
+
+.. autoclass:: mu
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~mu.arrays
+      ~mu.check_grid
+      ~mu.clustermap
+      ~mu.epochs
+      ~mu.plot
+      ~mu.plot_cumulative
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~mu.Z
+      ~mu.mutation_types
+   
+   

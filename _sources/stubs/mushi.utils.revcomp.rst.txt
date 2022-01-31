@@ -1,0 +1,6 @@
+mushi.utils.revcomp
+===================
+
+.. currentmodule:: mushi.utils
+
+.. autofunction:: revcomp

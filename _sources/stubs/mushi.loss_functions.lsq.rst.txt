@@ -1,0 +1,6 @@
+mushi.loss\_functions.lsq
+=========================
+
+.. currentmodule:: mushi.loss_functions
+
+.. autofunction:: lsq

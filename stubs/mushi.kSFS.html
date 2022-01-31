@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mushi.kSFS &mdash; mushi  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mushi.eta" href="mushi.eta.html" />
+    <link rel="prev" title="Classes" href="../mushi.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../cite.html">Citing <code class="docutils literal notranslate"><span class="pre">mushi</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Notebooks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/simulation.html">Testing with simulations</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Classes</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.kSFS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.eta.html">mushi.eta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mushi.mu.html">mushi.mu</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../mushi.html#submodules">Submodules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html">Open source code repository</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#developer-tools">Developer tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#test-notebook">Test notebook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer.html#todo-list">Todo list</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">mushi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../mushi.html">Classes</a> &raquo;</li>
+      <li>mushi.kSFS</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="mushi-ksfs">
+<h1>mushi.kSFS<a class="headerlink" href="#mushi-ksfs" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="mushi.kSFS">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kSFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Primary class for working with SFS data to infer demography
+<span class="math notranslate nohighlight">\(\eta(t)\equiv 2N(t)\)</span>, or with <span class="math notranslate nohighlight">\(k\)</span>-SFS data to infer demography
+and mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mushi.kSFS.X">
+<span class="sig-name descname"><span class="pre">X</span></span><a class="headerlink" href="#mushi.kSFS.X" title="Permalink to this definition"></a></dt>
+<dd><p><span class="math notranslate nohighlight">\(k\)</span>-SFS matrix (or 1D SFS vector)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mushi.kSFS.eta">
+<span class="sig-name descname"><span class="pre">eta</span></span><a class="headerlink" href="#mushi.kSFS.eta" title="Permalink to this definition"></a></dt>
+<dd><p>demographic history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mushi.eta.html#mushi.eta" title="mushi.eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.eta</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mushi.kSFS.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#mushi.kSFS.mu" title="Permalink to this definition"></a></dt>
+<dd><p>mutation spectrum history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mushi.mu.html#mushi.mu" title="mushi.mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mushi.mu</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mushi.kSFS.mutation_types">
+<span class="sig-name descname"><span class="pre">mutation_types</span></span><a class="headerlink" href="#mushi.kSFS.mutation_types" title="Permalink to this definition"></a></dt>
+<dd><p>mutation spectrum history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">List[str]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="mushi.kSFS.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#mushi.kSFS.n" title="Permalink to this definition"></a></dt>
+<dd><p>number of sampled haplotypes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ksfs_file</strong> – path to <span class="math notranslate nohighlight">\(k\)</span>-SFS file, as ouput by <code class="docutils literal notranslate"><span class="pre">mutyper</span> <span class="pre">ksfs</span></code></p></li>
+<li><p><strong>X</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix</p></li>
+<li><p><strong>mutation_types</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]) – list of names of X columns</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – number of sampled haplotypes</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<p>Three constructors:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ksfs_file</span></code>: path to k-SFS file, as ouput by <cite>mutyper ksfs</cite></p></li>
+</ol>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;ksfs.tsv&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p><code class="docutils literal notranslate"><span class="pre">X</span></code> and <code class="docutils literal notranslate"><span class="pre">mutation_types</span></code> (the latter may be ommitted if <code class="docutils literal notranslate"><span class="pre">X</span></code> is
+a 1D SFS array)</p></li>
+</ol>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
+<span class="gp">... </span>                  <span class="n">mutation_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AAA&gt;ACA&#39;</span><span class="p">,</span> <span class="s1">&#39;ACA&gt;AAA&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                                  <span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p><code class="docutils literal notranslate"><span class="pre">n</span></code>: number of haplotypes to initialize for simulation</p></li>
+</ol>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.as_df" title="mushi.kSFS.as_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_df</span></code></a></p></td>
+<td><p>Return a pandas DataFrame representation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.clear_eta" title="mushi.kSFS.clear_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_eta</span></code></a></p></td>
+<td><p>Clear demographic history attribute η</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.clear_mu" title="mushi.kSFS.clear_mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_mu</span></code></a></p></td>
+<td><p>Clear μ attribute</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.clustermap" title="mushi.kSFS.clustermap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clustermap</span></code></a></p></td>
+<td><p>Clustermap of compositionally centralized k-SFS</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.infer_eta" title="mushi.kSFS.infer_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_eta</span></code></a></p></td>
+<td><p>Infer demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.infer_misid" title="mushi.kSFS.infer_misid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_misid</span></code></a></p></td>
+<td><p>Infer ancestral misidentification rate with <span class="math notranslate nohighlight">\(\eta(t)\)</span> fixed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.infer_mush" title="mushi.kSFS.infer_mush"><code class="xref py py-obj docutils literal notranslate"><span class="pre">infer_mush</span></code></a></p></td>
+<td><p>Infer mutation spectrum history <span class="math notranslate nohighlight">\(\mu(t)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.loss" title="mushi.kSFS.loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loss</span></code></a></p></td>
+<td><p>Loss under current history.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.plot" title="mushi.kSFS.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<td><p>Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.plot_total" title="mushi.kSFS.plot_total"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_total</span></code></a></p></td>
+<td><p>Plot the SFS using matplotlib</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.set_eta" title="mushi.kSFS.set_eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_eta</span></code></a></p></td>
+<td><p>Set pre-specified demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#mushi.kSFS.simulate" title="mushi.kSFS.simulate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simulate</span></code></a></p></td>
+<td><p>Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS under the Poisson random field model (no linkage), assign to <code class="docutils literal notranslate"><span class="pre">X</span></code> attribute</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#mushi.kSFS.tmrca_cdf" title="mushi.kSFS.tmrca_cdf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmrca_cdf</span></code></a></p></td>
+<td><p>The CDF of the TMRCA at each change point in <code class="docutils literal notranslate"><span class="pre">eta</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="mushi.kSFS.eta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta</span></code></a></p></td>
+<td><p>Read-only alias to η attribute</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id1" title="mushi.kSFS.mu"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mu</span></code></a></p></td>
+<td><p>Read-only alias to μ attribute</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><span class="pre">mushi.histories.eta</span></a></em><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Read-only alias to η attribute</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><span class="pre">mushi.histories.mu</span></a></em><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>Read-only alias to μ attribute</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.as_df">
+<span class="sig-name descname"><span class="pre">as_df</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.as_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.as_df" title="Permalink to this definition"></a></dt>
+<dd><p>Return a pandas DataFrame representation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.clear_eta">
+<span class="sig-name descname"><span class="pre">clear_eta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.clear_eta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.clear_eta" title="Permalink to this definition"></a></dt>
+<dd><p>Clear demographic history attribute η</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.clear_mu">
+<span class="sig-name descname"><span class="pre">clear_mu</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.clear_mu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.clear_mu" title="Permalink to this definition"></a></dt>
+<dd><p>Clear μ attribute</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.tmrca_cdf">
+<span class="sig-name descname"><span class="pre">tmrca_cdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.tmrca_cdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.tmrca_cdf" title="Permalink to this definition"></a></dt>
+<dd><p>The CDF of the TMRCA at each change point in <code class="docutils literal notranslate"><span class="pre">eta</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eta</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>]) – demographic history (if <code class="docutils literal notranslate"><span class="pre">None</span></code>, use <code class="docutils literal notranslate"><span class="pre">self.eta</span></code> attribute)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.simulate">
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.simulate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.simulate" title="Permalink to this definition"></a></dt>
+<dd><p>Simulate a <span class="math notranslate nohighlight">\(k\)</span>-SFS under the Poisson random field model
+(no linkage), assign to <code class="docutils literal notranslate"><span class="pre">X</span></code> attribute</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eta</strong> (<a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>) – demographic history</p></li>
+<li><p><strong>mu</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – mutation spectrum history (or constant mutation rate)</p></li>
+<li><p><strong>r</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – ancestral state misidentification rate (default 0)</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]) – random seed</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Define sample size:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Define demographic history and MuSH:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eta</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1e4</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mush</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">eta</span><span class="o">.</span><span class="n">change_points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
+<span class="gp">... </span>                <span class="p">[</span><span class="s1">&#39;AAA&gt;ACA&#39;</span><span class="p">,</span> <span class="s1">&#39;ACA&gt;AAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Define ancestral misidentification rate:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="mf">0.03</span>
+</pre></div>
+</div>
+<p>Set random seed:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seed</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Run simulation and print simulated <span class="math notranslate nohighlight">\(k\)</span>-SFS</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">mush</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">as_df</span><span class="p">()</span> 
+<span class="go">mutation type     AAA&gt;ACA  ACA&gt;AAA  TCC&gt;TTC  GAA&gt;GGA</span>
+<span class="go">sample frequency</span>
+<span class="go">1                    1118     1123     1106     1108</span>
+<span class="go">2                     147      128      120       98</span>
+<span class="go">3                      65       55       66       60</span>
+<span class="go">4                      49       52       64       46</span>
+<span class="go">5                      44       43       34       36</span>
+<span class="go">6                      35       28       36       33</span>
+<span class="go">7                      23       32       24       35</span>
+<span class="go">8                      34       32       24       24</span>
+<span class="go">9                      52       41       57       56</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.set_eta">
+<span class="sig-name descname"><span class="pre">set_eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.set_eta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.set_eta" title="Permalink to this definition"></a></dt>
+<dd><p>Set pre-specified demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eta</strong> (<a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>) – demographic history object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.infer_misid">
+<span class="sig-name descname"><span class="pre">infer_misid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_search_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.infer_misid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.infer_misid" title="Permalink to this definition"></a></dt>
+<dd><p>Infer ancestral misidentification rate with <span class="math notranslate nohighlight">\(\eta(t)\)</span> fixed.
+This function is used for fitting with a pre-specified demography, after
+using <a class="reference internal" href="#mushi.kSFS.set_eta" title="mushi.kSFS.set_eta"><code class="xref py py-func docutils literal notranslate"><span class="pre">set_eta()</span></code></a>, instead of inferring
+<span class="math notranslate nohighlight">\(\eta(t)\)</span> with <a class="reference internal" href="#mushi.kSFS.infer_eta" title="mushi.kSFS.infer_eta"><code class="xref py py-func docutils literal notranslate"><span class="pre">infer_eta()</span></code></a> (which jointly infers
+misidentification rate).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – total mutation rate (per genome per generation)</p></li>
+<li><p><strong>loss</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – maximum number of optimization steps</p></li>
+<li><p><strong>tol</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
+<li><p><strong>line_search_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – line search keyword arguments,
+see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher()</span></code></a></p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.infer_eta">
+<span class="sig-name descname"><span class="pre">infer_eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">trend_penalty</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_search_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.infer_eta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.infer_eta" title="Permalink to this definition"></a></dt>
+<dd><p>Infer demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – total mutation rate (per genome per generation)</p></li>
+<li><p><strong>trend_penalty</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
+penalty (can pass multiple for mixed trends)</p></li>
+<li><p><strong>ridge_penalty</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – ridge penalty</p></li>
+<li><p><strong>folded</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> using unfolded SFS. If
+<code class="docutils literal notranslate"><span class="pre">True</span></code>, can only be used with <code class="docutils literal notranslate"><span class="pre">infer_mu=False</span></code>, and
+infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> using folded SFS.</p></li>
+<li><p><strong>pts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – number of points for time discretization</p></li>
+<li><p><strong>ta</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – time (in WF generations ago) of oldest change point in time
+discretization. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, set automatically based on
+10 * E[TMRCA] under MLE constant demography</p></li>
+<li><p><strong>log_transform</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – fit <span class="math notranslate nohighlight">\(\log\eta(t)\)</span></p></li>
+<li><p><strong>eta</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>]) – initial demographic history. By default, a constant MLE is
+computed</p></li>
+<li><p><strong>eta_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>]) – reference demographic history for ridge penalty. If
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, the constant MLE is used</p></li>
+<li><p><strong>loss</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – maximum number of optimization steps</p></li>
+<li><p><strong>tol</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
+<li><p><strong>line_search_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – line search keyword arguments,
+see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher()</span></code></a></p></li>
+<li><p><strong>trend_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – keyword arguments for trend filtering,
+see <a class="reference internal" href="mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.run" title="mushi.optimization.TrendFilter.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.TrendFilter.run()</span></code></a></p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Suppose <code class="docutils literal notranslate"><span class="pre">ksfs</span></code> is a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object. Then the following fits a
+demographic history with 0-th order (piecewise constant) trend
+penalization of strength 100, assuming a mutation rate of 10
+mutations per genome per generation.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mu0</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Alternatively, a mixed trend solution, with constant and cubic
+pieces, is fit with</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_eta</span><span class="p">(</span><span class="n">mu0</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1e1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The attribute <code class="docutils literal notranslate"><span class="pre">ksfs.eta</span></code> is now set and accessable for plotting
+(see <a class="reference internal" href="mushi.eta.html#mushi.eta" title="mushi.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.infer_mush">
+<span class="sig-name descname"><span class="pre">infer_mush</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">trend_penalty</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misid_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_search_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trend_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.infer_mush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.infer_mush" title="Permalink to this definition"></a></dt>
+<dd><p>Infer mutation spectrum history <span class="math notranslate nohighlight">\(\mu(t)\)</span></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trend_penalty</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
+penalty (can pass multiple for mixed trends)</p></li>
+<li><p><strong>ridge_penalty</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – ridge penalty</p></li>
+<li><p><strong>rank_penalty</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – rank penalty</p></li>
+<li><p><strong>hard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – hard rank penalty (non-convex)</p></li>
+<li><p><strong>mu_ref</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a>]) – reference MuSH for ridge penalty. If None, the constant
+MLE is used</p></li>
+<li><p><strong>misid_penalty</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – ridge parameter to shrink misid rates to aggregate
+rate</p></li>
+<li><p><strong>loss</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – loss function from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – maximum number of optimization steps</p></li>
+<li><p><strong>tol</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
+<li><p><strong>line_search_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – line search keyword arguments,
+see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher</span></code></a></p></li>
+<li><p><strong>trend_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – keyword arguments for trend filtering,
+see <a class="reference internal" href="mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.run" title="mushi.optimization.TrendFilter.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.TrendFilter.run()</span></code></a></p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Suppose <code class="docutils literal notranslate"><span class="pre">ksfs</span></code> is a <code class="docutils literal notranslate"><span class="pre">kSFS</span></code> object, and the demography has
+already been fit with <code class="docutils literal notranslate"><span class="pre">infer_eta</span></code>. The following fits a
+mutation spectrum history with 0-th order (piecewise constant) trend
+penalization of strength 100.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Alternatively, a mixed trend solution, with constant and cubic
+pieces, and with rank penalization 100, is fit with</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">infer_mush</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1e1</span><span class="p">),</span> <span class="n">rank_penalty</span><span class="o">=</span><span class="mf">1e2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The attribute <code class="docutils literal notranslate"><span class="pre">ksfs.mu</span></code> is now set and accessable for plotting
+(see <a class="reference internal" href="mushi.mu.html#mushi.mu" title="mushi.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.plot_total">
+<span class="sig-name descname"><span class="pre">plot_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'ls':</span> <span class="pre">'',</span> <span class="pre">'marker':</span> <span class="pre">'.'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folded</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.plot_total"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.plot_total" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the SFS using matplotlib</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – keyword arguments for scatter plot</p></li>
+<li><p><strong>line_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – keyword arguments for expectation line</p></li>
+<li><p><strong>fill_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – keyword arguments for marginal fill</p></li>
+<li><p><strong>folded</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, plot the folded SFS and fit</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'ls':</span> <span class="pre">'',</span> <span class="pre">'marker':</span> <span class="pre">'.',</span> <span class="pre">'rasterized':</span> <span class="pre">True}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.plot" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the <span class="math notranslate nohighlight">\(k\)</span>-SFS</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>types</strong> – iterable of mutation type names to restrict plotting to</p></li>
+<li><p><strong>clr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – flag to normalize to total mutation intensity and display as
+centered log ratio transform</p></li>
+<li><p><strong>kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – key word arguments passed to data scatter plot</p></li>
+<li><p><strong>line_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a>) – key word arguments passed to expectation line plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.clustermap">
+<span class="sig-name descname"><span class="pre">clustermap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.clustermap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.clustermap" title="Permalink to this definition"></a></dt>
+<dd><p>Clustermap of compositionally centralized k-SFS</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>kwargs</strong> – additional keyword arguments passed to pandas.clustermap</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="mushi.kSFS.loss">
+<span class="sig-name descname"><span class="pre">loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prf'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS.loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS.loss" title="Permalink to this definition"></a></dt>
+<dd><p>Loss under current history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>After fitting demography and/or MuSH (with <code class="docutils literal notranslate"><span class="pre">infer_eta</span></code> and
+<code class="docutils literal notranslate"><span class="pre">infer_mush</span></code>), the loss (goodness of fit) may be evaluated as</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+<span class="go">-31584.27...</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../mushi.html" class="btn btn-neutral float-left" title="Classes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mushi.eta.html" class="btn btn-neutral float-right" title="mushi.eta" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, William DeWitt, Kameron Decker Harris, Aaron Ragsdale, and Kelley Harris.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

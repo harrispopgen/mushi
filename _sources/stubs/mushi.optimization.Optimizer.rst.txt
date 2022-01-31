@@ -1,0 +1,26 @@
+mushi.optimization.Optimizer
+============================
+
+.. currentmodule:: mushi.optimization
+
+.. autoclass:: Optimizer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+      :nosignatures:
+   
+      ~Optimizer.f
+      ~Optimizer.run
+   
+   
+
+   
+   
+   
