@@ -451,7 +451,8 @@ class kSFS:
         def h(params):
             """nondifferentiable piece of objective in η problem."""
             return sum(
-                λ * np.linalg.norm(np.diff(params[1:], k), 1) for k, λ in trend_penalty
+                λ * np.linalg.norm(np.diff(params[1:], k + 1), 1)
+                for k, λ in trend_penalty
             )
 
         def prox(params, s):
@@ -621,7 +622,7 @@ class kSFS:
             def h_trend(params):
                 """trend filtering penalty."""
                 return sum(
-                    λ * np.linalg.norm(np.diff(params[1:, :], k, axis=0), 1)
+                    λ * np.linalg.norm(np.diff(params[1:, :], k + 1, axis=0), 1)
                     for k, λ in trend_penalty
                 )
 
