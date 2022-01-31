@@ -8,7 +8,6 @@ at package level.
 
 """
 
-from dataclasses import dataclass
 from typing import List
 
 import numpy as np
@@ -19,42 +18,44 @@ import seaborn as sns
 import mushi.composition as cmp
 
 
-@dataclass
-class History():
-    """
-    Base class piecewise constant history. The first epoch starts at zero,
-    and the last epoch extends to infinity
+class History:
+    """Base class piecewise constant history. The first epoch starts at zero,
+    and the last epoch extends to infinity.
 
     Args:
         change_points: epoch change points (times)
         vals: constant values for each epoch (rows)
     """
-    change_points: np.array
-    vals: np.ndarray
 
-    def __post_init__(self):
-        if any(np.diff(self.change_points) <= 0) or any(
-           np.isinf(self.change_points)) or any(self.change_points <= 0):
-            raise ValueError('change_points must be increasing, finite, and '
-                             'positive')
+    def __init__(self, change_points: np.array, vals: np.ndarray):
+        self.change_points = change_points
+        self.vals = vals
+        if (
+            any(np.diff(self.change_points) <= 0)
+            or any(np.isinf(self.change_points))
+            or any(self.change_points <= 0)
+        ):
+            raise ValueError(
+                "change_points must be increasing, finite, and " "positive"
+            )
         if len(self.vals) != len(self.change_points) + 1:
-            raise ValueError(f'len(change_points) = {len(self.change_points)}'
-                             f' implies {len(self.change_points) + 1} epochs,'
-                             f' but len(vals) = {len(self.vals)}')
+            raise ValueError(
+                f"len(change_points) = {len(self.change_points)}"
+                f" implies {len(self.change_points) + 1} epochs,"
+                f" but len(vals) = {len(self.vals)}"
+            )
         if np.any(self.vals < 0) or np.sum(np.isinf(self.vals)):
-            raise ValueError('elements of vals must be finite and nonnegative')
+            raise ValueError("elements of vals must be finite and nonnegative")
         self.m = len(self.vals)
 
     def arrays(self):
-        """Return time grid and values in each cell"""
-        t = np.concatenate((np.array([0]),
-                            self.change_points,
-                            np.array([np.inf])))
+        """Return time grid and values in each cell."""
+        t = np.concatenate((np.array([0]), self.change_points, np.array([np.inf])))
         return t, self.vals
 
     def epochs(self):
-        """Generator yielding epochs as tuples: (start_time, end_time, value)
-        """
+        """Generator yielding epochs as tuples: (start_time, end_time,
+        value)"""
         for i in range(self.m):
             if i == 0:
                 start_time = 0
@@ -67,18 +68,17 @@ class History():
             value = self.vals[i]
             yield (start_time, end_time, value)
 
-    def check_grid(self, other: 'History'):
-        """Test if time grid is the same as another instance
+    def check_grid(self, other: "History"):
+        """Test if time grid is the same as another instance.
 
         Args:
             other: another History object
         """
         if not np.array_equal(self.change_points, other.change_points):
-            raise ValueError('histories have different time grids')
+            raise ValueError("histories have different time grids")
 
-    def plot(self, t_gen: float = None, types=None,
-             **kwargs) -> List[mpl.lines.Line2D]:
-        """Plot the history
+    def plot(self, t_gen: float = None, types=None, **kwargs) -> List[mpl.lines.Line2D]:
+        """Plot the history.
 
         Args:
             t_gen: generation time in years (optional)
@@ -87,23 +87,23 @@ class History():
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:
             t *= t_gen
-            t_unit = 'years ago'
+            t_unit = "years ago"
         else:
-            t_unit = 'generations ago'
+            t_unit = "generations ago"
         if types is not None:
             idxs = [self.mutation_types.get_loc(type) for type in types]
             vals = self.vals[:, idxs]
         else:
             vals = self.vals
         lines = plt.plot(t, vals, **kwargs)
-        plt.xlabel(f'$t$ ({t_unit})')
-        plt.xscale('log')
+        plt.xlabel(f"$t$ ({t_unit})")
+        plt.xscale("log")
         plt.tight_layout()
         return lines
 
 
 class eta(History):
-    """Demographic history :math:`\eta(t)`.
+    r"""Demographic history :math:`\eta(t)`.
 
     Args:
         change_points: epoch change points (times)
@@ -117,27 +117,27 @@ class eta(History):
         >>> eta = mushi.eta(np.array([1, 10, 100, 1000]),
         ...                 np.array([1000, 100, 100, 1000, 1000]))
     """
+
+    def __init__(self, change_points: np.ndarray, y: np.ndarray):
+        super().__init__(change_points, y)
+        assert len(self.y.shape) == 1, self.y.shape
+
     @property
     def y(self):
-        """read-only alias to vals attribute in base class"""
+        r"""read-only alias to ``vals`` attribute in base class."""
         return self.vals
 
     @y.setter
     def y(self, value):
         self.vals = value
 
-    def __post_init__(self):
-        super().__post_init__()
-        assert len(self.y.shape) == 1, self.y.shape
-
     def plot(self, **kwargs) -> None:
         super().plot(**kwargs)
-        plt.ylabel('$\\eta(t)$')
-        plt.yscale('log')
+        plt.ylabel("$\\eta(t)$")
+        plt.yscale("log")
         plt.tight_layout()
 
 
-@dataclass
 class mu(History):
     r"""Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`.
 
@@ -158,28 +158,29 @@ class mu(History):
     """
     mutation_types: List[str]
 
+    def __init__(
+        self, change_points: np.ndarray, Z: np.ndarray, mutation_types: List[str]
+    ):
+        super().__init__(change_points, Z)
+        self.mutation_types = mutation_types
+        # if mutation rate vector instead of matrix, promote to matrix
+        if len(self.Z.shape) == 1:
+            self.Z = self.Z[:, np.newaxis]
+        assert len(self.Z.shape) == 2, self.Z.shape
+        assert len(self.mutation_types) == self.Z.shape[1]
+        self.mutation_types = pd.Index(self.mutation_types, name="mutation type")
+
     @property
     def Z(self):
-        """read-only alias to vals attribute in base class"""
+        """read-only alias to vals attribute in base class."""
         return self.vals
 
     @Z.setter
     def Z(self, value):
         self.vals = value
 
-    def __post_init__(self):
-        super().__post_init__()
-        # if mutation rate vector instead of matrix, promote to matrix
-        if len(self.Z.shape) == 1:
-            self.Z = self.Z[:, np.newaxis]
-        assert len(self.Z.shape) == 2, self.Z.shape
-        assert len(self.mutation_types) == self.Z.shape[1]
-        self.mutation_types = pd.Index(self.mutation_types,
-                                       name='mutation type')
-
-    def plot(self, types: List[str] = None, clr: bool = False,
-             **kwargs) -> None:
-        """Plot history
+    def plot(self, types: List[str] = None, clr: bool = False, **kwargs) -> None:
+        """Plot history.
 
         Args:
             types: list of mutation types to plot (default all)
@@ -201,13 +202,12 @@ class mu(History):
             # update ax.viewLim using the new dataLim
             ax.autoscale_view()
             # plt.ylabel('relative mutation intensity')
-            plt.ylabel('mutation intensity composition\n(CLR transformed)')
+            plt.ylabel("mutation intensity composition\n(CLR transformed)")
         else:
-            plt.ylabel('$\\mu(t)$')
+            plt.ylabel("$\\mu(t)$")
         plt.tight_layout()
 
-    def plot_cumulative(self, t_gen: float = None, clr: bool = False,
-                        **kwargs) -> None:
+    def plot_cumulative(self, t_gen: float = None, clr: bool = False, **kwargs) -> None:
         r"""Plot the cumulative mutation rate, like a Muller plot
 
         Args:
@@ -219,17 +219,17 @@ class mu(History):
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:
             t *= t_gen
-            t_unit = 'years ago'
+            t_unit = "years ago"
         else:
-            t_unit = 'generations ago'
+            t_unit = "generations ago"
         Z = np.cumsum(self.Z, axis=1)
         if clr:
             Z = cmp.clr(Z)
         for j in range(Z.shape[1]):
             plt.fill_between(t, Z[:, j - 1] if j else 0, Z[:, j], **kwargs)
-        plt.xlabel(f'$t$ ({t_unit})')
-        plt.ylabel('$\\mu(t)$')
-        plt.xscale('log')
+        plt.xlabel(f"$t$ ({t_unit})")
+        plt.ylabel("$\\mu(t)$")
+        plt.xscale("log")
         plt.tight_layout()
 
     def clustermap(self, t_gen: float = None, **kwargs) -> None:
@@ -242,15 +242,17 @@ class mu(History):
         t = np.concatenate((np.array([0]), self.change_points))
         if t_gen:
             t *= t_gen
-            t_unit = 'years ago'
+            t_unit = "years ago"
         else:
-            t_unit = 'generations ago'
+            t_unit = "generations ago"
         Z = cmp.centralize(self.Z)
-        label = 'mutation intensity\nperturbation'
-        df = pd.DataFrame(data=Z, index=pd.Index(t, name=f'$t$ ({t_unit})'),
-                          columns=self.mutation_types)
-        g = sns.clustermap(df, row_cluster=False,
-                           cbar_kws={'label': label},
-                           **kwargs)
-        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(),
-                                     fontsize=9, family='monospace')
+        label = "mutation intensity\nperturbation"
+        df = pd.DataFrame(
+            data=Z,
+            index=pd.Index(t, name=f"$t$ ({t_unit})"),
+            columns=self.mutation_types,
+        )
+        g = sns.clustermap(df, row_cluster=False, cbar_kws={"label": label}, **kwargs)
+        g.ax_heatmap.set_xticklabels(
+            g.ax_heatmap.get_xmajorticklabels(), fontsize=9, family="monospace"
+        )

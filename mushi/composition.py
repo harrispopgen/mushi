@@ -87,8 +87,7 @@ import scipy.stats
 
 
 def closure(mat):
-    """
-    Performs closure to ensure that all elements add up to 1.
+    """Performs closure to ensure that all elements add up to 1.
 
     Parameters
     ----------
@@ -120,7 +119,6 @@ def closure(mat):
     >>> cmp.closure(X)
     DeviceArray([[0.2, 0.2, 0.6],
                  [0.4, 0.4, 0.2]], dtype=float64)
-
     """
     mat = np.atleast_2d(mat)
     # if np.any(mat < 0):
@@ -186,18 +184,20 @@ def multiplicative_replacement(mat, delta=None):
 
     """
     mat = closure(mat)
-    z_mat = (mat == 0)
+    z_mat = mat == 0
 
     num_feats = mat.shape[-1]
     tot = z_mat.sum(axis=-1, keepdims=True)
 
     if delta is None:
-        delta = (1. / num_feats)**2
+        delta = (1.0 / num_feats) ** 2
 
     zcnts = 1 - tot * delta
     if np.any(zcnts) < 0:
-        raise ValueError('The multiplicative replacment created negative '
-                         'proportions. Consider using a smaller `delta`.')
+        raise ValueError(
+            "The multiplicative replacment created negative "
+            "proportions. Consider using a smaller `delta`."
+        )
     mat = np.where(z_mat, delta, zcnts * mat)
     return mat.squeeze()
 
@@ -605,13 +605,16 @@ def centralize(mat):
     return perturb_inv(mat, cen)
 
 
-def ancom(table, grouping,
-          alpha=0.05,
-          tau=0.02,
-          theta=0.1,
-          multiple_comparisons_correction=None,
-          significance_test=None):
-    r""" Performs a differential abundance test using ANCOM.
+def ancom(
+    table,
+    grouping,
+    alpha=0.05,
+    tau=0.02,
+    theta=0.1,
+    multiple_comparisons_correction=None,
+    significance_test=None,
+):
+    r"""Performs a differential abundance test using ANCOM.
 
     This is done by calculating pairwise log ratios between all features
     and performing a significance test to determine if there is a significant
@@ -772,37 +775,41 @@ def ancom(table, grouping,
     """
 
     if not isinstance(table, pd.DataFrame):
-        raise TypeError('`table` must be a `pd.DataFrame`, '
-                        'not %r.' % type(table).__name__)
+        raise TypeError(
+            "`table` must be a `pd.DataFrame`, " "not %r." % type(table).__name__
+        )
     if not isinstance(grouping, pd.Series):
-        raise TypeError('`grouping` must be a `pd.Series`,'
-                        ' not %r.' % type(grouping).__name__)
+        raise TypeError(
+            "`grouping` must be a `pd.Series`," " not %r." % type(grouping).__name__
+        )
 
     if np.any(table <= 0):
-        raise ValueError('Cannot handle zeros or negative values in `table`. '
-                         'Use pseudo counts or ``multiplicative_replacement``.'
-                         )
+        raise ValueError(
+            "Cannot handle zeros or negative values in `table`. "
+            "Use pseudo counts or ``multiplicative_replacement``."
+        )
 
     if not 0 < alpha < 1:
-        raise ValueError('`alpha`=%f is not within 0 and 1.' % alpha)
+        raise ValueError("`alpha`=%f is not within 0 and 1." % alpha)
 
     if not 0 < tau < 1:
-        raise ValueError('`tau`=%f is not within 0 and 1.' % tau)
+        raise ValueError("`tau`=%f is not within 0 and 1." % tau)
 
     if not 0 < theta < 1:
-        raise ValueError('`theta`=%f is not within 0 and 1.' % theta)
+        raise ValueError("`theta`=%f is not within 0 and 1." % theta)
 
     if multiple_comparisons_correction is not None:
-        if multiple_comparisons_correction != 'holm-bonferroni':
-            raise ValueError('%r is not an available option for '
-                             '`multiple_comparisons_correction`.'
-                             % multiple_comparisons_correction)
+        if multiple_comparisons_correction != "holm-bonferroni":
+            raise ValueError(
+                "%r is not an available option for "
+                "`multiple_comparisons_correction`." % multiple_comparisons_correction
+            )
 
     if (grouping.isnull()).any():
-        raise ValueError('Cannot handle missing values in `grouping`.')
+        raise ValueError("Cannot handle missing values in `grouping`.")
 
     if (table.isnull()).any().any():
-        raise ValueError('Cannot handle missing values in `table`.')
+        raise ValueError("Cannot handle missing values in `table`.")
 
     groups, _grouping = onp.unique(grouping, return_inverse=True)
     grouping = pd.Series(_grouping, index=grouping.index)
@@ -813,24 +820,25 @@ def ancom(table, grouping,
             "All values in `grouping` are unique. This method cannot "
             "operate on a grouping vector with only unique values (e.g., "
             "there are no 'within' variance because each group of samples "
-            "contains only a single sample).")
+            "contains only a single sample)."
+        )
 
     if num_groups == 1:
         raise ValueError(
             "All values the `grouping` are the same. This method cannot "
             "operate on a grouping vector with only a single group of samples"
             "(e.g., there are no 'between' variance because there is only a "
-            "single group).")
+            "single group)."
+        )
 
     if significance_test is None:
         significance_test = scipy.stats.f_oneway
 
     table_index_len = len(table.index)
     grouping_index_len = len(grouping.index)
-    mat, cats = table.align(grouping, axis=0, join='inner')
-    if (len(mat) != table_index_len or len(cats) != grouping_index_len):
-        raise ValueError('`table` index and `grouping` '
-                         'index must be consistent.')
+    mat, cats = table.align(grouping, axis=0, join="inner")
+    if len(mat) != table_index_len or len(cats) != grouping_index_len:
+        raise ValueError("`table` index and `grouping` " "index must be consistent.")
 
     n_feat = mat.shape[1]
 
@@ -838,9 +846,8 @@ def ancom(table, grouping,
     logratio_mat = _logratio_mat + _logratio_mat.T
 
     # Multiple comparisons
-    if multiple_comparisons_correction == 'holm-bonferroni':
-        logratio_mat = np.apply_along_axis(_holm_bonferroni,
-                                           1, logratio_mat)
+    if multiple_comparisons_correction == "holm-bonferroni":
+        logratio_mat = np.apply_along_axis(_holm_bonferroni, 1, logratio_mat)
     np.fill_diagonal(logratio_mat, 1)
     W = (logratio_mat < alpha).sum(axis=1)
     c_start = W.max() / n_feat
@@ -849,7 +856,7 @@ def ancom(table, grouping,
     else:
         # Select appropriate cutoff
         cutoff = c_start - np.linspace(0.05, 0.25, 5)
-        prop_cut = np.array([(W > n_feat*cut).mean() for cut in cutoff])
+        prop_cut = np.array([(W > n_feat * cut).mean() for cut in cutoff])
         dels = np.abs(prop_cut - np.roll(prop_cut, -1))
         dels[-1] = 0
 
@@ -861,15 +868,16 @@ def ancom(table, grouping,
             nu = cutoff[3]
         else:
             nu = cutoff[4]
-        reject = (W >= nu*n_feat)
+        reject = W >= nu * n_feat
     labs = mat.columns
-    return pd.DataFrame({'W': pd.Series(W, index=labs),
-                         'reject': pd.Series(reject, index=labs)})
+    return pd.DataFrame(
+        {"W": pd.Series(W, index=labs), "reject": pd.Series(reject, index=labs)}
+    )
 
 
 def _holm_bonferroni(p):
-    """ Performs Holm-Bonferroni correction for pvalues
-    to account for multiple comparisons
+    """Performs Holm-Bonferroni correction for pvalues to account for multiple
+    comparisons.
 
     Parameters
     ---------
@@ -884,21 +892,19 @@ def _holm_bonferroni(p):
     K = len(p)
     sort_index = -np.ones(K, dtype=np.int64)
     sorted_p = np.sort(p)
-    sorted_p_adj = sorted_p*(K-np.arange(K))
+    sorted_p_adj = sorted_p * (K - np.arange(K))
     for j in range(K):
         idx = (p == sorted_p[j]) & (sort_index < 0)
         num_ties = len(sort_index[idx])
-        sort_index[idx] = np.arange(j, (j+num_ties), dtype=np.int64)
+        sort_index[idx] = np.arange(j, (j + num_ties), dtype=np.int64)
 
-    sorted_holm_p = [min([max(sorted_p_adj[:k]), 1])
-                     for k in range(1, K+1)]
+    sorted_holm_p = [min([max(sorted_p_adj[:k]), 1]) for k in range(1, K + 1)]
     holm_p = [sorted_holm_p[sort_index[k]] for k in range(K)]
     return holm_p
 
 
-def _log_compare(mat, cats,
-                 significance_test=scipy.stats.ttest_ind):
-    """ Calculates pairwise log ratios between all features and performs a
+def _log_compare(mat, cats, significance_test=scipy.stats.ttest_ind):
+    """Calculates pairwise log ratios between all features and performs a
     significiance test (i.e. t-test) to determine if there is a significant
     difference in feature ratios with respect to the variable of interest.
 
@@ -925,44 +931,39 @@ def _log_compare(mat, cats,
     def func(x):
         return significance_test(*[x[cats == k] for k in cs])
 
-    for i in range(c-1):
-        ratio = (log_mat[:, i].T - log_mat[:, i+1:].T).T
-        m, p = np.apply_along_axis(func,
-                                   axis=0,
-                                   arr=ratio)
-        log_ratio[i, i+1:] = np.squeeze(np.array(p.T))
+    for i in range(c - 1):
+        ratio = (log_mat[:, i].T - log_mat[:, i + 1 :].T).T
+        m, p = np.apply_along_axis(func, axis=0, arr=ratio)
+        log_ratio[i, i + 1 :] = np.squeeze(np.array(p.T))
     return log_ratio
 
 
 def _gram_schmidt_basis(n):
-    """
-    Builds clr transformed basis derived from
-    gram schmidt orthogonalization
+    """Builds clr transformed basis derived from gram schmidt
+    orthogonalization.
 
     Parameters
     ----------
     n : int
         Dimension of the Aitchison simplex
     """
-    basis = onp.zeros((n, n-1))
-    for j in range(n-1):
+    basis = onp.zeros((n, n - 1))
+    for j in range(n - 1):
         i = j + 1
-        e = onp.array([(1/i)]*i + [-1] +
-                     [0]*(n-i-1))*np.sqrt(i/(i+1))
+        e = onp.array([(1 / i)] * i + [-1] + [0] * (n - i - 1)) * np.sqrt(i / (i + 1))
         basis[:, j] = e
     return basis.T
 
 
 def _check_orthogonality(basis):
-    """
-    Checks to see if basis is truly orthonormal in the
-    Aitchison simplex
+    """Checks to see if basis is truly orthonormal in the Aitchison simplex.
 
     Parameters
     ----------
     basis: numpy.ndarray
         basis in the Aitchison simplex
     """
-    if not np.allclose(inner(basis, basis), np.identity(len(basis)),
-                       rtol=1e-4, atol=1e-6):
+    if not np.allclose(
+        inner(basis, basis), np.identity(len(basis)), rtol=1e-4, atol=1e-6
+    ):
         raise ValueError("Aitchison basis is not orthonormal")

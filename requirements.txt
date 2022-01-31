@@ -1,0 +1,11 @@
+jupyter
+stdpopsim
+scikit-learn
+sphinx
+sphinx_rtd_theme
+nbsphinx
+sphinx-autodoc-typehints
+flake8
+black
+docformatter
+pytest

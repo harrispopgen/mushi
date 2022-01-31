@@ -64,7 +64,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docsrc/_build/
+docs/_build/
 
 # PyBuilder
 target/
@@ -104,6 +104,6 @@ venv.bak/
 .mypy_cache/
 
 # sphinx stubs
-docsrc/stubs
+docs/stubs
 
 .DS_Store

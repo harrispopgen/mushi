@@ -15,11 +15,11 @@ from matplotlib.ticker import MaxNLocator
 import pandas as pd
 import seaborn as sns
 
-config.update('jax_enable_x64', True)
+config.update("jax_enable_x64", True)
 # config.update('jax_debug_nans', True)
 
 
-class kSFS():
+class kSFS:
     r"""Primary class for working with SFS data to infer demography
     :math:`\eta(t)\equiv 2N(t)`, or with :math:`k`-SFS data to infer demography
     and mutation spectrum history :math:`\boldsymbol\mu(t)`.
@@ -62,32 +62,36 @@ class kSFS():
         >>> ksfs = mushi.kSFS(n=100)
     """
 
-    def __init__(self, X: np.ndarray = None, mutation_types: List[str] = None,
-                 file: str = None,
-                 n: int = None):
+    def __init__(
+        self,
+        X: np.ndarray = None,
+        mutation_types: List[str] = None,
+        file: str = None,
+        n: int = None,
+    ):
         if file is not None:
-            df = pd.read_csv(file, sep='\t', index_col=0)
+            df = pd.read_csv(file, sep="\t", index_col=0)
             assert np.all(df.values >= 0)
             n = df.shape[0] + 1
             self.X = np.array(df.values)  # NOTE: np is jax.numpy
             self.n = len(self.X) + 1
-            self.mutation_types = pd.Index(df.columns,
-                                           name='mutation type')
+            self.mutation_types = pd.Index(df.columns, name="mutation type")
 
         elif X is not None:
             self.X = np.array(X)  # NOTE: np is jax.numpy
             self.n = len(X) + 1
             if self.X.ndim == 2:
                 if mutation_types is None:
-                    raise TypeError('must specify mutation_types')
+                    raise TypeError("must specify mutation_types")
                 if len(mutation_types) != self.X.shape[1]:
-                    raise ValueError('inconsistent number of mutation '
-                                     f'types {len(mutation_types)} for X '
-                                     f'with {self.X.shape[1]} columns')
-                self.mutation_types = pd.Index(mutation_types,
-                                               name='mutation type')
+                    raise ValueError(
+                        "inconsistent number of mutation "
+                        f"types {len(mutation_types)} for X "
+                        f"with {self.X.shape[1]} columns"
+                    )
+                self.mutation_types = pd.Index(mutation_types, name="mutation type")
         elif n is None:
-            raise TypeError('either file, or X, or n must be specified')
+            raise TypeError("either file, or X, or n must be specified")
         else:
             self.n = n
             self.X = None
@@ -111,40 +115,34 @@ class kSFS():
 
     @property
     def eta(self) -> hst.eta:
-        r"""Read-only alias to η attribute
-        """
+        r"""Read-only alias to η attribute"""
         return self.η
 
     def _check_eta(self):
         if self.η is None:
-            raise TypeError('demographic history η is not defined')
+            raise TypeError("demographic history η is not defined")
 
     @property
     def mu(self) -> hst.mu:
-        r"""Read-only alias to μ attribute
-        """
+        r"""Read-only alias to μ attribute"""
         return self.μ
 
     def as_df(self) -> pd.DataFrame:
-        r"""Return a pandas DataFrame representation
-        """
-        index = pd.Index(range(1, self.n), name='sample frequency')
+        r"""Return a pandas DataFrame representation"""
+        index = pd.Index(range(1, self.n), name="sample frequency")
         if self.X.ndim == 1:
-            return pd.Series(self.X, index=index, name='SFS')
+            return pd.Series(self.X, index=index, name="SFS")
         elif self.X.ndim == 2:
-            return pd.DataFrame(self.X, index=index,
-                                columns=self.mutation_types)
+            return pd.DataFrame(self.X, index=index, columns=self.mutation_types)
 
     def clear_eta(self) -> None:
-        r"""Clear demographic history attribute η
-        """
+        r"""Clear demographic history attribute η"""
         self.η = None
         self.M = None
         self.L = None
 
     def clear_mu(self) -> None:
-        r"""Clear μ attribute
-        """
+        r"""Clear μ attribute"""
         self.μ = None
 
     def tmrca_cdf(self, eta: hst.eta = None) -> onp.ndarray:
@@ -159,9 +157,13 @@ class kSFS():
         t, y = eta.arrays()
         return 1 - utils.tmrca_sf(t, y, self.n)[1:-1]
 
-    def simulate(self, eta: hst.eta, mu: Union[hst.mu, np.float64],
-                 r: np.float64 = 0,
-                 seed: int = None) -> None:
+    def simulate(
+        self,
+        eta: hst.eta,
+        mu: Union[hst.mu, np.float64],
+        r: np.float64 = 0,
+        seed: int = None,
+    ) -> None:
         r"""Simulate a :math:`k`-SFS under the Poisson random field model
         (no linkage), assign to ``X`` attribute
 
@@ -217,9 +219,9 @@ class kSFS():
             Ξ = L @ mu.Z
             self.mutation_types = mu.mutation_types
             self.AM_mut = utils.mutype_misid(self.mutation_types)
-            self.X = np.array(poisson.rvs((1 - r) * Ξ
-                                          + r * self.AM_freq @ Ξ @ self.AM_mut)
-                              )
+            self.X = np.array(
+                poisson.rvs((1 - r) * Ξ + r * self.AM_freq @ Ξ @ self.AM_mut)
+            )
         else:
             ξ = mu * L.sum(1)
             self.X = np.array(poisson.rvs((1 - r) * ξ + r * self.AM_freq @ ξ))
@@ -236,14 +238,15 @@ class kSFS():
         self.L = self.C @ self.M
         self.r = 0
 
-    def infer_misid(self,
-                    mu0: np.float64,
-                    loss: str = 'prf',
-                    max_iter: int = 100,
-                    tol: np.float64 = 0,
-                    line_search_kwargs: Dict = {},
-                    verbose: bool = False
-                    ) -> None:
+    def infer_misid(
+        self,
+        mu0: np.float64,
+        loss: str = "prf",
+        max_iter: int = 100,
+        tol: np.float64 = 0,
+        line_search_kwargs: Dict = {},
+        verbose: bool = False,
+    ) -> None:
         r"""Infer ancestral misidentification rate with :math:`\eta(t)` fixed.
         This function is used for fitting with a pre-specified demography, after
         using :func:`~mushi.kSFS.set_eta`, instead of inferring
@@ -261,7 +264,7 @@ class kSFS():
         """
         self._check_eta()
         if self.X is None:
-            raise TypeError('use simulate() to generate data first')
+            raise TypeError("use simulate() to generate data first")
 
         # total SFS
         if self.X.ndim == 1:
@@ -276,7 +279,7 @@ class kSFS():
 
         @jit
         def g(r_logit):
-            """differentiable piece of objective in η problem"""
+            """differentiable piece of objective in η problem."""
             ξ = self.mu0 * self.L.sum(1)
             r = expit(r_logit)
             ξ = (1 - r) * ξ + r * self.AM_freq @ ξ
@@ -291,8 +294,9 @@ class kSFS():
             return params
 
         # optimizer
-        optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
-                                    verbose=verbose, **line_search_kwargs)
+        optimizer = opt.AccProxGrad(
+            g, jit(grad(g)), h, prox, verbose=verbose, **line_search_kwargs
+        )
         # initial point
         r_logit = np.array([logit(1e-2)])
         # run optimization
@@ -300,23 +304,24 @@ class kSFS():
 
         self.r = expit(r_logit)
 
-    def infer_eta(self,
-                  mu0: np.float64,
-                  *trend_penalty: Tuple[int, np.float64],
-                  ridge_penalty: np.float64 = 0,
-                  folded: bool = False,
-                  pts: np.float64 = 100,
-                  ta: np.float64 = None,
-                  log_transform: bool = True,
-                  eta: hst.eta = None,
-                  eta_ref: hst.eta = None,
-                  loss: str = 'prf',
-                  max_iter: int = 100,
-                  tol: np.float64 = 0,
-                  line_search_kwargs: Dict = {},
-                  trend_kwargs: Dict = {},
-                  verbose: bool = False
-                  ) -> None:
+    def infer_eta(
+        self,
+        mu0: np.float64,
+        *trend_penalty: Tuple[int, np.float64],
+        ridge_penalty: np.float64 = 0,
+        folded: bool = False,
+        pts: np.float64 = 100,
+        ta: np.float64 = None,
+        log_transform: bool = True,
+        eta: hst.eta = None,
+        eta_ref: hst.eta = None,
+        loss: str = "prf",
+        max_iter: int = 100,
+        tol: np.float64 = 0,
+        line_search_kwargs: Dict = {},
+        trend_kwargs: Dict = {},
+        verbose: bool = False,
+    ) -> None:
         r"""Infer demographic history :math:`\eta(t)`
 
         Args:
@@ -364,7 +369,7 @@ class kSFS():
             (see :class:`~mushi.eta`).
         """
         if self.X is None:
-            raise TypeError('use simulate() to generate data first')
+            raise TypeError("use simulate() to generate data first")
 
         # total SFS
         if self.X.ndim == 1:
@@ -378,7 +383,7 @@ class kSFS():
         # constant MLE
         # Harmonic number
         H = (1 / np.arange(1, self.n - 1)).sum()
-        N_const = (self.X.sum() / 2 / H / mu0)
+        N_const = self.X.sum() / 2 / H / mu0
 
         if ta is None:
             tmrca_exp = 4 * N_const * (1 - 1 / self.n)
@@ -404,8 +409,11 @@ class kSFS():
 
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
-        trend_penalty = tuple((k, (self.η.m ** k / onp.math.factorial(k)) * λ)
-                              for k, λ in trend_penalty if λ > 0)
+        trend_penalty = tuple(
+            (k, (self.η.m**k / onp.math.factorial(k)) * λ)
+            for k, λ in trend_penalty
+            if λ > 0
+        )
 
         # Tikhonov matrix
         if eta_ref is None:
@@ -421,7 +429,7 @@ class kSFS():
         # misid rate in params[0], and y in params[1:]
         @jit
         def g(params):
-            """differentiable piece of objective in η problem"""
+            """differentiable piece of objective in η problem."""
             y = params[1:]
             if log_transform:
                 M = utils.M(self.n, t, np.exp(y))
@@ -441,17 +449,20 @@ class kSFS():
 
         @jit
         def h(params):
-            """nondifferentiable piece of objective in η problem"""
-            return sum(λ * np.linalg.norm(np.diff(params[1:], k), 1)
-                       for k, λ in trend_penalty)
+            """nondifferentiable piece of objective in η problem."""
+            return sum(
+                λ * np.linalg.norm(np.diff(params[1:], k + 1), 1)
+                for k, λ in trend_penalty
+            )
 
         def prox(params, s):
             """trend filtering prox operator (no jit due to ptv module)"""
             if trend_penalty:
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
-                params = params.at[1:].set(trend_filterer.run(params[1:],
-                                                              **trend_kwargs))
+                params = params.at[1:].set(
+                    trend_filterer.run(params[1:], **trend_kwargs)
+                )
             if log_transform:
                 return params
             # else:
@@ -459,12 +470,13 @@ class kSFS():
             return np.clip(params, 1)
 
         # optimizer
-        optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
-                                    verbose=verbose, **line_search_kwargs)
+        optimizer = opt.AccProxGrad(
+            g, jit(grad(g)), h, prox, verbose=verbose, **line_search_kwargs
+        )
         # initial point
-        params = np.concatenate((np.array([logit(1e-2)]),
-                                 np.log(self.η.y)
-                                 if log_transform else self.η.y))
+        params = np.concatenate(
+            (np.array([logit(1e-2)]), np.log(self.η.y) if log_transform else self.η.y)
+        )
         # run optimization
         params = optimizer.run(params, tol=tol, max_iter=max_iter)
 
@@ -475,20 +487,21 @@ class kSFS():
         self.M = utils.M(self.n, t, y)
         self.L = self.C @ self.M
 
-    def infer_mush(self,
-                   *trend_penalty: Tuple[int, np.float64],
-                   ridge_penalty: np.float64 = 0,
-                   rank_penalty: np.float64 = 0,
-                   hard: bool = False,
-                   mu_ref: hst.mu = None,
-                   misid_penalty: np.float64 = 1e-4,
-                   loss: str = 'prf',
-                   max_iter: int = 100,
-                   tol: np.float64 = 0,
-                   line_search_kwargs: Dict = {},
-                   trend_kwargs: Dict = {},
-                   verbose: bool = False
-                   ) -> None:
+    def infer_mush(
+        self,
+        *trend_penalty: Tuple[int, np.float64],
+        ridge_penalty: np.float64 = 0,
+        rank_penalty: np.float64 = 0,
+        hard: bool = False,
+        mu_ref: hst.mu = None,
+        misid_penalty: np.float64 = 1e-4,
+        loss: str = "prf",
+        max_iter: int = 100,
+        tol: np.float64 = 0,
+        line_search_kwargs: Dict = {},
+        trend_kwargs: Dict = {},
+        verbose: bool = False,
+    ) -> None:
         r"""Infer mutation spectrum history :math:`\mu(t)`
 
         Args:
@@ -527,21 +540,24 @@ class kSFS():
             (see :class:`~mushi.mu`).
         """
         if self.X is None:
-            raise TypeError('use simulate() to generate data first')
+            raise TypeError("use simulate() to generate data first")
         self._check_eta()
         if self.r is None or self.r == 0:
-            raise ValueError('ancestral misidentification rate has not been '
-                             'inferred, possibly due to folded SFS inference')
+            raise ValueError(
+                "ancestral misidentification rate has not been "
+                "inferred, possibly due to folded SFS inference"
+            )
         if self.mutation_types is None:
-            raise ValueError('k-SFS must contain multiple mutation types')
+            raise ValueError("k-SFS must contain multiple mutation types")
 
         # number of segregating variants in each mutation type
         S = self.X.sum(0, keepdims=True)
         # ininitialize with MLE constant μ
-        μ_const = hst.mu(self.η.change_points,
-                         self.mu0 * (S / S.sum()) * np.ones((self.η.m,
-                                                             self.X.shape[1])),
-                         mutation_types=self.mutation_types.values)
+        μ_const = hst.mu(
+            self.η.change_points,
+            self.mu0 * (S / S.sum()) * np.ones((self.η.m, self.X.shape[1])),
+            mutation_types=self.mutation_types.values,
+        )
         if self.μ is None:
             self.μ = μ_const
         t = μ_const.arrays()[0]
@@ -553,8 +569,11 @@ class kSFS():
 
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
-        trend_penalty = tuple((k, (self.μ.m ** k / onp.math.factorial(k)) * λ)
-                              for k, λ in trend_penalty if λ > 0)
+        trend_penalty = tuple(
+            (k, (self.μ.m**k / onp.math.factorial(k)) * λ)
+            for k, λ in trend_penalty
+            if λ > 0
+        )
 
         if mu_ref is None:
             mu_ref = μ_const
@@ -563,7 +582,7 @@ class kSFS():
         else:
             self.μ.check_grid(mu_ref)
             # - log(1 - CDF)
-            Γ = np.diag(- np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
+            Γ = np.diag(-np.log(utils.tmrca_sf(t, self.η.y, self.n))[:-1])
 
         # orthonormal basis for Aitchison simplex
         # NOTE: instead of Gram-Schmidt could try SVD of clr transformed X
@@ -585,53 +604,53 @@ class kSFS():
 
         @jit
         def g(params):
-            """differentiable piece of objective in μ problem"""
+            """differentiable piece of objective in μ problem."""
             r = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
             Z = params[1:, :]
             Ξ = self.L @ (self.mu0 * cmp.ilr_inv(Z, basis))
-            Ξ =  Ξ * (1 - r) + self.AM_freq @ Ξ @ (self.AM_mut * r[:, np.newaxis])
+            Ξ = Ξ * (1 - r) + self.AM_freq @ Ξ @ (self.AM_mut * r[:, np.newaxis])
             loss_term = loss(Ξ, self.X)
             Z_delta = Z - Z_ref
             ridge_term = (ridge_penalty / 2) * np.sum(Z_delta * (Γ @ Z_delta))
             misid_delta = params[0, :] - misid_ref
-            misid_ridge_term = misid_penalty * np.sum(misid_delta ** 2)
+            misid_ridge_term = misid_penalty * np.sum(misid_delta**2)
             return loss_term + ridge_term + misid_ridge_term
 
         if trend_penalty:
 
             @jit
             def h_trend(params):
-                """trend filtering penalty"""
-                return sum(λ * np.linalg.norm(np.diff(params[1:, :], k,
-                                                      axis=0), 1)
-                           for k, λ in trend_penalty)
+                """trend filtering penalty."""
+                return sum(
+                    λ * np.linalg.norm(np.diff(params[1:, :], k + 1, axis=0), 1)
+                    for k, λ in trend_penalty
+                )
 
             def prox_trend(params, s):
                 """trend filtering prox operator (no jit due to ptv module)"""
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
-                return params.at[1:, :].set(trend_filterer.run(params[1:, :],
-                                              **trend_kwargs))
+                return params.at[1:, :].set(
+                    trend_filterer.run(params[1:, :], **trend_kwargs)
+                )
 
         if rank_penalty:
             if self.mutation_types.size < 3:
-                raise ValueError('kSFS must have more than 2 mutation types for'
-                                 ' rank penalization')
+                raise ValueError(
+                    "kSFS must have more than 2 mutation types for" " rank penalization"
+                )
 
             @jit
             def h_rank(params):
-                """2nd nondifferentiable piece of objective in μ problem"""
+                """2nd nondifferentiable piece of objective in μ problem."""
                 if hard:
-                    return rank_penalty * np.linalg.matrix_rank(params[1:, :]
-                                                                - Z_const)
+                    return rank_penalty * np.linalg.matrix_rank(params[1:, :] - Z_const)
                 # else:
-                return rank_penalty * np.linalg.norm(params[1:, :] - Z_const,
-                                                     'nuc')
+                return rank_penalty * np.linalg.norm(params[1:, :] - Z_const, "nuc")
 
             def prox_rank(params, s):
-                """singular value thresholding"""
-                U, σ, Vt = np.linalg.svd(params[1:, :] - Z_const,
-                                         full_matrices=False)
+                """singular value thresholding."""
+                U, σ, Vt = np.linalg.svd(params[1:, :] - Z_const, full_matrices=False)
                 if hard:
                     σ = σ.at[σ <= s * rank_penalty].set(0)
                 else:
@@ -644,11 +663,16 @@ class kSFS():
 
         # optimizer
         if trend_penalty and rank_penalty:
-            optimizer = opt.ThreeOpProxGrad(g, jit(grad(g)),
-                                            h_trend, prox_trend,
-                                            h_rank, prox_rank,
-                                            verbose=verbose,
-                                            **line_search_kwargs)
+            optimizer = opt.ThreeOpProxGrad(
+                g,
+                jit(grad(g)),
+                h_trend,
+                prox_trend,
+                h_rank,
+                prox_rank,
+                verbose=verbose,
+                **line_search_kwargs,
+            )
         else:
             if trend_penalty:
                 h = h_trend
@@ -657,6 +681,7 @@ class kSFS():
                 h = h_rank
                 prox = prox_rank
             else:
+
                 @jit
                 def h(params):
                     return 0
@@ -665,8 +690,9 @@ class kSFS():
                 def prox(params, s):
                     return params
 
-            optimizer = opt.AccProxGrad(g, jit(grad(g)), h, prox,
-                                        verbose=verbose, **line_search_kwargs)
+            optimizer = opt.AccProxGrad(
+                g, jit(grad(g)), h, prox, verbose=verbose, **line_search_kwargs
+            )
 
         # initial point (note initial row is for misid rates)
         # ---------------------------------------------------
@@ -690,14 +716,19 @@ class kSFS():
 
         # update attributes
         self.r_vector = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
-        self.μ = hst.mu(self.η.change_points,
-                        self.mu0 * cmp.ilr_inv(params[1:, :], basis),
-                        mutation_types=self.mutation_types.values)
+        self.μ = hst.mu(
+            self.η.change_points,
+            self.mu0 * cmp.ilr_inv(params[1:, :], basis),
+            mutation_types=self.mutation_types.values,
+        )
 
-    def plot_total(self, kwargs: Dict = dict(ls='', marker='.'),
-                   line_kwargs: Dict = dict(),
-                   fill_kwargs: Dict = dict(),
-                   folded: bool = False) -> None:
+    def plot_total(
+        self,
+        kwargs: Dict = dict(ls="", marker="."),
+        line_kwargs: Dict = dict(),
+        fill_kwargs: Dict = dict(),
+        folded: bool = False,
+    ) -> None:
         r"""Plot the SFS using matplotlib
 
         Args:
@@ -714,8 +745,8 @@ class kSFS():
             x = utils.fold(x)
         plt.plot(range(1, len(x) + 1), x, **kwargs)
         if self.η is not None:
-            if 'label' in kwargs:
-                del kwargs['label']
+            if "label" in kwargs:
+                del kwargs["label"]
             if self.μ is not None:
                 self.η.check_grid(self.μ)
                 z = self.μ.Z.sum(1)
@@ -726,23 +757,28 @@ class kSFS():
                 ξ = utils.fold(ξ)
             else:
                 if self.r is None:
-                    raise TypeError('ancestral state misidentification rate '
-                                    'is not inferred, do you want '
-                                    'folded=True?')
+                    raise TypeError(
+                        "ancestral state misidentification rate "
+                        "is not inferred, do you want "
+                        "folded=True?"
+                    )
                 ξ = (1 - self.r) * ξ + self.r * self.AM_freq @ ξ
             plt.plot(range(1, len(ξ) + 1), ξ, **line_kwargs)
-            ξ_lower = poisson.ppf(.025, ξ)
-            ξ_upper = poisson.ppf(.975, ξ)
-            plt.fill_between(range(1, len(ξ) + 1),
-                             ξ_lower, ξ_upper, **fill_kwargs)
-        plt.xlabel('sample frequency')
+            ξ_lower = poisson.ppf(0.025, ξ)
+            ξ_upper = poisson.ppf(0.975, ξ)
+            plt.fill_between(range(1, len(ξ) + 1), ξ_lower, ξ_upper, **fill_kwargs)
+        plt.xlabel("sample frequency")
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
-        plt.ylabel(r'variant count')
+        plt.ylabel(r"variant count")
         plt.tight_layout()
 
-    def plot(self, types=None, clr: bool = False,
-             kwargs: Dict = dict(ls='', marker='.', rasterized=True),
-             line_kwargs: Dict = dict()) -> None:
+    def plot(
+        self,
+        types=None,
+        clr: bool = False,
+        kwargs: Dict = dict(ls="", marker=".", rasterized=True),
+        line_kwargs: Dict = dict(),
+    ) -> None:
         r"""Plot the :math:`k`-SFS
 
         Args:
@@ -753,22 +789,26 @@ class kSFS():
             line_kwargs: key word arguments passed to expectation line plot
         """
         if self.η is not None and self.r is None:
-            print('warning: misidentification rate is not defined, perhaps due'
-                  ' to folded SFS inference, and will be set to 0 for plotting')
-            r = 0
+            print(
+                "warning: misidentification rate is not defined, perhaps due"
+                " to folded SFS inference, and will be set to 0 for plotting"
+            )
+            r_vector = np.zeros(self.X.shape[1])
         else:
-            r = self.r
+            r_vector = self.r_vector
         if self.μ is not None:
             Ξ = self.L @ self.μ.Z
-            Ξ = Ξ * (1 - self.r_vector) + self.AM_freq @ Ξ @ (self.AM_mut * self.r_vector[:, np.newaxis])
+            Ξ = Ξ * (1 - r_vector) + self.AM_freq @ Ξ @ (
+                self.AM_mut * r_vector[:, np.newaxis]
+            )
         if clr:
             X = cmp.clr(self.X)
             if self.μ is not None:
                 Ξ = cmp.clr(Ξ)
-            plt.ylabel('variant count composition\n(CLR transformed)')
+            plt.ylabel("variant count composition\n(CLR transformed)")
         else:
             X = self.X
-            plt.ylabel('number of variants')
+            plt.ylabel("number of variants")
         if types is not None:
             idxs = [self.mutation_types.get_loc(type) for type in types]
             X = X[:, idxs]
@@ -779,9 +819,9 @@ class kSFS():
         if self.μ is not None:
             plt.gca().set_prop_cycle(None)
             plt.plot(range(1, self.n), Ξ, **line_kwargs)
-        plt.xlabel('sample frequency')
+        plt.xlabel("sample frequency")
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
-        plt.xscale('log')
+        plt.xscale("log")
         plt.tight_layout()
 
     def clustermap(self, **kwargs) -> None:
@@ -791,19 +831,26 @@ class kSFS():
             kwargs: additional keyword arguments passed to pandas.clustermap
         """
         Z = cmp.centralize(self.X)
-        cbar_label = 'variant count\nperturbation'
-        df = pd.DataFrame(data=Z, index=pd.Index(range(1, self.n),
-                                                 name='sample frequency'),
-                          columns=self.mutation_types)
-        g = sns.clustermap(df, row_cluster=False,
-                           center=1 / Z.shape[1],
-                           cbar_kws={'label': cbar_label}, **kwargs)
-        g.ax_heatmap.set_yscale('symlog')
-        g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xmajorticklabels(),
-                                     fontsize=9, family='monospace')
+        cbar_label = "variant count\nperturbation"
+        df = pd.DataFrame(
+            data=Z,
+            index=pd.Index(range(1, self.n), name="sample frequency"),
+            columns=self.mutation_types,
+        )
+        g = sns.clustermap(
+            df,
+            row_cluster=False,
+            center=1 / Z.shape[1],
+            cbar_kws={"label": cbar_label},
+            **kwargs,
+        )
+        g.ax_heatmap.set_yscale("symlog")
+        g.ax_heatmap.set_xticklabels(
+            g.ax_heatmap.get_xmajorticklabels(), fontsize=9, family="monospace"
+        )
 
-    def loss(self, func='prf') -> onp.float64:
-        """Loss under current history
+    def loss(self, func="prf") -> onp.float64:
+        """Loss under current history.
 
         Args:
             func: loss function name from :mod:`~mushi.loss_functions` module
@@ -813,7 +860,7 @@ class kSFS():
             ``infer_mush``), the loss (goodness of fit) may be evaluated as
 
         >>> ksfs.loss()
-        -31584.277426010947
+        -31584.27...
         """
         self._check_eta()
         loss = getattr(loss_functions, func)
@@ -827,5 +874,7 @@ class kSFS():
             return loss(np.squeeze(ξ), np.squeeze(x))
         # else:
         Ξ = self.L @ self.μ.Z
-        Ξ = Ξ * (1 - self.r_vector) + self.AM_freq @ Ξ @ (self.AM_mut * self.r_vector[:, np.newaxis])
+        Ξ = Ξ * (1 - self.r_vector) + self.AM_freq @ Ξ @ (
+            self.AM_mut * self.r_vector[:, np.newaxis]
+        )
         return onp.float64(loss(Ξ, self.X))

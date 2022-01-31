@@ -16,7 +16,7 @@ from functools import lru_cache
 
 
 class Optimizer(metaclass=abc.ABCMeta):
-    """Abstract base class for optimizers
+    """Abstract base class for optimizers.
 
     Attributes:
         x: solution point
@@ -31,28 +31,28 @@ class Optimizer(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _initialize(self, x: np.ndarray) -> None:
-        """Initialize solution point x, and any auxiliary variables"""
+        """Initialize solution point x, and any auxiliary variables."""
         pass
 
     def _check_x(self) -> None:
-        """Test if x is defined"""
+        """Test if x is defined."""
         if self.x is None:
-            raise TypeError('solution point x is not initialized')
+            raise TypeError("solution point x is not initialized")
 
     @abc.abstractmethod
     def f(self) -> np.float64:
-        """Evaluate cost function at current solution point
-        """
+        """Evaluate cost function at current solution point."""
         pass
 
     @abc.abstractmethod
     def _step(self) -> None:
-        """Take an optimization step and update solution point"""
+        """Take an optimization step and update solution point."""
         pass
 
-    def run(self, x: np.ndarray,
-            tol: np.float64 = 1e-6, max_iter: int = 100) -> np.ndarray:
-        """Optimize until convergence criteria are met
+    def run(
+        self, x: np.ndarray, tol: np.float64 = 1e-6, max_iter: int = 100
+    ) -> np.ndarray:
+        """Optimize until convergence criteria are met.
 
         Args:
             x: initial point
@@ -67,36 +67,43 @@ class Optimizer(metaclass=abc.ABCMeta):
         # initial objective value
         f = self.f()
         if self.verbose:
-            print(f'initial objective {f:.6e}', flush=True)
+            print(f"initial objective {f:.6e}", flush=True)
         k = 0
         for k in range(1, max_iter + 1):
             self._step()
             if not np.all(np.isfinite(self.x)):
-                print('warning: x contains invalid values', flush=True)
+                print("warning: x contains invalid values", flush=True)
             # terminate if objective function is constant within tolerance
             f_old = f
             f = self.f()
             rel_change = np.abs((f - f_old) / f_old)
             if self.verbose:
-                print(f'iteration {k}, objective {f:.3e}, '
-                      f'relative change {rel_change:.3e}',
-                      end='        \r', flush=True)
+                print(
+                    f"iteration {k}, objective {f:.3e}, "
+                    f"relative change {rel_change:.3e}",
+                    end="        \r",
+                    flush=True,
+                )
             if rel_change < tol:
                 if self.verbose:
-                    print('\nrelative change in objective function '
-                          f'{rel_change:.2g} '
-                          f'is within tolerance {tol} after {k} iterations',
-                          flush=True)
+                    print(
+                        "\nrelative change in objective function "
+                        f"{rel_change:.2g} "
+                        f"is within tolerance {tol} after {k} iterations",
+                        flush=True,
+                    )
                 return np.squeeze(self.x)
         if self.verbose and k > 0:
-            print(f'\nmaximum iteration {max_iter} reached with relative '
-                  f'change in objective function {rel_change:.2g}',
-                  flush=True)
+            print(
+                f"\nmaximum iteration {max_iter} reached with relative "
+                f"change in objective function {rel_change:.2g}",
+                flush=True,
+            )
         return np.squeeze(self.x)
 
 
 class LineSearcher(Optimizer):
-    """Abstract class for an optimizer with Armijo line search
+    """Abstract class for an optimizer with Armijo line search.
 
     Args:
         s0: initial step size
@@ -105,8 +112,13 @@ class LineSearcher(Optimizer):
         verbose: flag to print convergence messages
     """
 
-    def __init__(self, s0: np.float64 = 1, max_line_iter: int = 100,
-                 gamma: np.float64 = 0.8, verbose: bool = False):
+    def __init__(
+        self,
+        s0: np.float64 = 1,
+        max_line_iter: int = 100,
+        gamma: np.float64 = 0.8,
+        verbose: bool = False,
+    ):
         self.s0 = s0
         self.max_line_iter = max_line_iter
         self.gamma = gamma
@@ -182,13 +194,15 @@ class AccProxGrad(LineSearcher):
 
     """
 
-    def __init__(self,
-                 g: Callable[[np.ndarray], np.float64],
-                 grad: Callable[[np.ndarray], np.float64],
-                 h: Callable[[np.ndarray], np.float64],
-                 prox: Callable[[np.ndarray, np.float64], np.float64],
-                 verbose: bool = False,
-                 **line_search_kwargs):
+    def __init__(
+        self,
+        g: Callable[[np.ndarray], np.float64],
+        grad: Callable[[np.ndarray], np.float64],
+        h: Callable[[np.ndarray], np.float64],
+        prox: Callable[[np.ndarray, np.float64], np.float64],
+        verbose: bool = False,
+        **line_search_kwargs,
+    ):
         self.g = g
         self.grad = grad
         self.h = h
@@ -210,13 +224,13 @@ class AccProxGrad(LineSearcher):
         self.k = 0
 
     def _step(self) -> None:
-        """step with backtracking line search"""
+        """step with backtracking line search."""
         self._check_x()
         # evaluate differtiable part of objective at momentum point
         g1 = self.g(self.q)
         grad1 = self.grad(self.q)
         if not np.all(np.isfinite(grad1)):
-            raise RuntimeError(f'invalid gradient:\n{grad1}')
+            raise RuntimeError(f"invalid gradient:\n{grad1}")
         # store old iterate
         x_old = self.x
         # Armijo line search
@@ -227,8 +241,8 @@ class AccProxGrad(LineSearcher):
             G = (1 / self.s) * (self.q - self.x)
             # test g(q - sG_s(q)) for sufficient decrease
             if self.g(self.q - self.s * G) <= (
-                                            g1 - self.s * (grad1 * G).sum()
-                                            + (self.s / 2) * (G ** 2).sum()):
+                g1 - self.s * (grad1 * G).sum() + (self.s / 2) * (G**2).sum()
+            ):
                 # Armijo satisfied
                 break
             else:
@@ -241,7 +255,7 @@ class AccProxGrad(LineSearcher):
         self.q = self.x + ((self.k - 1) / (self.k + 2)) * (self.x - x_old)
 
         if line_iter == self.max_line_iter - 1:
-            print('warning: line search failed', flush=True)
+            print("warning: line search failed", flush=True)
             # reset step size
             self.s = self.s0
 
@@ -334,17 +348,18 @@ class ThreeOpProxGrad(AccProxGrad):
 
     """
 
-    def __init__(self,
-                 g: Callable[[np.ndarray], np.float64],
-                 grad: Callable[[np.ndarray], np.float64],
-                 h1: Callable[[np.ndarray], np.float64],
-                 prox1: Callable[[np.ndarray, np.float64], np.float64],
-                 h2: Callable[[np.ndarray], np.float64],
-                 prox2: Callable[[np.ndarray, np.float64], np.float64],
-                 verbose: bool = False,
-                 **line_search_kwargs):
-        super().__init__(g, grad, h1, prox1, verbose=verbose,
-                         **line_search_kwargs)
+    def __init__(
+        self,
+        g: Callable[[np.ndarray], np.float64],
+        grad: Callable[[np.ndarray], np.float64],
+        h1: Callable[[np.ndarray], np.float64],
+        prox1: Callable[[np.ndarray, np.float64], np.float64],
+        h2: Callable[[np.ndarray], np.float64],
+        prox2: Callable[[np.ndarray, np.float64], np.float64],
+        verbose: bool = False,
+        **line_search_kwargs,
+    ):
+        super().__init__(g, grad, h1, prox1, verbose=verbose, **line_search_kwargs)
         self.h2 = h2
         self.prox2 = prox2
 
@@ -357,20 +372,23 @@ class ThreeOpProxGrad(AccProxGrad):
         self.u = np.zeros_like(self.q)
 
     def _step(self) -> None:
-        """step with backtracking line search"""
+        """step with backtracking line search."""
         self._check_x()
         # evaluate differentiable part of objective
         g1 = self.g(self.q)
         grad1 = self.grad(self.q)
         if not np.all(np.isfinite(grad1)):
-            raise RuntimeError(f'invalid gradient:\n{grad1}')
+            raise RuntimeError(f"invalid gradient:\n{grad1}")
         # Armijo line search
         for line_iter in range(self.max_line_iter):
             # new point via prox-gradient of momentum point
             self.x = self.prox(self.q - self.s * (self.u + grad1), self.s)
             # quadratic approximation of objective
-            Q = (g1 + (grad1 * (self.x - self.q)).sum()
-                    + ((self.x - self.q) ** 2).sum() / (2 * self.s))
+            Q = (
+                g1
+                + (grad1 * (self.x - self.q)).sum()
+                + ((self.x - self.q) ** 2).sum() / (2 * self.s)
+            )
             if self.g(self.x) - Q <= 0:
                 # sufficient decrease satisfied
                 break
@@ -378,7 +396,7 @@ class ThreeOpProxGrad(AccProxGrad):
                 # sufficient decrease not satisfied
                 self.s *= self.gamma  # shrink step size
         if line_iter == self.max_line_iter - 1:
-            print('warning: line search failed', flush=True)
+            print("warning: line search failed", flush=True)
             # reset step size
             self.s = self.s0
 
@@ -387,7 +405,7 @@ class ThreeOpProxGrad(AccProxGrad):
         # update u variables: dual variables
         self.u = self.u + (self.x - self.q) / self.s
         # grow step size
-        self.s = min(self.s / self.gamma ** 2, self.s0)
+        self.s = min(self.s / self.gamma**2, self.s0)
 
 
 class TrendFilter(Optimizer):
@@ -440,8 +458,13 @@ class TrendFilter(Optimizer):
 
     """
 
-    def __init__(self, ks: Tuple[int], lambdas: Tuple[np.float64],
-                 rhos: Tuple[np.float64] = None, verbose: bool = False):
+    def __init__(
+        self,
+        ks: Tuple[int],
+        lambdas: Tuple[np.float64],
+        rhos: Tuple[np.float64] = None,
+        verbose: bool = False,
+    ):
         self.k = tuple(ks)
         self.λ = tuple(lambdas)
         self.r = len(self.k)
@@ -451,16 +474,18 @@ class TrendFilter(Optimizer):
         else:
             self.ρ = rhos
         if len(self.λ) != self.r:
-            raise ValueError('ks and lambdas must have equal length')
+            raise ValueError("ks and lambdas must have equal length")
         if len(self.ρ) != self.r:
-            raise ValueError('ks and rhos must have equal length')
+            raise ValueError("ks and rhos must have equal length")
         super().__init__(verbose=verbose)
 
     def f(self):
         self._check_x()
         fit = 0.5 * np.sum((self.x - self.y) ** 2)
-        penalty = sum(λ * np.linalg.norm(np.diff(self.x, k + 1, axis=0), 1)
-                      for k, λ in zip(self.k, self.λ))
+        penalty = sum(
+            λ * np.linalg.norm(np.diff(self.x, k + 1, axis=0), 1)
+            for k, λ in zip(self.k, self.λ)
+        )
         return fit + penalty
 
     def _initialize(self, x: np.ndarray) -> None:
@@ -472,8 +497,8 @@ class TrendFilter(Optimizer):
         # initialize solution point (β in the paper cited)
         self.x = np.zeros_like(self.y)
         # initialize Lagrangian dual variables
-        self.α = [np.zeros_like(self.y)[:(self.n - k)] for k in self.k]
-        self.u = [np.zeros_like(self.y)[:(self.n - k)] for k in self.k]
+        self.α = [np.zeros_like(self.y)[: (self.n - k)] for k in self.k]
+        self.u = [np.zeros_like(self.y)[: (self.n - k)] for k in self.k]
 
         self.D, self.DTD = self._D_DTD(self.n, self.k)
         self.c = self._choleskify(self.n, self.k, self.ρ)
@@ -481,21 +506,24 @@ class TrendFilter(Optimizer):
     def _step(self):
         self.x = cho_solve_banded(
             (self.c, False),
-            self.y + sum(self.ρ[i] * self.D[i].T @ (self.α[i] + self.u[i])
-                         for i in range(self.r)),
-            check_finite=False)
+            self.y
+            + sum(
+                self.ρ[i] * self.D[i].T @ (self.α[i] + self.u[i]) for i in range(self.r)
+            ),
+            check_finite=False,
+        )
         for i in range(self.r):
             Dx = self.D[i] @ self.x
             for j in range(self.x.shape[1]):
-                self.α[i][:, j] = ptv.tv1_1d(Dx[:, j] - self.u[i][:, j],
-                                             self.λ[i] / self.ρ[i])
+                self.α[i][:, j] = ptv.tv1_1d(
+                    Dx[:, j] - self.u[i][:, j], self.λ[i] / self.ρ[i]
+                )
             self.u[i] += self.α[i] - Dx
 
     @staticmethod
     @lru_cache()
-    def _D_DTD(n: int, k: Tuple[int]) -> Tuple[Tuple[np.ndarray],
-                                               Tuple[np.ndarray]]:
-        """difference operator for each order in k
+    def _D_DTD(n: int, k: Tuple[int]) -> Tuple[Tuple[np.ndarray], Tuple[np.ndarray]]:
+        """difference operator for each order in k.
 
         Args:
             n: number of points in signal
@@ -513,7 +541,7 @@ class TrendFilter(Optimizer):
     @staticmethod
     @lru_cache(maxsize=1024)
     def _choleskify(n: int, k: Tuple[int], ρ: Tuple[np.float64]) -> np.ndarray:
-        """cholesky decomposition needed for linear solves in trend estimate
+        """cholesky decomposition needed for linear solves in trend estimate.
 
         Args:
             n: number of points in signal
