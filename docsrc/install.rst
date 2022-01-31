@@ -1,7 +1,7 @@
 Installation
 ############
 
-Python 3.7 is required (higher versions not supported by ``prox-tv`` dependency).
+Python 3.7 or higher is required.
 
 Pip
 ===
