@@ -22,13 +22,11 @@ Lint::
 
   make lint
 
-Build docs locally (you can then see the generated documentation in ``docsrc/_build/html/index.html``.)::
+Build docs locally (you can then see the generated documentation in ``docs/_build/html/index.html``)::
 
   make docs
 
-Deploy docs to ``docs/`` directory::
-
-  make deploy
+Docs are automatically deployed to github pages via a workflow on push to the master branch.
 
 
 Test notebook

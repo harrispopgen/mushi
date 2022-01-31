@@ -1,0 +1,23 @@
+name: Docs build and deploy
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build-and-deploy:
+    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+
+      - name: Install and Build 🔧
+        run: |
+          make install
+          make docs
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.2.2
+        with:
+          branch: docs # The branch the action should deploy to.
+          folder: docs/_build/html # The folder the action should deploy.

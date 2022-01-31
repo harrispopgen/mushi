@@ -15,7 +15,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/harrispopgen/mushi',
-    # packages=setuptools.find_packages(exclude=['tests', 'docs', 'docsrc']),
+    # packages=setuptools.find_packages(exclude=['tests', 'docs', 'docs']),
     packages=['mushi'],
     classifiers=[
         'Programming Language :: Python :: 3',
