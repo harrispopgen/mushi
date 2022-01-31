@@ -3,60 +3,33 @@ Open source code repository
 
 All code is freely available at `<https://github.com/harrispopgen/mushi>`_
 
+Developer tools
+===============
 
-Update documentation
-====================
+Developer install::
 
-Inspired by: https://www.docslikecode.com/articles/github-pages-python-sphinx/
+  make install
 
-Go to the ``docsrc`` directory::
+Run tests::
 
-  cd docsrc
+  make test
 
-Environment
------------
+Format code::
 
-Create and activate the ``mushidocs`` conda environment::
+  make format
 
-  conda env create -f env.yml
-  conda activate mushidocs
+Lint::
 
-Install ``mushi`` itself from the local copy in the parent directory::
+  make lint
 
-  pip install -e ..
+Build docs locally (you can then see the generated documentation in ``docsrc/_build/html/index.html``.)::
 
-Modify notebooks in the ``notebooks`` directory as needed.
+  make docs
 
-.. note::
+Deploy docs to ``docs/`` directory::
 
-  Executing builds (below) after modifying notebooks can take a very long time
-  if compute-heavy notebooks need to be recompiled.
+  make deploy
 
-Run doctests
-------------
-
-From the ``docsrc`` dir::
-
-  make doctest
-
-Local build
------------
-
-From the ``docsrc`` dir::
-
-  make html
-
-You can then see the generated documentation in ``docsrc/_build/index.html``.
-
-Github Pages build
-------------------
-
-From the ``docsrc`` dir::
-
-  make github
-
-You can then see the generated documentation in
-``docs/index.html``.
 
 Test notebook
 =============
