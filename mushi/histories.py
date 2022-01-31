@@ -8,7 +8,6 @@ at package level.
 
 """
 
-from dataclasses import dataclass
 from typing import List
 
 import numpy as np
@@ -19,7 +18,6 @@ import seaborn as sns
 import mushi.composition as cmp
 
 
-@dataclass
 class History:
     """Base class piecewise constant history. The first epoch starts at zero,
     and the last epoch extends to infinity.
@@ -29,10 +27,9 @@ class History:
         vals: constant values for each epoch (rows)
     """
 
-    change_points: np.array
-    vals: np.ndarray
-
-    def __post_init__(self):
+    def __init__(self, change_points: np.array, vals: np.ndarray):
+        self.change_points = change_points
+        self.vals = vals
         if (
             any(np.diff(self.change_points) <= 0)
             or any(np.isinf(self.change_points))
@@ -121,18 +118,18 @@ class eta(History):
         ...                 np.array([1000, 100, 100, 1000, 1000]))
     """
 
+    def __init__(self, change_points: np.ndarray, y: np.ndarray):
+        super().__init__(change_points, y)
+        assert len(self.y.shape) == 1, self.y.shape
+
     @property
     def y(self):
-        """read-only alias to vals attribute in base class."""
+        r"""read-only alias to ``vals`` attribute in base class."""
         return self.vals
 
     @y.setter
     def y(self, value):
         self.vals = value
-
-    def __post_init__(self):
-        super().__post_init__()
-        assert len(self.y.shape) == 1, self.y.shape
 
     def plot(self, **kwargs) -> None:
         super().plot(**kwargs)
@@ -141,7 +138,6 @@ class eta(History):
         plt.tight_layout()
 
 
-@dataclass
 class mu(History):
     r"""Mutation spectrum history (MuSH) :math:`\boldsymbol\mu(t)`.
 
@@ -162,6 +158,18 @@ class mu(History):
     """
     mutation_types: List[str]
 
+    def __init__(
+        self, change_points: np.ndarray, Z: np.ndarray, mutation_types: List[str]
+    ):
+        super().__init__(change_points, Z)
+        self.mutation_types = mutation_types
+        # if mutation rate vector instead of matrix, promote to matrix
+        if len(self.Z.shape) == 1:
+            self.Z = self.Z[:, np.newaxis]
+        assert len(self.Z.shape) == 2, self.Z.shape
+        assert len(self.mutation_types) == self.Z.shape[1]
+        self.mutation_types = pd.Index(self.mutation_types, name="mutation type")
+
     @property
     def Z(self):
         """read-only alias to vals attribute in base class."""
@@ -170,15 +178,6 @@ class mu(History):
     @Z.setter
     def Z(self, value):
         self.vals = value
-
-    def __post_init__(self):
-        super().__post_init__()
-        # if mutation rate vector instead of matrix, promote to matrix
-        if len(self.Z.shape) == 1:
-            self.Z = self.Z[:, np.newaxis]
-        assert len(self.Z.shape) == 2, self.Z.shape
-        assert len(self.mutation_types) == self.Z.shape[1]
-        self.mutation_types = pd.Index(self.mutation_types, name="mutation type")
 
     def plot(self, types: List[str] = None, clr: bool = False, **kwargs) -> None:
         """Plot history.
