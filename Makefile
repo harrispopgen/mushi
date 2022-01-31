@@ -6,7 +6,6 @@ install:
 
 test:
 	pytest
-	make -C docs doctest
 
 doctest:
 	make -C docs doctest

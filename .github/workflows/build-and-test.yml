@@ -38,3 +38,7 @@ jobs:
     - name: Test
       run: |
         make test
+
+    - name: Test docs build
+      run: |
+        make docs
