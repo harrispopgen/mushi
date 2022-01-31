@@ -8,6 +8,9 @@ test:
 	pytest
 	make -C docs doctest
 
+doctest:
+	make -C docs doctest
+
 format:
 	black mushi
 	docformatter --in-place mushi/*.py

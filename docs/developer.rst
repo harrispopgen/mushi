@@ -14,6 +14,10 @@ Run tests::
 
   make test
 
+Run doctests (required Pandoc)::
+
+  make doctest
+
 Format code::
 
   make format
