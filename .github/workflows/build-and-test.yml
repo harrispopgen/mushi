@@ -31,10 +31,15 @@ jobs:
       run: |
         make lint
 
-    - name: Check format with black
-      run: |
-        black --check mushi
-
     - name: Test
       run: |
         make test
+
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./mushi"
