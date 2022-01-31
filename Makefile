@@ -6,8 +6,6 @@ install:
 
 test:
 	pytest
-
-doctest:
 	make -C docs doctest
 
 format:

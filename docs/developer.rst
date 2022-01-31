@@ -10,13 +10,11 @@ Developer install::
 
   make install
 
+You will also need to install `Pandoc <https://pandoc.org>`_ to build docs and run doctests.
+
 Run tests::
 
   make test
-
-Run doctests (required Pandoc)::
-
-  make doctest
 
 Format code::
 
