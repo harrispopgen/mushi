@@ -3,10 +3,9 @@ from mushi import loss_functions, utils
 import mushi.optimization as opt
 import mushi.composition as cmp
 
-from jax.config import config
 import numpy as onp
 import jax.numpy as np
-from jax import jit, grad
+from jax import jit, grad, config
 from jax.scipy.special import expit, logit
 from scipy.stats import poisson
 from typing import Union, List, Dict, Tuple
