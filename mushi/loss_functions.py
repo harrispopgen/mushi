@@ -1,5 +1,4 @@
-r"""
-Loss functions for measuring goodness of fit.
+r"""Loss functions for measuring goodness of fit.
 
 Each loss function takes an expected data matrix :math:`\mathbb{E}[\mathbf X]`
 and an observed data matrix :math:`\mathbf X`, and returns a loss value.
@@ -41,7 +40,7 @@ import jax.numpy as np
 
 
 def prf(E: np.ndarray, X: np.ndarray) -> np.float64:
-    r"""Poisson random field loss
+    r"""Poisson random field loss.
 
     .. math::
         \sum_{i,j} \left( \mathbb{E}[X_{i, j}] - X_{i, j} \log \mathbb{E}[X_{i, j}] \right)
@@ -49,7 +48,6 @@ def prf(E: np.ndarray, X: np.ndarray) -> np.float64:
     Args:
         E: expectation :math:`\mathbb{E}[\mathbf X]`
         X: data :math:`\mathbf X`
-
     """
     return (E - X * np.log(E)).sum()
 
@@ -64,13 +62,12 @@ def dkl(E: np.ndarray, X: np.ndarray) -> np.float64:
     Args:
         E: expectation :math:`\mathbb{E}[\mathbf X]`
         X: data :math:`\mathbf X`
-
     """
     return (X * np.log(X / E) - X + E).sum()
 
 
 def lsq(E: np.ndarray, X: np.ndarray) -> np.float64:
-    r"""Least-squares loss
+    r"""Least-squares loss.
 
     .. math::
         \frac{1}{2} \| \mathbb{E}[\mathbf X] - \mathbf X \|_F^2
@@ -78,6 +75,5 @@ def lsq(E: np.ndarray, X: np.ndarray) -> np.float64:
     Args:
         E: expectation :math:`\mathbb{E}[\mathbf X]`
         X: data :math:`\mathbf X`
-
     """
     return (1 / 2) * ((E - X) ** 2).sum()

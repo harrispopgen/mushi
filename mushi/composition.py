@@ -1,5 +1,4 @@
-r"""
-Functions for compositional data analysis.
+r"""Functions for compositional data analysis.
 
 It was copied from the :mod:`skbio.stats.composition` module and edited slightly to
 enable compatibility with the JAX package.
@@ -68,7 +67,6 @@ And the resulting perturbation would be
 
 >>> cmp.perturb(otus, antibiotic)
 DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)
-
 """
 
 # ----------------------------------------------------------------------------
@@ -132,7 +130,7 @@ def closure(mat):
 
 
 def multiplicative_replacement(mat, delta=None):
-    r"""Replace all zeros with small non-zero values
+    r"""Replace all zeros with small non-zero values.
 
     It uses the multiplicative replacement strategy [1]_ ,
     replacing zeros with a small positive :math:`\delta`
@@ -181,7 +179,6 @@ def multiplicative_replacement(mat, delta=None):
     >>> cmp.multiplicative_replacement(X)
     DeviceArray([[0.1875, 0.375 , 0.375 , 0.0625],
                  [0.0625, 0.4375, 0.4375, 0.0625]], dtype=float64)
-
     """
     mat = closure(mat)
     z_mat = mat == 0
@@ -203,8 +200,7 @@ def multiplicative_replacement(mat, delta=None):
 
 
 def perturb(x, y):
-    r"""
-    Performs the perturbation operation.
+    r"""Performs the perturbation operation.
 
     This operation is defined as
 
@@ -245,15 +241,13 @@ def perturb(x, y):
     >>> y = np.array([1./6,1./6,1./3,1./3])
     >>> cmp.perturb(x,y)
     DeviceArray([0.0625, 0.1875, 0.5   , 0.25  ], dtype=float64)
-
     """
     x, y = closure(x), closure(y)
     return closure(x * y)
 
 
 def perturb_inv(x, y):
-    r"""
-    Performs the inverse perturbation operation.
+    r"""Performs the inverse perturbation operation.
 
     This operation is defined as
 
@@ -301,8 +295,7 @@ def perturb_inv(x, y):
 
 
 def power(x, a):
-    r"""
-    Performs the power operation.
+    r"""Performs the power operation.
 
     This operation is defined as follows
 
@@ -340,15 +333,13 @@ def power(x, a):
     >>> x = np.array([.1,.3,.4, .2])
     >>> cmp.power(x, .1)
     DeviceArray([0.23059566, 0.25737316, 0.26488486, 0.24714631], dtype=float64)
-
     """
     x = closure(x)
     return closure(x**a).squeeze()
 
 
 def inner(x, y):
-    r"""
-    Calculates the Aitchson inner product.
+    r"""Calculates the Aitchson inner product.
 
     This inner product is defined as follows
 
@@ -389,8 +380,7 @@ def inner(x, y):
 
 
 def clr(mat):
-    r"""
-    Performs centre log ratio transformation.
+    r"""Performs centre log ratio transformation.
 
     This function transforms compositions from Aitchison geometry to
     the real space. The :math:`clr` transform is both an isometry and an
@@ -428,7 +418,6 @@ def clr(mat):
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.clr(x)
     DeviceArray([-0.79451346,  0.30409883,  0.5917809 , -0.10136628], dtype=float64)
-
     """
     mat = closure(mat)
     lmat = np.log(mat)
@@ -437,8 +426,7 @@ def clr(mat):
 
 
 def clr_inv(mat):
-    r"""
-    Performs inverse centre log ratio transformation.
+    r"""Performs inverse centre log ratio transformation.
 
     This function transforms compositions from the real space to
     Aitchison geometry. The :math:`clr^{-1}` transform is both an isometry,
@@ -473,14 +461,12 @@ def clr_inv(mat):
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.clr_inv(x)
     DeviceArray([0.21383822, 0.26118259, 0.28865141, 0.23632778], dtype=float64)
-
     """
     return closure(np.exp(mat))
 
 
 def ilr(mat, basis=None, check=True):
-    r"""
-    Performs isometric log ratio transformation.
+    r"""Performs isometric log ratio transformation.
 
     This function transforms compositions from Aitchison simplex to
     the real space. The :math: ilr` transform is both an isometry,
@@ -518,7 +504,6 @@ def ilr(mat, basis=None, check=True):
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.ilr(x)
     DeviceArray([-0.7768362 , -0.68339802,  0.11704769], dtype=float64)
-
     """
     mat = closure(mat)
     if basis is None:
@@ -529,8 +514,7 @@ def ilr(mat, basis=None, check=True):
 
 
 def ilr_inv(mat, basis):
-    r"""
-    Performs inverse isometric log ratio transform.
+    r"""Performs inverse isometric log ratio transform.
 
     This function transforms compositions from the real space to
     Aitchison geometry. The :math:`ilr^{-1}` transform is both an isometry,
@@ -569,7 +553,6 @@ def ilr_inv(mat, basis):
     >>> basis = cmp._gram_schmidt_basis(4)
     >>> cmp.ilr_inv(x, basis)
     DeviceArray([0.34180297, 0.29672718, 0.22054469, 0.14092516], dtype=float64)
-
     """
 
     return clr_inv(np.dot(mat, basis))
@@ -598,7 +581,6 @@ def centralize(mat):
     >>> cmp.centralize(X)
     DeviceArray([[0.17445763, 0.30216948, 0.34891526, 0.17445763],
                  [0.32495488, 0.18761279, 0.16247744, 0.32495488]],            dtype=float64)
-
     """
     mat = closure(mat)
     cen = scipy.stats.gmean(mat, axis=0)
@@ -771,7 +753,6 @@ def ancom(
 
     From this we can conclude that only `b2` was significantly
     different between the treatment and the control.
-
     """
 
     if not isinstance(table, pd.DataFrame):

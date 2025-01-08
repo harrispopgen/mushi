@@ -1,6 +1,4 @@
-r"""Utility functions.
-
-"""
+r"""Utility functions."""
 
 import numpy as onp
 import jax.numpy as np
@@ -16,7 +14,6 @@ def C(n: int) -> np.ndarray:
 
     Returns:
         :math:`(n-1)\times(n-1)` matrix
-
     """
     W1 = np.zeros((n - 1, n - 1))
     W2 = np.zeros((n - 1, n - 1))
@@ -104,16 +101,7 @@ def C(n: int) -> np.ndarray:
                 * (3 + 2 * j)
                 * (1 + j - n)
                 * (j + n)
-                * (
-                    2
-                    - j
-                    - 2 * b * j
-                    - j**2
-                    - 2 * b * j**2
-                    + 2 * n
-                    + j * n
-                    + j**2 * n
-                )
+                * (2 - j - 2 * b * j - j**2 - 2 * b * j**2 + 2 * n + j * n + j**2 * n)
                 * W2[:, col + 1]
             )
             / ((-1 + j) * j * (2 + j) * (-1 + 2 * j) * (j - n) * (j + n) * (1 + j + n))
@@ -123,7 +111,7 @@ def C(n: int) -> np.ndarray:
 
 
 def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
-    r"""The matrix :math:`\mathbf M` defined in the paper's appendix
+    r"""The matrix :math:`\mathbf M` defined in the paper's appendix.
 
     Args:
         n: the number of sampled haplotypes :math:`n`
@@ -133,7 +121,6 @@ def M(n: int, t: np.ndarray, y: np.ndarray) -> np.ndarray:
     Returns:
         :math:`(n-1)\times m` matrix, where :math:`m` is the number of epochs
         (the length of the ``y`` argument)
-
     """
     # epoch durations
     s = np.diff(t)
@@ -245,7 +232,7 @@ def misid_partners(mutation_types: List[str]) -> List[int]:
 
 
 def mutype_misid(mutation_types: List[str]) -> np.ndarray:
-    """mutation type misidentification operator.
+    """Mutation type misidentification operator.
 
     Args:
         mutation_types: list of mutation type strings, e.g. [AAA>ACA, ...]
@@ -266,7 +253,7 @@ def mutype_misid(mutation_types: List[str]) -> np.ndarray:
 
 
 def fold(x: np.ndarray) -> np.ndarray:
-    """transform SFS to folded SFS.
+    """Transform SFS to folded SFS.
 
     Args:
         func: loss function name from loss_functions module
