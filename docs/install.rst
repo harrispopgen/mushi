@@ -1,7 +1,7 @@
 Installation
 ############
 
-Python 3.7 or higher is required.
+Python 3.8 or higher is required.
 
 Pip
 ===
