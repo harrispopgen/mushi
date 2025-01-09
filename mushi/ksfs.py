@@ -410,9 +410,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.η.m**k / factorial(k)) * λ)
-            for k, λ in trend_penalty
-            if λ > 0
+            (k, (self.η.m**k / factorial(k)) * λ) for k, λ in trend_penalty if λ > 0
         )
 
         # Tikhonov matrix
@@ -570,9 +568,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.μ.m**k / factorial(k)) * λ)
-            for k, λ in trend_penalty
-            if λ > 0
+            (k, (self.μ.m**k / factorial(k)) * λ) for k, λ in trend_penalty if λ > 0
         )
 
         if mu_ref is None:
