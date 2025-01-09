@@ -27,15 +27,8 @@ jobs:
         channels: conda-forge
         miniconda-version: "latest"
         activate-environment: mushi
+        auto-activate-base: true
     - run: |
-        conda info
-        conda list
-        conda config --show-sources
-        conda config --show
-        which python
-
-    - name: FOO
-      run: |
         which python
         which pip
 
