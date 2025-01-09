@@ -242,9 +242,9 @@ def mutype_misid(mutation_types: List[str]) -> np.ndarray:
         >>> from mushi import utils
 
         >>> utils.mutype_misid(['TCC>TTC', 'GAA>GGA', None])
-        DeviceArray([[0., 1., 0.],
-                     [1., 0., 0.],
-                     [0., 0., 1.]], dtype=float64)
+        Array([[0., 1., 0.],
+               [1., 0., 0.],
+               [0., 0., 1.]], dtype=float64)
     """
     AM_mut = np.zeros((len(mutation_types), len(mutation_types)))
     for j, i in enumerate(misid_partners(mutation_types)):
@@ -266,7 +266,7 @@ def fold(x: np.ndarray) -> np.ndarray:
         >>> sfs = np.array([1000, 100, 10])
 
         >>> utils.fold(sfs)
-        DeviceArray([1010,  100], dtype=int64)
+        Array([1010,  100], dtype=int64)
     """
     n = len(x) + 1
     x = (x + x[::-1])[: (n // 2)]

@@ -856,7 +856,7 @@ class kSFS:
             ``infer_mush``), the loss (goodness of fit) may be evaluated as
 
         >>> ksfs.loss()
-        -31584.27...
+        np.float64(-31584.27...)
         """
         self._check_eta()
         loss = getattr(loss_functions, func)

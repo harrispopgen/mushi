@@ -23,17 +23,17 @@ Compute various losses:
 - Poisson random field
 
   >>> lf.prf(E, X)
-  DeviceArray(100., dtype=float64)
+  Array(100., dtype=float64)
 
 - Generalized Kullback-Leibler divergence
 
   >>> lf.dkl(E, X)
-  DeviceArray(0., dtype=float64)
+  Array(0., dtype=float64)
 
 - Least squares
 
   >>> lf.lsq(E, X)
-  0.0
+  np.float64(0.0)
 """
 
 import jax.numpy as np

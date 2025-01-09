@@ -188,7 +188,7 @@ class AccProxGrad(LineSearcher):
         Evaluate cost at the solution point
 
         >>> fista.f()
-        0.0
+        np.float64(0.0)
     """
 
     def __init__(
@@ -341,7 +341,7 @@ class ThreeOpProxGrad(AccProxGrad):
         Evaluate cost at the solution point
 
         >>> threeop.f()
-        1.5
+        np.float64(1.5)
     """
 
     def __init__(

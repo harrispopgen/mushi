@@ -66,7 +66,7 @@ perturbation vector would be as follows
 And the resulting perturbation would be
 
 >>> cmp.perturb(otus, antibiotic)
-DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)
+Array([0.25, 0.25, 0.5 ], dtype=float64)
 """
 
 # ----------------------------------------------------------------------------
@@ -115,8 +115,8 @@ def closure(mat):
     >>> import mushi.composition as cmp
     >>> X = np.array([[2, 2, 6], [4, 4, 2]])
     >>> cmp.closure(X)
-    DeviceArray([[0.2, 0.2, 0.6],
-                 [0.4, 0.4, 0.2]], dtype=float64)
+    Array([[0.2, 0.2, 0.6],
+           [0.4, 0.4, 0.2]], dtype=float64)
     """
     mat = np.atleast_2d(mat)
     # if np.any(mat < 0):
@@ -177,8 +177,8 @@ def multiplicative_replacement(mat, delta=None):
     >>> import mushi.composition as cmp
     >>> X = np.array([[.2,.4,.4, 0],[0,.5,.5,0]])
     >>> cmp.multiplicative_replacement(X)
-    DeviceArray([[0.1875, 0.375 , 0.375 , 0.0625],
-                 [0.0625, 0.4375, 0.4375, 0.0625]], dtype=float64)
+    Array([[0.1875, 0.375 , 0.375 , 0.0625],
+           [0.0625, 0.4375, 0.4375, 0.0625]], dtype=float64)
     """
     mat = closure(mat)
     z_mat = mat == 0
@@ -240,7 +240,7 @@ def perturb(x, y):
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
     >>> cmp.perturb(x,y)
-    DeviceArray([0.0625, 0.1875, 0.5   , 0.25  ], dtype=float64)
+    Array([0.0625, 0.1875, 0.5   , 0.25  ], dtype=float64)
     """
     x, y = closure(x), closure(y)
     return closure(x * y)
@@ -288,7 +288,7 @@ def perturb_inv(x, y):
     >>> x = np.array([.1,.3,.4, .2])
     >>> y = np.array([1./6,1./6,1./3,1./3])
     >>> cmp.perturb_inv(x,y)
-    DeviceArray([0.14285714, 0.42857143, 0.28571429, 0.14285714], dtype=float64)
+    Array([0.14285714, 0.42857143, 0.28571429, 0.14285714], dtype=float64)
     """
     x, y = closure(x), closure(y)
     return closure(x / y)
@@ -332,7 +332,7 @@ def power(x, a):
     >>> import mushi.composition as cmp
     >>> x = np.array([.1,.3,.4, .2])
     >>> cmp.power(x, .1)
-    DeviceArray([0.23059566, 0.25737316, 0.26488486, 0.24714631], dtype=float64)
+    Array([0.23059566, 0.25737316, 0.26488486, 0.24714631], dtype=float64)
     """
     x = closure(x)
     return closure(x**a).squeeze()
@@ -371,7 +371,7 @@ def inner(x, y):
     >>> x = np.array([.1, .3, .4, .2])
     >>> y = np.array([.2, .4, .2, .2])
     >>> cmp.inner(x, y)  # doctest: +ELLIPSIS
-    DeviceArray(0.21078525, dtype=float64)
+    Array(0.21078525, dtype=float64)
     """
     x = closure(x)
     y = closure(y)
@@ -417,7 +417,7 @@ def clr(mat):
     >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.clr(x)
-    DeviceArray([-0.79451346,  0.30409883,  0.5917809 , -0.10136628], dtype=float64)
+    Array([-0.79451346,  0.30409883,  0.5917809 , -0.10136628], dtype=float64)
     """
     mat = closure(mat)
     lmat = np.log(mat)
@@ -460,7 +460,7 @@ def clr_inv(mat):
     >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.clr_inv(x)
-    DeviceArray([0.21383822, 0.26118259, 0.28865141, 0.23632778], dtype=float64)
+    Array([0.21383822, 0.26118259, 0.28865141, 0.23632778], dtype=float64)
     """
     return closure(np.exp(mat))
 
@@ -503,7 +503,7 @@ def ilr(mat, basis=None, check=True):
     >>> import mushi.composition as cmp
     >>> x = np.array([.1, .3, .4, .2])
     >>> cmp.ilr(x)
-    DeviceArray([-0.7768362 , -0.68339802,  0.11704769], dtype=float64)
+    Array([-0.7768362 , -0.68339802,  0.11704769], dtype=float64)
     """
     mat = closure(mat)
     if basis is None:
@@ -552,7 +552,7 @@ def ilr_inv(mat, basis):
     >>> x = np.array([.1, .3, .6,])
     >>> basis = cmp._gram_schmidt_basis(4)
     >>> cmp.ilr_inv(x, basis)
-    DeviceArray([0.34180297, 0.29672718, 0.22054469, 0.14092516], dtype=float64)
+    Array([0.34180297, 0.29672718, 0.22054469, 0.14092516], dtype=float64)
     """
 
     return clr_inv(np.dot(mat, basis))
@@ -579,8 +579,8 @@ def centralize(mat):
     >>> import mushi.composition as cmp
     >>> X = np.array([[.1,.3,.4, .2],[.2,.2,.2,.4]])
     >>> cmp.centralize(X)
-    DeviceArray([[0.17445763, 0.30216948, 0.34891526, 0.17445763],
-                 [0.32495488, 0.18761279, 0.16247744, 0.32495488]],            dtype=float64)
+    Array([[0.17445763, 0.30216948, 0.34891526, 0.17445763],
+           [0.32495488, 0.18761279, 0.16247744, 0.32495488]], dtype=float64)
     """
     mat = closure(mat)
     cen = scipy.stats.gmean(mat, axis=0)
