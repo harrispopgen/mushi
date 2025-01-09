@@ -23,13 +23,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install blas/lapack if ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get install libblas-dev liblapack-dev
-      
-    - name: Install blas/lapack if macos
-      if: matrix.os == 'macos-15-large'
+    - name: Homebrew install blas/lapack
+      uses: Homebrew/actions/setup-homebrew@master
       run: |
         brew install openblas lapack
 
