@@ -7,6 +7,7 @@ import numpy as onp
 import jax.numpy as np
 from jax import jit, grad, config
 from jax.scipy.special import expit, logit
+from scipy.special import factorial
 from scipy.stats import poisson
 from typing import Union, List, Dict, Tuple
 from matplotlib import pyplot as plt
@@ -409,7 +410,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.η.m**k / onp.math.factorial(k)) * λ)
+            (k, (self.η.m**k / factorial(k)) * λ)
             for k, λ in trend_penalty
             if λ > 0
         )
@@ -569,7 +570,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.μ.m**k / onp.math.factorial(k)) * λ)
+            (k, (self.μ.m**k / factorial(k)) * λ)
             for k, λ in trend_penalty
             if λ > 0
         )
