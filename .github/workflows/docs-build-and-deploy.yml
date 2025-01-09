@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install blas/lapack
+        run: |
+          sudo apt-get install libblas-dev liblapack-dev
+
       - name: Install
         run: |
           make install
