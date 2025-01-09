@@ -14,7 +14,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
     - uses: actions/checkout@v4
     - uses: r-lib/actions/setup-pandoc@v2
@@ -26,9 +28,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         channels: conda-forge
         miniconda-version: "latest"
-        activate-environment: mushi
     - run: |
-        conda activate mushi
         which python
         which pip
 
