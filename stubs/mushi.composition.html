@@ -1,24 +1,25 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mushi.composition &mdash; mushi  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -31,12 +32,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -99,9 +104,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../mushi.html">Classes</a> &raquo;</li>
-      <li>mushi.composition</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../mushi.html">Classes</a></li>
+      <li class="breadcrumb-item active">mushi.composition</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -110,32 +115,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="module-mushi.composition">
-<span id="mushi-composition"></span><h1>mushi.composition<a class="headerlink" href="#module-mushi.composition" title="Permalink to this headline"></a></h1>
+  <section id="module-mushi.composition">
+<span id="mushi-composition"></span><h1>mushi.composition<a class="headerlink" href="#module-mushi.composition" title="Link to this heading"></a></h1>
 <p>Functions for compositional data analysis.</p>
 <p>It was copied from the <code class="xref py py-mod docutils literal notranslate"><span class="pre">skbio.stats.composition</span></code> module and edited slightly to
 enable compatibility with the JAX package.</p>
@@ -146,7 +127,7 @@ absolute counts.</p>
 and <span class="math notranslate nohighlight">\(x_{i} &gt; 0\)</span>, <span class="math notranslate nohighlight">\(1 \leq i \leq D\)</span> and <span class="math notranslate nohighlight">\(c\)</span> is a real
 valued constant and there are <span class="math notranslate nohighlight">\(D\)</span> components for each
 composition. In this module <span class="math notranslate nohighlight">\(c=1\)</span>. Compositional data can be
-analyzed using Aitchison geometry. <a class="footnote-reference brackets" href="#id4" id="id1">1</a></p>
+analyzed using Aitchison geometry. <a class="footnote-reference brackets" href="#id4" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p>
 <p>However, in this framework, standard real Euclidean operations such as
 addition and multiplication no longer apply. Only operations such as
 perturbation and power can be used to manipulate this data.</p>
@@ -155,33 +136,36 @@ Compositional data can be analyzed using perturbation and power
 operations, which can be useful for simulation studies. The
 alternative strategy is to transform compositional data into the real
 space.  Right now, the centre log ratio transform (clr) and
-the isometric log ratio transform (ilr) <a class="footnote-reference brackets" href="#id5" id="id2">2</a> can be used to accomplish
+the isometric log ratio transform (ilr) <a class="footnote-reference brackets" href="#id5" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> can be used to accomplish
 this. This transform can be useful for performing standard statistical
 tools such as parametric hypothesis testing, regressions and more.</p>
 <p>The major caveat of using this framework is dealing with zeros.  In
 the Aitchison geometry, only compositions with nonzero components can
-be considered. The multiplicative replacement technique <a class="footnote-reference brackets" href="#id6" id="id3">3</a> can be
+be considered. The multiplicative replacement technique <a class="footnote-reference brackets" href="#id6" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> can be
 used to substitute these zeros with small pseudocounts without
 introducing major distortions to the data.</p>
 <p class="rubric">References</p>
-<dl class="footnote brackets">
-<dt class="label" id="id4"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><p>V. Pawlowsky-Glahn, “Lecture Notes on Compositional Data Analysis”
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>V. Pawlowsky-Glahn, “Lecture Notes on Compositional Data Analysis”
 (2007)</p>
-</dd>
-<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
-<dd><p>J. J. Egozcue.,  “Isometric Logratio Transformations for
+</aside>
+<aside class="footnote brackets" id="id5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>J. J. Egozcue.,  “Isometric Logratio Transformations for
 Compositional Data Analysis” Mathematical Geology, 35.3 (2003)</p>
-</dd>
-<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
-<dd><p>J. A. Martin-Fernandez,  “Dealing With Zeros and Missing Values in
+</aside>
+<aside class="footnote brackets" id="id6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p>J. A. Martin-Fernandez,  “Dealing With Zeros and Missing Values in
 Compositional Data Sets Using Nonparametric Imputation”,
 Mathematical Geology, 35.3 (2003)</p>
-</dd>
-</dl>
+</aside>
+</aside>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi.composition</span> <span class="k">as</span> <span class="nn">cmp</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mushi.composition</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cmp</span>
 </pre></div>
 </div>
 <p>Consider a very simple environment with only 3 species. The species
@@ -198,15 +182,11 @@ perturbation vector would be as follows</p>
 </div>
 <p>And the resulting perturbation would be</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cmp</span><span class="o">.</span><span class="n">perturb</span><span class="p">(</span><span class="n">otus</span><span class="p">,</span> <span class="n">antibiotic</span><span class="p">)</span>
-<span class="go">DeviceArray([0.25, 0.25, 0.5 ], dtype=float64)</span>
+<span class="go">Array([0.25, 0.25, 0.5 ], dtype=float64)</span>
 </pre></div>
 </div>
 <p class="rubric">Functions</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.ancom.html#mushi.composition.ancom" title="mushi.composition.ancom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ancom</span></code></a></p></td>
 <td><p>Performs a differential abundance test using ANCOM.</p></td>
@@ -233,7 +213,7 @@ perturbation vector would be as follows</p>
 <td><p>Calculates the Aitchson inner product.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="mushi.composition.multiplicative_replacement.html#mushi.composition.multiplicative_replacement" title="mushi.composition.multiplicative_replacement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multiplicative_replacement</span></code></a></p></td>
-<td><p>Replace all zeros with small non-zero values</p></td>
+<td><p>Replace all zeros with small non-zero values.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="mushi.composition.perturb.html#mushi.composition.perturb" title="mushi.composition.perturb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturb</span></code></a></p></td>
 <td><p>Performs the perturbation operation.</p></td>

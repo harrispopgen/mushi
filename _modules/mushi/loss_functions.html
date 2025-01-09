@@ -1,21 +1,22 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mushi.loss_functions &mdash; mushi  documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -26,12 +27,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -73,9 +78,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>mushi.loss_functions</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">mushi.loss_functions</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -85,8 +90,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for mushi.loss_functions</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Loss functions for measuring goodness of fit.</span>
+<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Loss functions for measuring goodness of fit.</span>
 
 <span class="sd">Each loss function takes an expected data matrix :math:`\mathbb{E}[\mathbf X]`</span>
 <span class="sd">and an observed data matrix :math:`\mathbf X`, and returns a loss value.</span>
@@ -111,24 +115,26 @@
 <span class="sd">- Poisson random field</span>
 
 <span class="sd">  &gt;&gt;&gt; lf.prf(E, X)</span>
-<span class="sd">  DeviceArray(100., dtype=float64)</span>
+<span class="sd">  Array(100., dtype=float64)</span>
 
 <span class="sd">- Generalized Kullback-Leibler divergence</span>
 
 <span class="sd">  &gt;&gt;&gt; lf.dkl(E, X)</span>
-<span class="sd">  DeviceArray(0., dtype=float64)</span>
+<span class="sd">  Array(0., dtype=float64)</span>
 
 <span class="sd">- Least squares</span>
 
 <span class="sd">  &gt;&gt;&gt; lf.lsq(E, X)</span>
-<span class="sd">  0.0</span>
+<span class="sd">  np.float64(0.0)</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
-<div class="viewcode-block" id="prf"><a class="viewcode-back" href="../../stubs/mushi.loss_functions.prf.html#mushi.loss_functions.prf">[docs]</a><span class="k">def</span> <span class="nf">prf</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Poisson random field loss</span>
+<div class="viewcode-block" id="prf">
+<a class="viewcode-back" href="../../stubs/mushi.loss_functions.prf.html#mushi.loss_functions.prf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prf</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Poisson random field loss.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \sum_{i,j} \left( \mathbb{E}[X_{i, j}] - X_{i, j} \log \mathbb{E}[X_{i, j}] \right)</span>
@@ -136,13 +142,15 @@
 <span class="sd">    Args:</span>
 <span class="sd">        E: expectation :math:`\mathbb{E}[\mathbf X]`</span>
 <span class="sd">        X: data :math:`\mathbf X`</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">E</span> <span class="o">-</span> <span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">E</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="dkl"><a class="viewcode-back" href="../../stubs/mushi.loss_functions.dkl.html#mushi.loss_functions.dkl">[docs]</a><span class="k">def</span> <span class="nf">dkl</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generalized Kullback-Liebler divergence, a Bregman divergence (ignores</span>
+
+<div class="viewcode-block" id="dkl">
+<a class="viewcode-back" href="../../stubs/mushi.loss_functions.dkl.html#mushi.loss_functions.dkl">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dkl</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generalized Kullback-Liebler divergence, a Bregman divergence (ignores</span>
 <span class="sd">    constant term)</span>
 
 <span class="sd">    .. math::</span>
@@ -151,13 +159,15 @@
 <span class="sd">    Args:</span>
 <span class="sd">        E: expectation :math:`\mathbb{E}[\mathbf X]`</span>
 <span class="sd">        X: data :math:`\mathbf X`</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">X</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">X</span> <span class="o">/</span> <span class="n">E</span><span class="p">)</span> <span class="o">-</span> <span class="n">X</span> <span class="o">+</span> <span class="n">E</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="lsq"><a class="viewcode-back" href="../../stubs/mushi.loss_functions.lsq.html#mushi.loss_functions.lsq">[docs]</a><span class="k">def</span> <span class="nf">lsq</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Least-squares loss</span>
+
+<div class="viewcode-block" id="lsq">
+<a class="viewcode-back" href="../../stubs/mushi.loss_functions.lsq.html#mushi.loss_functions.lsq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lsq</span><span class="p">(</span><span class="n">E</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Least-squares loss.</span>
 
 <span class="sd">    .. math::</span>
 <span class="sd">        \frac{1}{2} \| \mathbb{E}[\mathbf X] - \mathbf X \|_F^2</span>
@@ -165,9 +175,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        E: expectation :math:`\mathbb{E}[\mathbf X]`</span>
 <span class="sd">        X: data :math:`\mathbf X`</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">E</span> <span class="o">-</span> <span class="n">X</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+
 </pre></div>
 
            </div>

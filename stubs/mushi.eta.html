@@ -1,24 +1,25 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mushi.eta &mdash; mushi  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -31,12 +32,16 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -56,7 +61,17 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../mushi.html">Classes</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="mushi.kSFS.html">mushi.kSFS</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.eta</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">mushi.eta</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mushi.eta"><code class="docutils literal notranslate"><span class="pre">eta</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mushi.eta.y"><code class="docutils literal notranslate"><span class="pre">eta.y</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mushi.eta.plot"><code class="docutils literal notranslate"><span class="pre">eta.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mushi.eta.arrays"><code class="docutils literal notranslate"><span class="pre">eta.arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mushi.eta.check_grid"><code class="docutils literal notranslate"><span class="pre">eta.check_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mushi.eta.epochs"><code class="docutils literal notranslate"><span class="pre">eta.epochs()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="mushi.mu.html">mushi.mu</a></li>
 </ul>
 </li>
@@ -83,9 +98,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../mushi.html">Classes</a> &raquo;</li>
-      <li>mushi.eta</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../mushi.html">Classes</a></li>
+      <li class="breadcrumb-item active">mushi.eta</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -94,48 +109,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="mushi-eta">
-<h1>mushi.eta<a class="headerlink" href="#mushi-eta" title="Permalink to this headline"></a></h1>
+  <section id="mushi-eta">
+<h1>mushi.eta<a class="headerlink" href="#mushi-eta" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mushi.eta">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#eta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.eta" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">mushi.histories.History</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#eta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.eta" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">History</span></code></a></p>
 <p>Demographic history <span class="math notranslate nohighlight">\(\eta(t)\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>change_points</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – epoch change points (times)</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – vector of constant population sizes in each epoch</p></li>
+<li><p><strong>change_points</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – epoch change points (times)</p></li>
+<li><p><strong>y</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span>) – vector of constant population sizes in each epoch</p></li>
 </ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">mushi</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">mushi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eta</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]),</span>
@@ -143,11 +134,7 @@
 </pre></div>
 </div>
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#mushi.eta.arrays" title="mushi.eta.arrays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">arrays</span></code></a></p></td>
 <td><p>Return time grid and values in each cell.</p></td>
@@ -164,60 +151,56 @@
 </tbody>
 </table>
 <p class="rubric">Attributes</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
+<table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#mushi.eta.y" title="mushi.eta.y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">y</span></code></a></p></td>
-<td><p>read-only alias to <code class="docutils literal notranslate"><span class="pre">vals</span></code> attribute in base class.</p></td>
+<td><p>Read-only alias to <code class="docutils literal notranslate"><span class="pre">vals</span></code> attribute in base class.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py property">
 <dt class="sig sig-object py" id="mushi.eta.y">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#mushi.eta.y" title="Permalink to this definition"></a></dt>
-<dd><p>read-only alias to <code class="docutils literal notranslate"><span class="pre">vals</span></code> attribute in base class.</p>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#mushi.eta.y" title="Link to this definition"></a></dt>
+<dd><p>Read-only alias to <code class="docutils literal notranslate"><span class="pre">vals</span></code> attribute in base class.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mushi.eta.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#eta.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.eta.plot" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/histories.html#eta.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.eta.plot" title="Link to this definition"></a></dt>
 <dd><p>Plot the history.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>t_gen</strong> – generation time in years (optional)</p></li>
 <li><p><strong>kwargs</strong> – key word arguments passed to plt.plot</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mushi.eta.arrays">
-<span class="sig-name descname"><span class="pre">arrays</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.arrays" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">arrays</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.arrays" title="Link to this definition"></a></dt>
 <dd><p>Return time grid and values in each cell.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mushi.eta.check_grid">
-<span class="sig-name descname"><span class="pre">check_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.check_grid" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.check_grid" title="Link to this definition"></a></dt>
 <dd><p>Test if time grid is the same as another instance.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">History</span></code></a>) – another History object</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.History.html#mushi.histories.History" title="mushi.histories.History"><code class="xref py py-class docutils literal notranslate"><span class="pre">History</span></code></a></span>) – another History object</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="mushi.eta.epochs">
-<span class="sig-name descname"><span class="pre">epochs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.epochs" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">epochs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mushi.eta.epochs" title="Link to this definition"></a></dt>
 <dd><p>Generator yielding epochs as tuples: (start_time, end_time,
 value)</p>
 </dd></dl>
