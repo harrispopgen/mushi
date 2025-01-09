@@ -24,6 +24,12 @@ jobs:
       with:
         auto-update-conda: true
         python-version: ${{ matrix.python-version }}
+        channels: conda-forge
+
+    - name: FOO
+      run: |
+        which python
+        which pip
 
     - name: Install
       run: |
