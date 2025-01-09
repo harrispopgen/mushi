@@ -14,32 +14,24 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
-    defaults:
-      run:
-        shell: bash -el {0}
+
     steps:
     - uses: actions/checkout@v4
     - uses: r-lib/actions/setup-pandoc@v2
-
-    # we use conda instead of setup-python because we need the lapack and blas libraries that come with conda's install
-    - uses: conda-incubator/setup-miniconda@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
       with:
-        auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-        channels: conda-forge
-        miniconda-version: "latest"
-    - name: Install gcc/g++ if ubuntu
-      if: runner.os == 'ubuntu-latest'
+
+    - name: Install blas/lapack for ubuntu
+      if: ${{ matrix.os }} == 'ubuntu-latest'
       run: |
-        conda install -y gcc_linux-64 gxx_linux-64
-        export CC=gcc
-        export CXX=g++
-    - name: Install clang/clangxx if macos
-      if: runner.os == 'macos-latest'
+        sudo apt-get install libblas-dev liblapack-dev
+      
+    - name: Install blas/lapack for macos
+      if: ${{ matrix.os }} == 'macos-latest'
       run: |
-        conda install -y clang_osx-64 clangxx_osx-64
-        export CC=clang
-        export CXX=clang++
+        brew install openblas lapack
 
     - name: Install
       run: |
