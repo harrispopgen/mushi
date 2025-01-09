@@ -23,13 +23,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install blas/lapack for ubuntu
-      if: ${{ matrix.os }} == 'ubuntu-latest'
+    - name: Install blas/lapack if ubuntu
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get install libblas-dev liblapack-dev
       
-    - name: Install blas/lapack for macos
-      if: ${{ matrix.os }} == 'macos-latest'
+    - name: Install blas/lapack if macos
+      if: matrix.os == 'macos-latest'
       run: |
         brew install openblas lapack
 
