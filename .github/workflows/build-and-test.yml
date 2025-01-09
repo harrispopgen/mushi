@@ -28,9 +28,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
         channels: conda-forge
         miniconda-version: "latest"
-    - run: |
-        which python
-        which pip
+    - name: Install gcc if ubuntu
+      if: runner.os == 'ubuntu-latest'
+      run: conda install -y gcc_linux-64
+    - name: Install clang if macos
+      if: runner.os == 'macos-latest'
+      run: conda install -y clang_osx-64
 
     - name: Install
       run: |
