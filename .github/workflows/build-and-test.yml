@@ -18,24 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: r-lib/actions/setup-pandoc@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+
+    # we use conda instead of setup-python because we need the lapack and blas libraries that come with conda's install
+    - uses: conda-incubator/setup-miniconda@v3
       with:
+        auto-update-conda: true
         python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        # Install GCC, BLAS, and LAPACK
-        sudo apt-get install -y build-essential libblas-dev liblapack-dev
-
-    - name: Install dependencies on macOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew update
-        # Install GCC, BLAS (via openblas), and LAPACK (usually included with openblas)
-        brew install gcc openblas lapack
 
     - name: Install
       run: |
