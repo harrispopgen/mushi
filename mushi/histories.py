@@ -1,11 +1,9 @@
-r"""
-History objects for representing demography :math:`\eta(t)` and MuSH
+r"""History objects for representing demography :math:`\eta(t)` and MuSH
 :math:`\boldsymbol\mu(t)`.
 
 A base class :class:`mushi.histories.History` is defined, from which
 :class:`mushi.eta` and :class:`mushi.mu` are derived and exposed
 at package level.
-
 """
 
 from typing import List
@@ -124,7 +122,7 @@ class eta(History):
 
     @property
     def y(self):
-        r"""read-only alias to ``vals`` attribute in base class."""
+        r"""Read-only alias to ``vals`` attribute in base class."""
         return self.vals
 
     @y.setter
@@ -156,6 +154,7 @@ class mu(History):
         ...               np.ones((5, 2)),
         ...               ['TCC>TTC', 'GAA>GGA'])
     """
+
     mutation_types: List[str]
 
     def __init__(
@@ -172,7 +171,7 @@ class mu(History):
 
     @property
     def Z(self):
-        """read-only alias to vals attribute in base class."""
+        """Read-only alias to vals attribute in base class."""
         return self.vals
 
     @Z.setter
@@ -208,7 +207,7 @@ class mu(History):
         plt.tight_layout()
 
     def plot_cumulative(self, t_gen: float = None, clr: bool = False, **kwargs) -> None:
-        r"""Plot the cumulative mutation rate, like a Muller plot
+        r"""Plot the cumulative mutation rate, like a Muller plot.
 
         Args:
             t_gen: generation time in years (optional)
@@ -233,7 +232,7 @@ class mu(History):
         plt.tight_layout()
 
     def clustermap(self, t_gen: float = None, **kwargs) -> None:
-        r"""Clustermap of compositionally centralized MuSH
+        r"""Clustermap of compositionally centralized MuSH.
 
         Args:
             t_gen: generation time in years (optional)

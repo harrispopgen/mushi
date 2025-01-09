@@ -2,7 +2,7 @@ default:
 
 install:
 	pip install -r requirements.txt
-	pip install -e .
+	pip install --use-pep517 -e .
 
 test:
 	pytest

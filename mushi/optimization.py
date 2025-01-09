@@ -1,10 +1,8 @@
-r"""
-Optimization algorithms.
+r"""Optimization algorithms.
 
 An abstract base class :class:`mushi.optimization.Optimizer` is defined, from
 which concrete optimization classes are derived (perhaps with intermediate
 abstraction).
-
 """
 
 import abc
@@ -190,8 +188,7 @@ class AccProxGrad(LineSearcher):
         Evaluate cost at the solution point
 
         >>> fista.f()
-        0.0
-
+        np.float64(0.0)
     """
 
     def __init__(
@@ -224,7 +221,7 @@ class AccProxGrad(LineSearcher):
         self.k = 0
 
     def _step(self) -> None:
-        """step with backtracking line search."""
+        """Step with backtracking line search."""
         self._check_x()
         # evaluate differtiable part of objective at momentum point
         g1 = self.g(self.q)
@@ -261,8 +258,8 @@ class AccProxGrad(LineSearcher):
 
 
 class ThreeOpProxGrad(AccProxGrad):
-    r"""Three operator splitting proximal gradient method with backtracking
-    line search [2]_.
+    r"""Three operator splitting proximal gradient method with backtracking line
+    search [2]_.
 
     The optimization problem solved is:
 
@@ -344,8 +341,7 @@ class ThreeOpProxGrad(AccProxGrad):
         Evaluate cost at the solution point
 
         >>> threeop.f()
-        1.5
-
+        np.float64(1.5)
     """
 
     def __init__(
@@ -372,7 +368,7 @@ class ThreeOpProxGrad(AccProxGrad):
         self.u = np.zeros_like(self.q)
 
     def _step(self) -> None:
-        """step with backtracking line search."""
+        """Step with backtracking line search."""
         self._check_x()
         # evaluate differentiable part of objective
         g1 = self.g(self.q)
@@ -455,7 +451,6 @@ class TrendFilter(Optimizer):
         >>> tf.run(x)
         array([0.13810345, 0.13809355, 0.13809775, 1.10542391, 1.1054212 ,
                0.99863353, 0.99864752, 0.03853261, 0.03853295, 0.03853668])
-
     """
 
     def __init__(
@@ -523,7 +518,7 @@ class TrendFilter(Optimizer):
     @staticmethod
     @lru_cache()
     def _D_DTD(n: int, k: Tuple[int]) -> Tuple[Tuple[np.ndarray], Tuple[np.ndarray]]:
-        """difference operator for each order in k.
+        """Difference operator for each order in k.
 
         Args:
             n: number of points in signal
@@ -541,7 +536,7 @@ class TrendFilter(Optimizer):
     @staticmethod
     @lru_cache(maxsize=1024)
     def _choleskify(n: int, k: Tuple[int], ρ: Tuple[np.float64]) -> np.ndarray:
-        """cholesky decomposition needed for linear solves in trend estimate.
+        """Cholesky decomposition needed for linear solves in trend estimate.
 
         Args:
             n: number of points in signal

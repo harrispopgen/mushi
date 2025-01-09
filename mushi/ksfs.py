@@ -7,6 +7,7 @@ import numpy as onp
 import jax.numpy as np
 from jax import jit, grad, config
 from jax.scipy.special import expit, logit
+from scipy.special import factorial
 from scipy.stats import poisson
 from typing import Union, List, Dict, Tuple
 from matplotlib import pyplot as plt
@@ -114,7 +115,7 @@ class kSFS:
 
     @property
     def eta(self) -> hst.eta:
-        r"""Read-only alias to η attribute"""
+        r"""Read-only alias to η attribute."""
         return self.η
 
     def _check_eta(self):
@@ -123,11 +124,11 @@ class kSFS:
 
     @property
     def mu(self) -> hst.mu:
-        r"""Read-only alias to μ attribute"""
+        r"""Read-only alias to μ attribute."""
         return self.μ
 
     def as_df(self) -> pd.DataFrame:
-        r"""Return a pandas DataFrame representation"""
+        r"""Return a pandas DataFrame representation."""
         index = pd.Index(range(1, self.n), name="sample frequency")
         if self.X.ndim == 1:
             return pd.Series(self.X, index=index, name="SFS")
@@ -135,13 +136,13 @@ class kSFS:
             return pd.DataFrame(self.X, index=index, columns=self.mutation_types)
 
     def clear_eta(self) -> None:
-        r"""Clear demographic history attribute η"""
+        r"""Clear demographic history attribute η."""
         self.η = None
         self.M = None
         self.L = None
 
     def clear_mu(self) -> None:
-        r"""Clear μ attribute"""
+        r"""Clear μ attribute."""
         self.μ = None
 
     def tmrca_cdf(self, eta: hst.eta = None) -> onp.ndarray:
@@ -163,8 +164,8 @@ class kSFS:
         r: np.float64 = 0,
         seed: int = None,
     ) -> None:
-        r"""Simulate a :math:`k`-SFS under the Poisson random field model
-        (no linkage), assign to ``X`` attribute
+        r"""Simulate a :math:`k`-SFS under the Poisson random field model (no
+        linkage), assign to ``X`` attribute.
 
         Args:
             eta: demographic history
@@ -213,7 +214,7 @@ class kSFS:
         t, y = eta.arrays()
         M = utils.M(self.n, t, y)
         L = self.C @ M
-        if type(mu) == hst.mu:
+        if isinstance(mu, hst.mu):
             eta.check_grid(mu)
             Ξ = L @ mu.Z
             self.mutation_types = mu.mutation_types
@@ -247,10 +248,10 @@ class kSFS:
         verbose: bool = False,
     ) -> None:
         r"""Infer ancestral misidentification rate with :math:`\eta(t)` fixed.
-        This function is used for fitting with a pre-specified demography, after
-        using :func:`~mushi.kSFS.set_eta`, instead of inferring
-        :math:`\eta(t)` with :func:`~mushi.kSFS.infer_eta` (which jointly infers
-        misidentification rate).
+        This function is used for fitting with a pre-specified demography,
+        after using :func:`~mushi.kSFS.set_eta`, instead of inferring
+        :math:`\eta(t)` with :func:`~mushi.kSFS.infer_eta` (which jointly
+        infers misidentification rate).
 
         Args:
             mu0: total mutation rate (per genome per generation)
@@ -278,7 +279,7 @@ class kSFS:
 
         @jit
         def g(r_logit):
-            """differentiable piece of objective in η problem."""
+            """Differentiable piece of objective in η problem."""
             ξ = self.mu0 * self.L.sum(1)
             r = expit(r_logit)
             ξ = (1 - r) * ξ + r * self.AM_freq @ ξ
@@ -409,9 +410,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.η.m**k / onp.math.factorial(k)) * λ)
-            for k, λ in trend_penalty
-            if λ > 0
+            (k, (self.η.m**k / factorial(k)) * λ) for k, λ in trend_penalty if λ > 0
         )
 
         # Tikhonov matrix
@@ -428,7 +427,7 @@ class kSFS:
         # misid rate in params[0], and y in params[1:]
         @jit
         def g(params):
-            """differentiable piece of objective in η problem."""
+            """Differentiable piece of objective in η problem."""
             y = params[1:]
             if log_transform:
                 M = utils.M(self.n, t, np.exp(y))
@@ -448,14 +447,14 @@ class kSFS:
 
         @jit
         def h(params):
-            """nondifferentiable piece of objective in η problem."""
+            """Nondifferentiable piece of objective in η problem."""
             return sum(
                 λ * np.linalg.norm(np.diff(params[1:], k + 1), 1)
                 for k, λ in trend_penalty
             )
 
         def prox(params, s):
-            """trend filtering prox operator (no jit due to ptv module)"""
+            """Trend filtering prox operator (no jit due to ptv module)"""
             if trend_penalty:
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
@@ -569,9 +568,7 @@ class kSFS:
         # rescale trend penalties to be comparable between orders and time grids
         # filter zeros from trend penalties
         trend_penalty = tuple(
-            (k, (self.μ.m**k / onp.math.factorial(k)) * λ)
-            for k, λ in trend_penalty
-            if λ > 0
+            (k, (self.μ.m**k / factorial(k)) * λ) for k, λ in trend_penalty if λ > 0
         )
 
         if mu_ref is None:
@@ -603,7 +600,7 @@ class kSFS:
 
         @jit
         def g(params):
-            """differentiable piece of objective in μ problem."""
+            """Differentiable piece of objective in μ problem."""
             r = self.r * cmp.ilr_inv(params[0, :], basis) / misid_weights
             Z = params[1:, :]
             Ξ = self.L @ (self.mu0 * cmp.ilr_inv(Z, basis))
@@ -619,14 +616,14 @@ class kSFS:
 
             @jit
             def h_trend(params):
-                """trend filtering penalty."""
+                """Trend filtering penalty."""
                 return sum(
                     λ * np.linalg.norm(np.diff(params[1:, :], k + 1, axis=0), 1)
                     for k, λ in trend_penalty
                 )
 
             def prox_trend(params, s):
-                """trend filtering prox operator (no jit due to ptv module)"""
+                """Trend filtering prox operator (no jit due to ptv module)"""
                 k, sλ = zip(*((k, s * λ) for k, λ in trend_penalty))
                 trend_filterer = opt.TrendFilter(k, sλ)
                 return params.at[1:, :].set(
@@ -648,7 +645,7 @@ class kSFS:
                 return rank_penalty * np.linalg.norm(params[1:, :] - Z_const, "nuc")
 
             def prox_rank(params, s):
-                """singular value thresholding."""
+                """Singular value thresholding."""
                 U, σ, Vt = np.linalg.svd(params[1:, :] - Z_const, full_matrices=False)
                 if hard:
                     σ = σ.at[σ <= s * rank_penalty].set(0)
@@ -728,7 +725,7 @@ class kSFS:
         fill_kwargs: Dict = dict(),
         folded: bool = False,
     ) -> None:
-        r"""Plot the SFS using matplotlib
+        r"""Plot the SFS using matplotlib.
 
         Args:
             kwargs: keyword arguments for scatter plot
@@ -778,7 +775,7 @@ class kSFS:
         kwargs: Dict = dict(ls="", marker=".", rasterized=True),
         line_kwargs: Dict = dict(),
     ) -> None:
-        r"""Plot the :math:`k`-SFS
+        r"""Plot the :math:`k`-SFS.
 
         Args:
             types: iterable of mutation type names to restrict plotting to
@@ -824,7 +821,7 @@ class kSFS:
         plt.tight_layout()
 
     def clustermap(self, **kwargs) -> None:
-        r"""Clustermap of compositionally centralized k-SFS
+        r"""Clustermap of compositionally centralized k-SFS.
 
         Args:
             kwargs: additional keyword arguments passed to pandas.clustermap
@@ -859,7 +856,7 @@ class kSFS:
             ``infer_mush``), the loss (goodness of fit) may be evaluated as
 
         >>> ksfs.loss()
-        -31584.27...
+        np.float64(-31584.27...)
         """
         self._check_eta()
         loss = getattr(loss_functions, func)
