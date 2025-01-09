@@ -27,8 +27,8 @@ jobs:
         channels: conda-forge
         miniconda-version: "latest"
         activate-environment: mushi
-        auto-activate-base: true
     - run: |
+        conda activate mushi
         which python
         which pip
 
