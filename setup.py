@@ -10,7 +10,6 @@ setuptools.setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     author='William DeWitt',
-    author_email='wsdewitt@gmail.com',
     description='🍄 [mu]tation [s]pectrum [h]istory [i]nference 🍄',
     long_description=long_description,
     long_description_content_type='text/markdown',
