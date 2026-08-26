@@ -7,15 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mushi.optimization &mdash; mushi  documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -90,12 +90,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for mushi.optimization</h1><div class="highlight"><pre>
-<span></span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Optimization algorithms.</span>
+<span></span><span class="sa">r</span><span class="sd">"""Optimization algorithms.</span>
 
 <span class="sd">An abstract base class :class:`mushi.optimization.Optimizer` is defined, from</span>
 <span class="sd">which concrete optimization classes are derived (perhaps with intermediate</span>
 <span class="sd">abstraction).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -108,14 +108,14 @@
 <div class="viewcode-block" id="Optimizer">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Optimizer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for optimizers.</span>
+<span class="w">    </span><span class="sd">"""Abstract base class for optimizers.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        x: solution point</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        verbose: flag to print convergence messages</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
@@ -123,25 +123,25 @@
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize solution point x, and any auxiliary variables.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Initialize solution point x, and any auxiliary variables."""</span>
         <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if x is defined.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Test if x is defined."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;solution point x is not initialized&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"solution point x is not initialized"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Optimizer.f">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.Optimizer.html#mushi.optimization.Optimizer.f">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate cost function at current solution point.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Evaluate cost function at current solution point."""</span>
         <span class="k">pass</span></div>
 
 
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Take an optimization step and update solution point.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Take an optimization step and update solution point."""</span>
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="Optimizer.run">
@@ -149,7 +149,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optimize until convergence criteria are met.</span>
+<span class="w">        </span><span class="sd">"""Optimize until convergence criteria are met.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x: initial point</span>
@@ -158,42 +158,42 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            x: solution point</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_x</span><span class="p">()</span>
         <span class="c1"># initial objective value</span>
         <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"initial objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_step</span><span class="p">()</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warning: x contains invalid values&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"warning: x contains invalid values"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># terminate if objective function is constant within tolerance</span>
             <span class="n">f_old</span> <span class="o">=</span> <span class="n">f</span>
             <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">()</span>
             <span class="n">rel_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">f</span> <span class="o">-</span> <span class="n">f_old</span><span class="p">)</span> <span class="o">/</span> <span class="n">f_old</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">end</span><span class="o">=</span><span class="s2">&quot;        </span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">"iteration </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">, objective </span><span class="si">{</span><span class="n">f</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, "</span>
+                    <span class="sa">f</span><span class="s2">"relative change </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="n">end</span><span class="o">=</span><span class="s2">"        </span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span>
                     <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">rel_change</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span>
-                        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">relative change in objective function &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> iterations&quot;</span><span class="p">,</span>
+                        <span class="s2">"</span><span class="se">\n</span><span class="s2">relative change in objective function "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2"> "</span>
+                        <span class="sa">f</span><span class="s2">"is within tolerance </span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> iterations"</span><span class="p">,</span>
                         <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s2"> reached with relative &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">maximum iteration </span><span class="si">{</span><span class="n">max_iter</span><span class="si">}</span><span class="s2"> reached with relative "</span>
+                <span class="sa">f</span><span class="s2">"change in objective function </span><span class="si">{</span><span class="n">rel_change</span><span class="si">:</span><span class="s2">.2g</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span></div>
@@ -204,14 +204,14 @@
 <div class="viewcode-block" id="LineSearcher">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LineSearcher</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract class for an optimizer with Armijo line search.</span>
+<span class="w">    </span><span class="sd">"""Abstract class for an optimizer with Armijo line search.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        s0: initial step size</span>
 <span class="sd">        max_line_iter: maximum number of line search steps</span>
 <span class="sd">        gamma: step size shrinkage rate for line search</span>
 <span class="sd">        verbose: flag to print convergence messages</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -230,7 +230,7 @@
 <div class="viewcode-block" id="AccProxGrad">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.AccProxGrad.html#mushi.optimization.AccProxGrad">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AccProxGrad</span><span class="p">(</span><span class="n">LineSearcher</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Nesterov accelerated proximal gradient method with backtracking line</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Nesterov accelerated proximal gradient method with backtracking line</span>
 <span class="sd">    search [1]_.</span>
 
 <span class="sd">    The optimization problem solved is:</span>
@@ -260,7 +260,7 @@
 <span class="sd">        &gt;&gt;&gt; import mushi.optimization as opt</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
 
-<span class="sd">        We&#39;ll use a squared loss term and a Lasso term for this example, since</span>
+<span class="sd">        We'll use a squared loss term and a Lasso term for this example, since</span>
 <span class="sd">        we can specify the solution analytically (indeed, it is directly the</span>
 <span class="sd">        prox of the Lasso term).</span>
 
@@ -295,7 +295,7 @@
 
 <span class="sd">        &gt;&gt;&gt; fista.f()</span>
 <span class="sd">        np.float64(0.0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -330,13 +330,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step with backtracking line search.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Step with backtracking line search."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_x</span><span class="p">()</span>
         <span class="c1"># evaluate differtiable part of objective at momentum point</span>
         <span class="n">g1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="n">grad1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grad1</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid gradient:</span><span class="se">\n</span><span class="si">{</span><span class="n">grad1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid gradient:</span><span class="se">\n</span><span class="si">{</span><span class="n">grad1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># store old iterate</span>
         <span class="n">x_old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span>
         <span class="c1"># Armijo line search</span>
@@ -361,7 +361,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">x_old</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">line_iter</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_line_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warning: line search failed&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"warning: line search failed"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># reset step size</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0</span></div>
 
@@ -370,7 +370,7 @@
 <div class="viewcode-block" id="ThreeOpProxGrad">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.ThreeOpProxGrad.html#mushi.optimization.ThreeOpProxGrad">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ThreeOpProxGrad</span><span class="p">(</span><span class="n">AccProxGrad</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Three operator splitting proximal gradient method with backtracking line</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Three operator splitting proximal gradient method with backtracking line</span>
 <span class="sd">    search [2]_.</span>
 
 <span class="sd">    The optimization problem solved is:</span>
@@ -407,7 +407,7 @@
 <span class="sd">        &gt;&gt;&gt; import mushi.optimization as opt</span>
 <span class="sd">        &gt;&gt;&gt; import numpy as np</span>
 
-<span class="sd">        We&#39;ll use a squared loss term, a Lasso term and a box constraint for</span>
+<span class="sd">        We'll use a squared loss term, a Lasso term and a box constraint for</span>
 <span class="sd">        this example.</span>
 
 <span class="sd">        Define :math:`g(x)` and :math:`\boldsymbol\nabla g(x)`:</span>
@@ -430,7 +430,7 @@
 
 <span class="sd">        Define :math:`h_2(x)` and :math:`\mathrm{prox}_{h_2}(u)`. We use a simple</span>
 <span class="sd">        box constraint on one dimension, although note that this is quite</span>
-<span class="sd">        artificial, since such constraints don&#39;t require operator splitting.</span>
+<span class="sd">        artificial, since such constraints don't require operator splitting.</span>
 
 <span class="sd">        &gt;&gt;&gt; def h2(x):</span>
 <span class="sd">        ...     if x[0] &lt; 1:</span>
@@ -454,7 +454,7 @@
 
 <span class="sd">        &gt;&gt;&gt; threeop.f()</span>
 <span class="sd">        np.float64(1.5)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -483,13 +483,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step with backtracking line search.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Step with backtracking line search."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_x</span><span class="p">()</span>
         <span class="c1"># evaluate differentiable part of objective</span>
         <span class="n">g1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="n">grad1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grad1</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid gradient:</span><span class="se">\n</span><span class="si">{</span><span class="n">grad1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid gradient:</span><span class="se">\n</span><span class="si">{</span><span class="n">grad1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># Armijo line search</span>
         <span class="k">for</span> <span class="n">line_iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_line_iter</span><span class="p">):</span>
             <span class="c1"># new point via prox-gradient of momentum point</span>
@@ -507,7 +507,7 @@
                 <span class="c1"># sufficient decrease not satisfied</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>  <span class="c1"># shrink step size</span>
         <span class="k">if</span> <span class="n">line_iter</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_line_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warning: line search failed&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"warning: line search failed"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="c1"># reset step size</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0</span>
 
@@ -523,7 +523,7 @@
 <div class="viewcode-block" id="TrendFilter">
 <a class="viewcode-back" href="../../stubs/mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TrendFilter</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Mixed trend filtering via specialized ADMM as in [3]_, section 5.2.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Mixed trend filtering via specialized ADMM as in [3]_, section 5.2.</span>
 
 <span class="sd">    The optimization problem solved is:</span>
 
@@ -569,7 +569,7 @@
 <span class="sd">        &gt;&gt;&gt; tf.run(x)</span>
 <span class="sd">        array([0.13810345, 0.13809355, 0.13809775, 1.10542391, 1.1054212 ,</span>
 <span class="sd">               0.99863353, 0.99864752, 0.03853261, 0.03853295, 0.03853668])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -587,9 +587,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ρ</span> <span class="o">=</span> <span class="n">rhos</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">λ</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ks and lambdas must have equal length&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"ks and lambdas must have equal length"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ρ</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ks and rhos must have equal length&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"ks and rhos must have equal length"</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TrendFilter.f">
@@ -639,7 +639,7 @@
     <span class="nd">@staticmethod</span>
     <span class="nd">@lru_cache</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_D_DTD</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Difference operator for each order in k.</span>
+<span class="w">        </span><span class="sd">"""Difference operator for each order in k.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n: number of points in signal</span>
@@ -648,7 +648,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            D: tuple of difference operator for each k</span>
 <span class="sd">            DTD: D.T @ D corresponding to above</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">D</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matrix_power</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">k</span><span class="p">)[</span><span class="n">k</span><span class="p">:]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">k</span><span class="p">)</span>
 
@@ -657,7 +657,7 @@
     <span class="nd">@staticmethod</span>
     <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_choleskify</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">ρ</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cholesky decomposition needed for linear solves in trend estimate.</span>
+<span class="w">        </span><span class="sd">"""Cholesky decomposition needed for linear solves in trend estimate.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            n: number of points in signal</span>
@@ -666,7 +666,7 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Cholesky decomposition</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">DTD</span> <span class="o">=</span> <span class="n">TrendFilter</span><span class="o">.</span><span class="n">_D_DTD</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ρ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">DTD</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)))</span>
         <span class="c1"># A is a banded Hermitian positive definite matrix with upper/lower</span>

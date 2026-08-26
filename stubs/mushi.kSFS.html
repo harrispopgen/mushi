@@ -8,18 +8,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mushi.kSFS &mdash; mushi  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
       <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -128,8 +128,8 @@
 <h1>mushi.kSFS<a class="headerlink" href="#mushi-ksfs" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="mushi.kSFS">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kSFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">kSFS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_types</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mushi/ksfs.html#kSFS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#mushi.kSFS" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Primary class for working with SFS data to infer demography
 <span class="math notranslate nohighlight">\(\eta(t)\equiv 2N(t)\)</span>, or with <span class="math notranslate nohighlight">\(k\)</span>-SFS data to infer demography
 and mutation spectrum history <span class="math notranslate nohighlight">\(\boldsymbol\mu(t)\)</span>.</p>
@@ -139,7 +139,7 @@ and mutation spectrum history <span class="math notranslate nohighlight">\(\bold
 <dd><p><span class="math notranslate nohighlight">\(k\)</span>-SFS matrix (or 1D SFS vector)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -183,7 +183,7 @@ and mutation spectrum history <span class="math notranslate nohighlight">\(\bold
 <dd><p>number of sampled haplotypes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -193,8 +193,8 @@ and mutation spectrum history <span class="math notranslate nohighlight">\(\bold
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ksfs_file</strong> – path to <span class="math notranslate nohighlight">\(k\)</span>-SFS file, as ouput by <code class="docutils literal notranslate"><span class="pre">mutyper</span> <span class="pre">ksfs</span></code></p></li>
 <li><p><strong>X</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Array</span></code></span>) – <span class="math notranslate nohighlight">\(k\)</span>-SFS matrix</p></li>
-<li><p><strong>mutation_types</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – list of names of X columns</p></li>
-<li><p><strong>n</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – number of sampled haplotypes</p></li>
+<li><p><strong>mutation_types</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – list of names of X columns</p></li>
+<li><p><strong>n</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – number of sampled haplotypes</p></li>
 </ul>
 </dd>
 </dl>
@@ -207,7 +207,7 @@ and mutation spectrum history <span class="math notranslate nohighlight">\(\bold
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">ksfs_file</span></code>: path to k-SFS file, as ouput by <cite>mutyper ksfs</cite></p></li>
 </ol>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">&#39;ksfs.tsv&#39;</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="s1">'ksfs.tsv'</span><span class="p">)</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="2">
@@ -218,8 +218,8 @@ a 1D SFS array)</p></li>
 </pre></div>
 </div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">kSFS</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
-<span class="gp">... </span>                  <span class="n">mutation_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AAA&gt;ACA&#39;</span><span class="p">,</span> <span class="s1">&#39;ACA&gt;AAA&#39;</span><span class="p">,</span>
-<span class="gp">... </span>                                  <span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+<span class="gp">... </span>                  <span class="n">mutation_types</span><span class="o">=</span><span class="p">[</span><span class="s1">'AAA&gt;ACA'</span><span class="p">,</span> <span class="s1">'ACA&gt;AAA'</span><span class="p">,</span>
+<span class="gp">... </span>                                  <span class="s1">'TCC&gt;TTC'</span><span class="p">,</span> <span class="s1">'GAA&gt;GGA'</span><span class="p">])</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -285,13 +285,13 @@ a 1D SFS array)</p></li>
 </table>
 <dl class="py property">
 <dt class="sig sig-object py" id="id0">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><span class="pre">eta</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">eta</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><span class="pre">eta</span></a></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
 <dd><p>Read-only alias to η attribute.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="id1">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><span class="pre">mu</span></a></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">mu</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><span class="pre">mu</span></a></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
 <dd><p>Read-only alias to μ attribute.</p>
 </dd></dl>
 
@@ -312,7 +312,7 @@ a 1D SFS array)</p></li>
 <dd><p>Clear demographic history attribute η.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -323,7 +323,7 @@ a 1D SFS array)</p></li>
 <dd><p>Clear μ attribute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -337,7 +337,7 @@ a 1D SFS array)</p></li>
 <dd class="field-odd"><p><strong>eta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a></span>) – demographic history (if <code class="docutils literal notranslate"><span class="pre">None</span></code>, use <code class="docutils literal notranslate"><span class="pre">self.eta</span></code> attribute)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -351,13 +351,13 @@ linkage), assign to <code class="docutils literal notranslate"><span class="pre"
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>eta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a></span>) – demographic history</p></li>
-<li><p><strong>mu</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – mutation spectrum history (or constant mutation rate)</p></li>
+<li><p><strong>mu</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – mutation spectrum history (or constant mutation rate)</p></li>
 <li><p><strong>r</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – ancestral state misidentification rate (default 0)</p></li>
-<li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – random seed</p></li>
+<li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – random seed</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -368,7 +368,7 @@ linkage), assign to <code class="docutils literal notranslate"><span class="pre"
 <p>Define demographic history and MuSH:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eta</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">eta</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1e4</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">,</span> <span class="mf">1e4</span><span class="p">]))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mush</span> <span class="o">=</span> <span class="n">mushi</span><span class="o">.</span><span class="n">mu</span><span class="p">(</span><span class="n">eta</span><span class="o">.</span><span class="n">change_points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)),</span>
-<span class="gp">... </span>                <span class="p">[</span><span class="s1">&#39;AAA&gt;ACA&#39;</span><span class="p">,</span> <span class="s1">&#39;ACA&gt;AAA&#39;</span><span class="p">,</span> <span class="s1">&#39;TCC&gt;TTC&#39;</span><span class="p">,</span> <span class="s1">&#39;GAA&gt;GGA&#39;</span><span class="p">])</span>
+<span class="gp">... </span>                <span class="p">[</span><span class="s1">'AAA&gt;ACA'</span><span class="p">,</span> <span class="s1">'ACA&gt;AAA'</span><span class="p">,</span> <span class="s1">'TCC&gt;TTC'</span><span class="p">,</span> <span class="s1">'GAA&gt;GGA'</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Define ancestral misidentification rate:</p>
@@ -383,7 +383,7 @@ linkage), assign to <code class="docutils literal notranslate"><span class="pre"
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">mush</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">as_df</span><span class="p">()</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ksfs</span><span class="o">.</span><span class="n">as_df</span><span class="p">()</span>
 <span class="go">mutation type     AAA&gt;ACA  ACA&gt;AAA  TCC&gt;TTC  GAA&gt;GGA</span>
 <span class="go">sample frequency</span>
 <span class="go">1                    1118     1123     1106     1108</span>
@@ -422,16 +422,16 @@ infers misidentification rate).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mu0</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – total mutation rate (per genome per generation)</p></li>
-<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
-<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
+<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
 <li><p><strong>tol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
-<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
+<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
 see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher()</span></code></a></p></li>
-<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -444,33 +444,33 @@ see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mus
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mu0</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – total mutation rate (per genome per generation)</p></li>
-<li><p><strong>trend_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
+<li><p><strong>trend_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
 penalty (can pass multiple for mixed trends)</p></li>
 <li><p><strong>ridge_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – ridge penalty</p></li>
-<li><p><strong>folded</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> using unfolded SFS. If
+<li><p><strong>folded</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> using unfolded SFS. If
 <code class="docutils literal notranslate"><span class="pre">True</span></code>, can only be used with <code class="docutils literal notranslate"><span class="pre">infer_mu=False</span></code>, and
 infer <span class="math notranslate nohighlight">\(\eta(t)\)</span> using folded SFS.</p></li>
 <li><p><strong>pts</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – number of points for time discretization</p></li>
 <li><p><strong>ta</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – time (in WF generations ago) of oldest change point in time
 discretization. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, set automatically based on
 10 * E[TMRCA] under MLE constant demography</p></li>
-<li><p><strong>log_transform</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – fit <span class="math notranslate nohighlight">\(\log\eta(t)\)</span></p></li>
+<li><p><strong>log_transform</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – fit <span class="math notranslate nohighlight">\(\log\eta(t)\)</span></p></li>
 <li><p><strong>eta</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a></span>) – initial demographic history. By default, a constant MLE is
 computed</p></li>
 <li><p><strong>eta_ref</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.eta.html#mushi.histories.eta" title="mushi.histories.eta"><code class="xref py py-class docutils literal notranslate"><span class="pre">eta</span></code></a></span>) – reference demographic history for ridge penalty. If
 <code class="docutils literal notranslate"><span class="pre">None</span></code>, the constant MLE is used</p></li>
-<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
-<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
+<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
 <li><p><strong>tol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
-<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
+<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
 see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher()</span></code></a></p></li>
-<li><p><strong>trend_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for trend filtering,
+<li><p><strong>trend_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for trend filtering,
 see <a class="reference internal" href="mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.run" title="mushi.optimization.TrendFilter.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.TrendFilter.run()</span></code></a></p></li>
-<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -498,27 +498,27 @@ pieces, is fit with</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>trend_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
+<li><p><strong>trend_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]</span>) – tuple <code class="docutils literal notranslate"><span class="pre">(k,</span> <span class="pre">λ)</span></code> for <span class="math notranslate nohighlight">\(k\)</span>-th order trend
 penalty (can pass multiple for mixed trends)</p></li>
 <li><p><strong>ridge_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – ridge penalty</p></li>
 <li><p><strong>rank_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – rank penalty</p></li>
-<li><p><strong>hard</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – hard rank penalty (non-convex)</p></li>
+<li><p><strong>hard</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – hard rank penalty (non-convex)</p></li>
 <li><p><strong>mu_ref</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="mushi.histories.mu.html#mushi.histories.mu" title="mushi.histories.mu"><code class="xref py py-class docutils literal notranslate"><span class="pre">mu</span></code></a></span>) – reference MuSH for ridge penalty. If None, the constant
 MLE is used</p></li>
 <li><p><strong>misid_penalty</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – ridge parameter to shrink misid rates to aggregate
 rate</p></li>
-<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
-<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
+<li><p><strong>loss</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – loss function from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p></li>
+<li><p><strong>max_iter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – maximum number of optimization steps</p></li>
 <li><p><strong>tol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span>) – relative tolerance in objective function (if <code class="docutils literal notranslate"><span class="pre">0</span></code>, not used)</p></li>
-<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
+<li><p><strong>line_search_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – line search keyword arguments,
 see <a class="reference internal" href="mushi.optimization.LineSearcher.html#mushi.optimization.LineSearcher" title="mushi.optimization.LineSearcher"><code class="xref py py-class docutils literal notranslate"><span class="pre">mushi.optimization.LineSearcher</span></code></a></p></li>
-<li><p><strong>trend_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for trend filtering,
+<li><p><strong>trend_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for trend filtering,
 see <a class="reference internal" href="mushi.optimization.TrendFilter.html#mushi.optimization.TrendFilter.run" title="mushi.optimization.TrendFilter.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">mushi.optimization.TrendFilter.run()</span></code></a></p></li>
-<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>verbose</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – print verbose messages if <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -545,14 +545,14 @@ pieces, and with rank penalization 100, is fit with</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for scatter plot</p></li>
-<li><p><strong>line_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for expectation line</p></li>
-<li><p><strong>fill_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for marginal fill</p></li>
-<li><p><strong>folded</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, plot the folded SFS and fit</p></li>
+<li><p><strong>kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for scatter plot</p></li>
+<li><p><strong>line_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for expectation line</p></li>
+<li><p><strong>fill_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – keyword arguments for marginal fill</p></li>
+<li><p><strong>folded</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, plot the folded SFS and fit</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -565,14 +565,14 @@ pieces, and with rank penalization 100, is fit with</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>types</strong> – iterable of mutation type names to restrict plotting to</p></li>
-<li><p><strong>clr</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – flag to normalize to total mutation intensity and display as
+<li><p><strong>clr</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – flag to normalize to total mutation intensity and display as
 centered log ratio transform</p></li>
-<li><p><strong>kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – key word arguments passed to data scatter plot</p></li>
-<li><p><strong>line_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – key word arguments passed to expectation line plot</p></li>
+<li><p><strong>kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – key word arguments passed to data scatter plot</p></li>
+<li><p><strong>line_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code></a></span>) – key word arguments passed to expectation line plot</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -586,7 +586,7 @@ centered log ratio transform</p></li>
 <dd class="field-odd"><p><strong>kwargs</strong> – additional keyword arguments passed to pandas.clustermap</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -600,7 +600,7 @@ centered log ratio transform</p></li>
 <dd class="field-odd"><p><strong>func</strong> – loss function name from <a class="reference internal" href="mushi.loss_functions.html#module-mushi.loss_functions" title="mushi.loss_functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">loss_functions</span></code></a> module</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.double" title="(in NumPy v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">double</span></code></a></span></p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
